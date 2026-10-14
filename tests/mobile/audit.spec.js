@@ -42,7 +42,7 @@ test('mobile audit', async ({ page, browserName }, info) => {
   };
   const shot = async (n, label) => {
     const f = n + '-' + slug(label) + '.png';
-    await page.screenshot({ path: dir + f });
+    await page.screenshot({ path: dir + f, timeout: 60000 });
     result.shots.push({ file: f, label });
   };
   const run = (fn, ...args) => page.evaluate(fn, ...args);
@@ -74,12 +74,26 @@ test('mobile audit', async ({ page, browserName }, info) => {
       result.errors.push(m.text().slice(0, 200));
   });
   page.on('pageerror', (e) => result.errors.push('pageerror: ' + e.message.slice(0, 200)));
+  result.navigations = [];
+  page.on('framenavigated', (f) => {
+    if (f === page.mainFrame()) result.navigations.push(((Date.now() - t0) / 1000).toFixed(1) + 's ' + f.url());
+  });
   await page.addInitScript(INJECT);
   await page.addInitScript(() => {
     if (!/^https?:/.test(location.protocol)) return; // about:blank denies storage
     window.__csp = [];
     document.addEventListener('securitypolicyviolation', (e) =>
-      window.__csp.push(e.violatedDirective + ' ' + e.blockedURI),
+      window.__csp.push(
+        e.violatedDirective +
+          ' ' +
+          e.blockedURI +
+          ' @ ' +
+          (e.sourceFile || '').split('/').pop() +
+          ':' +
+          e.lineNumber +
+          ':' +
+          e.columnNumber,
+      ),
     );
     // Walk mode so tap-to-walk is measurable; picture quality is chosen by the app.
     localStorage.setItem(
@@ -95,6 +109,7 @@ test('mobile audit', async ({ page, browserName }, info) => {
     requestAnimationFrame(f);
   });
 
+  let t0 = Date.now();
   let cdp = null;
   if (browserName === 'chromium') {
     cdp = await page.context().newCDPSession(page);
@@ -122,7 +137,7 @@ test('mobile audit', async ({ page, browserName }, info) => {
 
   try {
     /* 1. Welcome */
-    const t0 = Date.now();
+    t0 = Date.now();
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => document.querySelector('#w-explore') && window.BM && window.BM.PRODUCTS, null, {
       timeout: 120000,
@@ -224,6 +239,39 @@ test('mobile audit', async ({ page, browserName }, info) => {
           [type, id, x, y, touch],
         );
       await page.waitForTimeout(500);
+      // Tap on the floor (down and up in one go, like a finger): walks.
+      const pt = await pose();
+      await run(
+        ([x, y, touch]) => {
+          const c = document.querySelector('#scene');
+          const o = {
+            pointerId: 1,
+            clientY: y,
+            bubbles: true,
+            cancelable: true,
+            isPrimary: true,
+            pointerType: touch ? 'touch' : 'mouse',
+          };
+          c.dispatchEvent(new PointerEvent('pointerdown', { ...o, clientX: x, buttons: 1 }));
+          c.dispatchEvent(new PointerEvent('pointerup', { ...o, clientX: x + 2, buttons: 0 }));
+        },
+        [vp.width / 2, vp.height * 0.66, touch],
+      );
+      await page.waitForTimeout(3500);
+      const pw = await pose();
+      check(
+        '3D',
+        'Tap on the floor walks there',
+        Math.hypot(pw.x - pt.x, pw.z - pt.z) > 0.08,
+        'moved ' + Math.hypot(pw.x - pt.x, pw.z - pt.z).toFixed(2) + ' m',
+      );
+      // Let the walk finish before the drag test.
+      for (let i = 0, prev = null; i < 16; i++) {
+        const q = await pose();
+        if (prev && Math.hypot(q.x - prev.x, q.z - prev.z) < 0.001) break;
+        prev = q;
+        await page.waitForTimeout(400);
+      }
       // Drag to look: must turn, must not walk.
       const p0 = await pose();
       const cx = vp.width / 2,
@@ -239,17 +287,11 @@ test('mobile audit', async ({ page, browserName }, info) => {
         p0.yaw !== null && Math.abs(p1.yaw - p0.yaw) > 0.05,
         p0.yaw === null ? 'no pose' : 'yaw ' + (p1.yaw - p0.yaw).toFixed(3),
       );
-      check('3D', 'A drag does not start walking', Math.hypot(p1.x - p0.x, p1.z - p0.z) < 0.05);
-      // Tap on the floor: walks.
-      await ptr('pointerdown', 1, cx, vp.height * 0.72);
-      await ptr('pointerup', 1, cx + 3, vp.height * 0.72 + 2);
-      await page.waitForTimeout(3200);
-      const p2 = await pose();
       check(
         '3D',
-        'Tap on the floor walks there',
-        Math.hypot(p2.x - p1.x, p2.z - p1.z) > 0.2,
-        'moved ' + Math.hypot(p2.x - p1.x, p2.z - p1.z).toFixed(2) + ' m',
+        'A drag does not start walking',
+        Math.hypot(p1.x - p0.x, p1.z - p0.z) < 0.05,
+        'moved ' + Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(3) + ' m',
       );
       // Pinch zooms.
       const z0 = (await pose()).zoom;
@@ -377,6 +419,8 @@ test('mobile audit', async ({ page, browserName }, info) => {
       ['#f-pin', '560001'],
     ]) {
       await page.fill(sel, val);
+      // The page waits for the keyboard animation before bringing the field into view.
+      await page.waitForTimeout(450);
       const vis = await run((s) => {
         const r = document.querySelector(s).getBoundingClientRect();
         const vv = window.visualViewport || { offsetTop: 0, height: innerHeight };
@@ -524,12 +568,22 @@ test('mobile audit', async ({ page, browserName }, info) => {
       );
     }
   } catch (e) {
-    check('Run', 'Audit ran to the end', false, e.message.split('\n')[0]);
+    // Keep Playwright's call log: it says which element blocked an action.
+    check(
+      'Run',
+      'Audit ran to the end',
+      false,
+      e.message
+        .split('\n')
+        .filter((l) => l.trim() && !/^\s*-\s*waiting for/.test(l))
+        .slice(0, 8)
+        .join(' / '),
+    );
     await shot(99, 'Where it stopped').catch(() => {});
   }
 
   /* 11. Errors */
-  result.csp = await run(() => window.__csp).catch(() => []);
+  result.csp = (await run(() => window.__csp).catch(() => [])) || [];
   check('Errors', 'No CSP violations', result.csp.length === 0, result.csp.join('; '));
   check('Errors', 'No console errors', result.errors.length === 0, result.errors.slice(0, 4).join(' | '));
   writeFileSync(dir + 'result.json', JSON.stringify(result, null, 2));

@@ -1,6 +1,9 @@
 // Request schemas for the API, used by the server and the browser. Objects are strict: unknown keys are rejected.
 import { z } from 'zod';
 
+// No generated code: zod's fast path uses new Function, which the Content-Security-Policy (script-src 'self') forbids.
+z.config({ jitless: true });
+
 import { LIMITS, IST_OFFSET } from './constants.js';
 import { MSG, isName, isMobile, isEmail, isLine1, isCity, isPin } from './rules.js';
 

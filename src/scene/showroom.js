@@ -1670,7 +1670,6 @@ async function start() {
     });
     dest.position.set(end.x, 0.012, end.y);
     dest.visible = true;
-    ring.visible = false;
     kick();
     return true;
   }
@@ -1697,18 +1696,28 @@ async function start() {
     ray.setFromCamera(ndc, camera);
   }
   const ptrs = new Map();
-  const drag = { active: false, id: null, x: 0, y: 0, sx: 0, sy: 0, t: 0, moved: false };
+  const drag = { active: false, id: null, x: 0, y: 0, sx: 0, sy: 0, t: 0, moved: false, touch: false, v: 0, lt: 0 };
   let pinch = null;
+  let inertia = null; // yaw speed (rad/s) after a touch drag, fading out
+  // Touch is less precise than a mouse: a tap may move 10 px and last up to 500 ms (mouse: 6 px, 650 ms).
+  const TAP = { touch: { slop: 10, ms: 500 }, mouse: { slop: 6, ms: 650 } };
+  // Look speed on touch: about 0.25° per CSS pixel.
+  const TOUCH_LOOK = (0.25 * Math.PI) / 180;
+  // No custom gestures start this close to the screen edge, so the system Back swipe keeps working.
+  const EDGE = 16;
   const pdist = () => {
     const v = [...ptrs.values()];
     return Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
   };
   canvas.addEventListener('pointerdown', (e) => {
+    const touch = e.pointerType !== 'mouse';
+    if (touch && ptrs.size === 0 && (e.clientX < EDGE || e.clientX > window.innerWidth - EDGE)) return;
     try {
       canvas.setPointerCapture(e.pointerId);
     } catch (err) {
       /* ignore */
     }
+    inertia = null;
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (ptrs.size === 1)
       Object.assign(drag, {
@@ -1720,6 +1729,9 @@ async function start() {
         sy: e.clientY,
         t: performance.now(),
         moved: false,
+        touch,
+        v: 0,
+        lt: performance.now(),
       });
     else if (ptrs.size === 2) {
       drag.active = false;
@@ -1740,16 +1752,23 @@ async function start() {
         dy = e.clientY - drag.y;
       drag.x = e.clientX;
       drag.y = e.clientY;
-      if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 6) {
+      if (
+        !drag.moved &&
+        Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > TAP[drag.touch ? 'touch' : 'mouse'].slop
+      ) {
         drag.moved = true;
         canvas.classList.add('grabbing');
         nav.turn = null;
         hideTip();
       }
       if (drag.moved) {
-        const k = (camera.fov * Math.PI) / 180 / Math.max(200, canvas.clientHeight);
+        const k = drag.touch ? TOUCH_LOOK : (camera.fov * Math.PI) / 180 / Math.max(200, canvas.clientHeight);
         nav.yaw += dx * k;
         nav.pitch = Math.max(-0.95, Math.min(0.7, nav.pitch + dy * k));
+        const now = performance.now(),
+          dtm = Math.max(8, now - drag.lt);
+        drag.v = drag.v * 0.6 + ((dx * k) / (dtm / 1000)) * 0.4;
+        drag.lt = now;
         kick();
       }
       return;
@@ -1767,8 +1786,12 @@ async function start() {
       drag.active = false;
     }
     if (drag.active && e.pointerId === drag.id) {
-      if (!drag.moved && !wasPinch && e.type === 'pointerup' && performance.now() - drag.t < 650)
-        tap(e.clientX, e.clientY);
+      const lim = TAP[drag.touch ? 'touch' : 'mouse'];
+      if (!drag.moved && !wasPinch && e.type === 'pointerup' && performance.now() - drag.t < lim.ms)
+        tap(e.clientX, e.clientY, drag.touch);
+      // A light glide after a touch drag (none with reduced motion, none if the finger stopped before lifting).
+      if (drag.moved && drag.touch && !RM && performance.now() - drag.lt < 80 && Math.abs(drag.v) > 0.3)
+        inertia = { v: Math.max(-4, Math.min(4, drag.v)) };
       drag.active = false;
       canvas.classList.remove('grabbing');
     }
@@ -1795,10 +1818,22 @@ async function start() {
   );
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-  function tap(cx, cy) {
+  let ringTimer = 0;
+  function tap(cx, cy, touch) {
     setRay(cx, cy);
     const hit = ray.intersectObjects(allHits, false)[0];
     if (!hit) return;
+    // Touch feedback: the ring flashes where the floor was tapped, then the destination marker takes over.
+    if (touch && hit.object === floor) {
+      ring.position.set(hit.point.x, 0.012, hit.point.z);
+      ring.visible = true;
+      clearTimeout(ringTimer);
+      ringTimer = setTimeout(() => {
+        ring.visible = false;
+        kick();
+      }, 450);
+      kick(500);
+    }
     const o = hit.object;
     if (o.userData.recs) {
       const rec = o.userData.recs[hit.instanceId];
@@ -1999,9 +2034,40 @@ async function start() {
     labelsEl.appendChild(b);
     return { z, el: b, p: new V3(z.anchor[0], z.anchor[1], z.anchor[2]) };
   });
+  // Fixed chrome the labels must not sit under. Re-read a few times a second, not every frame.
+  const CHROME = [
+    '.topbar',
+    '#minimap',
+    '#minimap-toggle',
+    '#zonecard',
+    '#tourcard',
+    '.bottombar',
+    '#coach',
+    '#hint',
+    '#sheet.open',
+    '#menu',
+  ];
+  let chromeRects = [],
+    chromeAt = 0;
+  function readChrome(now) {
+    if (now - chromeAt < 300) return chromeRects;
+    chromeAt = now;
+    chromeRects = [];
+    for (const sel of CHROME) {
+      const el = document.querySelector(sel);
+      if (!el || el.hidden) continue;
+      const q = el.getBoundingClientRect();
+      if (q.width > 0 && q.height > 0 && getComputedStyle(el).display !== 'none')
+        chromeRects.push({ x: q.left, y: q.top, w: q.width, h: q.height });
+    }
+    return chromeRects;
+  }
+  const hitRect = (a, b, pad) =>
+    a.x < b.x + b.w + pad && a.x + a.w + pad > b.x && a.y < b.y + b.h + pad && a.y + a.h + pad > b.y;
   function updateLabels() {
     const r = canvas.getBoundingClientRect();
     const hideAll = !labelsOn || paused || curZone === 'eyetest';
+    const cands = [];
     for (const lb of labels) {
       if (hideAll || lb.z.id === curZone) {
         lb.el.hidden = true;
@@ -2013,14 +2079,37 @@ async function start() {
         lb.el.hidden = true;
         continue;
       }
-      lb.el.hidden = false;
-      lb.el.style.transform =
-        'translate3d(' +
-        (((tmpV.x + 1) / 2) * r.width).toFixed(1) +
-        'px,' +
-        (((1 - tmpV.y) / 2) * r.height).toFixed(1) +
-        'px,0) translate(-50%,-100%)';
-      lb.el.style.opacity = d > 13 ? String(Math.max(0.35, (17 - d) / 4)) : '1';
+      cands.push({ lb, d, x: ((tmpV.x + 1) / 2) * r.width, y: ((1 - tmpV.y) / 2) * r.height });
+    }
+    if (!cands.length) return;
+    // Priority: the current tour stop first, then the nearest.
+    const target = BM.tourTarget;
+    cands.sort((a, b) => (b.lb.z.id === target) - (a.lb.z.id === target) || a.d - b.d);
+    const phone = r.width <= 600 || r.height <= 500;
+    const maxN = phone ? 4 : 10;
+    const chrome = readChrome(performance.now());
+    const placed = [];
+    for (const c of cands) {
+      const el = c.lb.el;
+      if (!c.lb.size || !c.lb.size.w) {
+        el.hidden = false;
+        c.lb.size = { w: el.offsetWidth, h: el.offsetHeight };
+      }
+      const box = { x: r.left + c.x - c.lb.size.w / 2, y: r.top + c.y - c.lb.size.h, w: c.lb.size.w, h: c.lb.size.h };
+      const off = box.x < 4 || box.y < 4 || box.x + box.w > r.right - 4 || box.y + box.h > r.bottom - 4;
+      if (
+        placed.length >= maxN ||
+        off ||
+        chrome.some((q) => hitRect(box, q, 4)) ||
+        placed.some((q) => hitRect(box, q, 4))
+      ) {
+        el.hidden = true;
+        continue;
+      }
+      placed.push(box);
+      el.hidden = false;
+      el.style.transform = 'translate3d(' + c.x.toFixed(1) + 'px,' + c.y.toFixed(1) + 'px,0) translate(-50%,-100%)';
+      el.style.opacity = c.d > 13 ? String(Math.max(0.35, (17 - c.d) / 4)) : '1';
     }
   }
 
@@ -2114,7 +2203,16 @@ async function start() {
     VW.cam.position.set(0.15, 0.05, 0.28);
     VW.ctr.target.set(0, -0.004, -0.04);
     VW.ctr.autoRotate = !RM;
+    VW.ctr.minPolarAngle = 0.45;
+    VW.ctr.maxPolarAngle = 2.1;
     VW.ctr.update();
+    if (coarse) {
+      // OrbitControls sets touch-action: none; allow vertical page scrolling and lock the tilt instead.
+      VW.r.domElement.style.touchAction = 'pan-y';
+      const polar = VW.ctr.getPolarAngle();
+      VW.ctr.minPolarAngle = polar;
+      VW.ctr.maxPolarAngle = polar;
+    }
     sizeViewer();
     VW.active = true;
     return true;
@@ -2221,6 +2319,12 @@ async function start() {
         if (nav.look) nav.turn = nav.look;
         arrive();
       }
+    }
+    if (inertia && !drag.active) {
+      act = true;
+      nav.yaw += inertia.v * dt;
+      inertia.v *= Math.exp(-dt * 5);
+      if (Math.abs(inertia.v) < 0.03) inertia = null;
     }
     if (nav.turn && !(drag.active && drag.moved)) {
       act = true;
@@ -2352,6 +2456,10 @@ async function start() {
       labelsOn = !!on;
       updateLabels();
     },
+    refreshLabels() {
+      chromeAt = 0;
+      updateLabels();
+    },
     setPaused(b) {
       paused = !!b;
       if (!paused) {
@@ -2365,6 +2473,10 @@ async function start() {
         tris: renderer.info.render.triangles,
         records: records.length,
         meshes: productMeshes.length,
+        x: nav.x,
+        z: nav.z,
+        yaw: nav.yaw,
+        zoom,
       };
     },
   });

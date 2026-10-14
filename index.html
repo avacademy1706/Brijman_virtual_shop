@@ -142,8 +142,92 @@
               <path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></svg
             ><span class="hide-sm">Bag</span><span class="badge" id="bag-count" hidden>0</span>
           </button>
+          <button
+            class="icon-btn sq menu-btn"
+            id="btn-menu"
+            type="button"
+            aria-label="More: directory, tour, eye test and store details"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="menu"
+          >
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
         </nav>
       </header>
+      <div class="menu glass" id="menu" hidden>
+        <button type="button" data-act="directory">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+            <path d="M9 4v14M15 6v14" /></svg
+          ><span>Directory</span>
+        </button>
+        <button type="button" data-act="tour">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="m10 8.5 5.5 3.5-5.5 3.5z" /></svg
+          ><span>Guided tour</span>
+        </button>
+        <button type="button" data-act="eyetest">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" />
+            <circle cx="12" cy="12" r="3" /></svg
+          ><span>Eye test</span>
+        </button>
+        <button type="button" data-act="info">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v5.5M12 7.6v.1" /></svg
+          ><span>Store details</span>
+        </button>
+      </div>
 
       <section class="minimap glass" id="minimap" aria-label="Floor plan">
         <div class="minimap-head">
@@ -155,7 +239,36 @@
           role="img"
           aria-label="Floor plan with your position and view direction. Click a spot to walk there."
         ></canvas>
+        <button class="mm-close" id="minimap-close" type="button" aria-label="Hide the floor plan">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+        </button>
       </section>
+      <button class="minimap-toggle glass" id="minimap-toggle" type="button" aria-label="Show the floor plan">
+        <svg
+          class="i"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+          <path d="M9 4v14M15 6v14" />
+        </svg>
+      </button>
 
       <div class="dock" id="dock">
         <section class="card glass" id="zonecard" hidden aria-live="polite">
@@ -303,6 +416,8 @@
         </div>
       </section>
       <p class="hint" id="hint" hidden>Tap the floor to walk &middot; drag to look around</p>
+      <section class="coach glass" id="coach" hidden aria-live="polite" aria-label="How to move around"></section>
+      <div class="restore glass" id="restore" role="status" hidden></div>
 
       <nav class="bottombar" aria-label="Showroom tools">
         <button id="bb-dir" type="button">
@@ -401,6 +516,7 @@
             </svg>
           </button>
         </header>
+        <p class="sheet-toast" id="sheet-toast" role="status" hidden></p>
         <div class="sheet-body" id="sheet-body"></div>
         <footer class="sheet-foot" id="sheet-foot" hidden></footer>
       </aside>

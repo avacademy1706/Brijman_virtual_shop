@@ -31,7 +31,7 @@ export default defineConfig({
   workers: process.env.AUDIT_WORKERS ? +process.env.AUDIT_WORKERS : 3,
   retries: 0,
   reporter: [['list']],
-  use: { baseURL: 'http://localhost:' + PORT, trace: 'off' },
+  use: { baseURL: 'http://localhost:' + PORT, trace: 'off', actionTimeout: 15000 },
   webServer: {
     command: 'node node_modules/vite/bin/vite.js preview --port ' + PORT + ' --strictPort',
     cwd: '../..',

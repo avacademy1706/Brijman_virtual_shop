@@ -27,6 +27,8 @@ async function schemasOr(showError) {
   }
 }
 import { DATA_SOURCE, ApiError } from '../services/http.js';
+import { initLayout, isBottomSheet, isPhone, isCoarse, onLayoutChange, layoutMode, measureChrome } from './layout.js';
+import { pushLayer, dropLayer } from './history.js';
 import { quoteCart } from '../services/cart-service.js';
 import { placeOrder, newIdempotencyKey } from '../services/order-service.js';
 import { getSlots, bookEyeTest } from '../services/eye-test-service.js';
@@ -87,14 +89,22 @@ const app = $('#app'),
   sheetBody = $('#sheet-body'),
   sheetFoot = $('#sheet-foot'),
   scrim = $('#scrim');
-const isNarrow = () => window.matchMedia('(max-width: 760px)').matches;
+// Layout modes live in src/ui/layout.js (matching main.css). Phones = portrait or landscape phone layouts.
+const isNarrow = () => isPhone();
 const api = () => (S.has3D ? BM.api : null);
 
 let toastT = null;
 function toast(msg, ms) {
-  const t = $('#toast');
+  // While the sheet is open the message appears inside it, so nothing floats over the panel.
+  const inSheet = sheet && sheet.classList.contains('open');
+  const t = inSheet ? $('#sheet-toast') : $('#toast');
+  const other = inSheet ? $('#toast') : $('#sheet-toast');
+  if (other) other.hidden = true;
   t.textContent = msg;
   t.hidden = false;
+  // The toast and the hint share the same spot: the toast wins.
+  const hn = $('#hint');
+  if (hn) hn.hidden = true;
   clearTimeout(toastT);
   toastT = setTimeout(() => {
     t.hidden = true;
@@ -133,6 +143,10 @@ function hideWelcome(showHint) {
   const w = $('#welcome');
   if (w.hidden) return;
   w.hidden = true;
+  if (showHint && S.has3D && !S.settings.coachSeen) {
+    showCoach();
+    return;
+  }
   if (showHint && S.has3D) {
     const hn = $('#hint');
     hn.hidden = false;
@@ -213,6 +227,7 @@ function zoneActions(z) {
 }
 function showZoneCard(id) {
   if (S.tour.on) return;
+  if (BM.coachVisible && BM.coachVisible()) return;
   const z = BM.zoneById(id),
     card = $('#zonecard');
   if (!z) {
@@ -281,7 +296,11 @@ BM.onArrive = (info) => {
     showZoneCard(info.zone);
   }
 };
-BM.onUserNav = () => {
+BM.onUserNav = (kind) => {
+  if (kind === 'walk' && BM.coachVisible && BM.coachVisible() && coachStep === 0) {
+    coachStep = 1;
+    renderCoach();
+  }
   hideWelcome(true);
   if (S.tour.on && S.tour.playing) pauseTour();
 };
@@ -323,12 +342,19 @@ function startTour(i) {
   $('#zonecard').hidden = true;
   $('#tourcard').hidden = false;
   setTourPressed(true);
+  if (!tourLayer)
+    tourLayer = pushLayer('tour', () => {
+      tourLayer = null;
+      endTour(true);
+    });
   renderTour();
   api().goZone(BM.TOUR[S.tour.i], 'tour');
 }
+let tourLayer = null;
 function renderTour() {
   const id = BM.TOUR[S.tour.i],
     z = BM.zoneById(id);
+  BM.tourTarget = id;
   $('#tc-step').textContent = 'Stop ' + (S.tour.i + 1) + ' of ' + BM.TOUR.length;
   $('#tc-title').textContent = z.name;
   $('#tc-text').textContent = S.tour.arrived ? BM.TOUR_TEXT[id] : 'Walking there…';
@@ -431,7 +457,10 @@ function togglePlay() {
   }
   renderTour();
 }
-function endTour() {
+function endTour(fromHistory) {
+  if (fromHistory !== true && tourLayer) dropLayer(tourLayer);
+  tourLayer = null;
+  BM.tourTarget = null;
   clearTimeout(S.tour.timer);
   S.tour.on = false;
   $('#tourcard').hidden = true;
@@ -441,7 +470,7 @@ function endTour() {
 $('#tc-next').addEventListener('click', nextStop);
 $('#tc-prev').addEventListener('click', prevStop);
 $('#tc-play').addEventListener('click', togglePlay);
-$('#tc-exit').addEventListener('click', endTour);
+$('#tc-exit').addEventListener('click', () => endTour());
 function tourButton() {
   if (S.tour.on) endTour();
   else startTour(BM.TOUR.indexOf(S.zone) > 0 ? BM.TOUR.indexOf(S.zone) : 0);
@@ -466,20 +495,43 @@ window.addEventListener('scroll', () => {
 
 const VIEWS = {};
 let current = null;
+// One history entry per view in the sheet: Back steps back through nested views, then closes the sheet.
+let sheetLayers = [];
+function sheetHistoryBack() {
+  sheetLayers.pop();
+  teardown();
+  S.stack.pop();
+  if (!S.stack.length) {
+    finishClose();
+    return;
+  }
+  renderSheet();
+}
 function openSheet(view, data, push) {
+  teardown();
   if (!push) {
-    teardown();
     S.stack = [];
-  } else teardown();
+    // Replacing the views: keep one history entry for the sheet and drop the nested ones.
+    if (sheetLayers.length > 1) {
+      dropLayer(sheetLayers[1]);
+      sheetLayers = [sheetLayers[0]];
+    }
+  }
   if (!sheet.classList.contains('open')) S.lastFocus = document.activeElement;
+  // The coach mark steps aside while a panel is open and comes back afterwards.
+  if (BM.coachVisible && BM.coachVisible()) {
+    $('#coach').hidden = true;
+    S.coachPaused = true;
+  }
   S.stack.push({ view, data: data || {} });
+  if (sheetLayers.length < S.stack.length) sheetLayers.push(pushLayer('sheet', sheetHistoryBack));
   renderSheet();
   sheet.classList.add('open');
   sheet.removeAttribute('inert');
   sheet.setAttribute('aria-hidden', 'false');
   app.classList.add('sheet-open');
-  scrim.hidden = !isNarrow();
-  if (isNarrow() && api()) api().setPaused(true);
+  scrim.hidden = !isBottomSheet();
+  if (isBottomSheet() && api()) api().setPaused(true);
   setTimeout(() => {
     const t = $('#sheet-title');
     t && t.focus({ preventScroll: true });
@@ -513,16 +565,29 @@ function renderSheet() {
   if (v.mount) v.mount();
 }
 function backSheet() {
+  if (sheetLayers.length) dropLayer(sheetLayers.pop());
   teardown();
   S.stack.pop();
   if (!S.stack.length) {
-    closeSheet();
+    finishClose();
     return;
   }
   renderSheet();
 }
 function closeSheet() {
   if (!sheet.classList.contains('open')) return;
+  if (sheetLayers.length) dropLayer(sheetLayers[0]);
+  sheetLayers = [];
+  finishClose();
+}
+function finishClose() {
+  if (!sheet.classList.contains('open')) return;
+  sheetLayers = [];
+  $('#sheet-toast').hidden = true;
+  if (S.coachPaused) {
+    S.coachPaused = false;
+    $('#coach').hidden = false;
+  }
   teardown();
   S.stack = [];
   sheet.classList.remove('open');
@@ -541,6 +606,19 @@ function closeSheet() {
     }
   }
 }
+sheetBody.addEventListener('focusin', (e) => {
+  const el = e.target;
+  if (!el.matches || !el.matches('input, select, textarea')) return;
+  // Wait for the keyboard to finish opening, then bring the field into the visible part of the sheet.
+  setTimeout(() => {
+    if (!document.contains(el) || document.activeElement !== el) return;
+    const r = el.getBoundingClientRect(),
+      b = sheetBody.getBoundingClientRect();
+    const vv = window.visualViewport;
+    const bottom = Math.min(b.bottom, vv ? vv.offsetTop + vv.height : innerHeight);
+    if (r.top < b.top + 8 || r.bottom > bottom - 8) scrollSheetTo(el);
+  }, 320);
+});
 $('#sheet-close').addEventListener('click', closeSheet);
 $('#sheet-back').addEventListener('click', backSheet);
 scrim.addEventListener('click', closeSheet);
@@ -1094,17 +1172,19 @@ function rxForm(d, needAdd) {
     ['axis', '–', '1', '180', '1'],
   ];
   if (needAdd) fields.push(['add', '+0.00', '0.75', '3.5', '0.25']);
+  // Text inputs with the decimal keypad. iPhone's decimal keypad has no minus sign, so a ± button flips the sign of
+  // the value being typed (SPH and CYL are often negative).
+  let signTarget = null;
   for (const eye of ['r', 'l']) {
     grid.append(h('span', { class: 'rx-eye' }, eye === 'r' ? 'Right' : 'Left'));
     for (const f of fields) {
       const id = 'rx-' + eye + '-' + f[0];
       const inp = h('input', {
-        type: 'number',
+        type: 'text',
         id,
         inputmode: 'decimal',
-        step: f[4],
-        min: f[2],
-        max: f[3],
+        autocomplete: 'off',
+        enterkeyhint: 'next',
         placeholder: f[1],
         'aria-label': (eye === 'r' ? 'Right' : 'Left') + ' eye ' + f[0].toUpperCase(),
       });
@@ -1114,16 +1194,36 @@ function rxForm(d, needAdd) {
         const e = $('#rx-err');
         if (e) e.hidden = true;
       });
+      if (f[0] !== 'axis') inp.addEventListener('focus', () => (signTarget = inp));
       grid.append(inp);
     }
   }
+  const sign = h(
+    'button',
+    {
+      class: 'btn small rx-sign',
+      type: 'button',
+      'aria-label': 'Switch the value you are typing between plus and minus',
+    },
+    '± Plus / minus',
+  );
+  // Keep the keyboard open: do not take focus from the field.
+  sign.addEventListener('pointerdown', (e) => e.preventDefault());
+  sign.addEventListener('mousedown', (e) => e.preventDefault());
+  sign.addEventListener('click', () => {
+    const inp = signTarget;
+    if (!inp) return;
+    const v = inp.value.trim();
+    inp.value = v.startsWith('-') ? v.slice(1) : v.startsWith('+') ? '-' + v.slice(1) : '-' + v;
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    inp.focus({ preventScroll: true });
+  });
   const pd = h('input', {
-    type: 'number',
+    type: 'text',
     id: 'rx-pd',
     inputmode: 'decimal',
-    step: '0.5',
-    min: '50',
-    max: '76',
+    autocomplete: 'off',
+    enterkeyhint: 'done',
     placeholder: '63',
   });
   pd.value = d.rx.pd || '';
@@ -1134,6 +1234,12 @@ function rxForm(d, needAdd) {
   });
   wrap.append(
     grid,
+    h(
+      'div',
+      { class: 'rx-signrow' },
+      sign,
+      h('span', { class: 'field-note' }, 'No minus sign on your keypad? Tap ± while typing a value.'),
+    ),
     h('label', { class: 'rx-pd', for: 'rx-pd' }, h('span', null, 'Pupillary distance (PD), mm'), pd),
     h('p', { class: 'field-error', id: 'rx-err', role: 'alert', hidden: true }),
     h(
@@ -1179,7 +1285,7 @@ async function openTryOn(pid, ci, sizeId) {
   pauseTour();
   if (api()) api().setPaused(true);
   const resume = () => {
-    if (api()) api().setPaused(isNarrow() && sheet.classList.contains('open'));
+    if (api()) api().setPaused(isBottomSheet() && sheet.classList.contains('open'));
   };
   try {
     tryOnModule = tryOnModule || (await import('../tryon/ui.js'));
@@ -1319,7 +1425,8 @@ VIEWS.search = function (d) {
     title: 'Find a frame',
     body,
     mount() {
-      if (!isNarrow()) setTimeout(() => input.focus({ preventScroll: true }), 60);
+      // Focus the search box with a mouse only: on touch screens it would pop the keyboard over the results.
+      if (!isCoarse() && !isNarrow()) setTimeout(() => input.focus({ preventScroll: true }), 60);
     },
   };
 };
@@ -1517,9 +1624,9 @@ const itemCount = (n) => n + (n === 1 ? ' item' : ' items');
 /* ---------- Form helpers ---------- */
 function formField(d, errs, k, label, attrs) {
   const id = 'f-' + k;
-  const inp = h('input', Object.assign({ id, 'aria-describedby': id + '-err' }, attrs));
+  const inp = h('input', Object.assign({ id, 'aria-describedby': id + '-err', enterkeyhint: 'next' }, attrs));
   inp.value = d.f[k] || '';
-  const err = h('span', { class: 'field-error', id: id + '-err', hidden: true });
+  const err = h('span', { class: 'field-error', id: id + '-err', 'aria-live': 'polite', hidden: true });
   inp.addEventListener('input', () => {
     d.f[k] = inp.value;
     err.hidden = true;
@@ -1872,6 +1979,7 @@ VIEWS.checkout = function (d) {
       formField(d, errs, 'city', 'Town or city', { type: 'text', autocomplete: 'address-level2', maxlength: '60' }),
       formField(d, errs, 'pin', 'PIN code', {
         type: 'text',
+        enterkeyhint: 'done',
         autocomplete: 'postal-code',
         inputmode: 'numeric',
         maxlength: '6',
@@ -2192,6 +2300,7 @@ VIEWS.eyetest = function (d) {
         }),
         formField(d, errs, 'mobile', 'Mobile', {
           type: 'tel',
+          enterkeyhint: 'done',
           autocomplete: 'tel-national',
           inputmode: 'tel',
           maxlength: '16',
@@ -2618,6 +2727,222 @@ $('#bb-eye').addEventListener('click', () => {
   else openSheet('eyetest');
 });
 $('#bb-info').addEventListener('click', () => openSheet('info'));
+
+/* ---------- Swipe down on the sheet's grip or header to close it (bottom sheet only) ---------- */
+(function sheetDrag() {
+  const grip = sheet.querySelector('.sheet-grip'),
+    head = sheet.querySelector('.sheet-head');
+  let st = null;
+  const start = (e) => {
+    if (!isBottomSheet() || !sheet.classList.contains('open')) return;
+    if (e.target.closest && e.target.closest('button')) return;
+    // Never while the content is scrolled away from the top, and never at the screen edges (system Back swipe).
+    if (sheetBody.scrollTop > 0) return;
+    if (e.clientX < 16 || e.clientX > window.innerWidth - 16) return;
+    const now = performance.now();
+    st = { id: e.pointerId, y0: e.clientY, dy: 0, ly: e.clientY, lt: now, v: 0 };
+    sheet.classList.add('dragging');
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (err) {
+      /* synthetic events cannot be captured */
+    }
+  };
+  const move = (e) => {
+    if (!st || e.pointerId !== st.id) return;
+    const now = performance.now();
+    st.v = (e.clientY - st.ly) / Math.max(1, now - st.lt);
+    st.ly = e.clientY;
+    st.lt = now;
+    st.dy = Math.max(0, e.clientY - st.y0);
+    sheet.style.transform = 'translateY(' + st.dy + 'px)';
+  };
+  const end = (e) => {
+    if (!st || e.pointerId !== st.id) return;
+    const h = sheet.getBoundingClientRect().height;
+    // Close when pulled past 30 % of the height, or flicked down fast enough; otherwise snap back.
+    const close = st.dy > h * 0.3 || (st.v > 0.6 && st.dy > 24);
+    st = null;
+    sheet.classList.remove('dragging');
+    sheet.style.transform = '';
+    if (close) closeSheet();
+  };
+  for (const el of [grip, head]) {
+    if (!el) continue;
+    el.addEventListener('pointerdown', start);
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }
+})();
+
+/* ---------- First-visit coach mark: tap to walk, drag to look ---------- */
+const coachEl = $('#coach');
+let coachStep = 0;
+function coachSteps() {
+  const touch = isCoarse();
+  return [
+    {
+      icon: '<path d="M12 21c4-4 6.5-7.2 6.5-10.3a6.5 6.5 0 1 0-13 0C5.5 13.8 8 17 12 21z"/><circle cx="12" cy="10.5" r="2.2"/>',
+      title: touch ? 'Tap the floor to walk there' : 'Click the floor to walk there',
+      text: 'The route goes around fixtures. A ring marks where you are going.',
+    },
+    {
+      icon: '<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',
+      title: 'Drag to look around',
+      text: touch
+        ? 'Pinch to zoom in on a shelf. Tap a frame for its details.'
+        : 'Scroll to zoom. Click a frame for its details.',
+    },
+  ];
+}
+function renderCoach() {
+  const steps = coachSteps(),
+    st = steps[coachStep];
+  const last = coachStep === steps.length - 1;
+  const icon = h('span', {
+    class: 'ic',
+    html:
+      '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      st.icon +
+      '</svg>',
+  });
+  coachEl.replaceChildren(
+    h('div', { class: 'coach-step' }, icon, h('span', null, h('b', null, st.title), h('span', null, st.text))),
+    h(
+      'div',
+      { class: 'coach-foot' },
+      h('span', { class: 'eyebrow' }, 'Step ' + (coachStep + 1) + ' of ' + steps.length),
+      h(
+        'span',
+        { class: 'card-actions' },
+        last ? null : btn('Skip', { cls: 'small', onclick: () => finishCoach() }),
+        btn(last ? 'Got it' : 'Next', {
+          primary: true,
+          cls: 'small',
+          id: 'coach-next',
+          onclick: () => (last ? finishCoach() : ((coachStep += 1), renderCoach())),
+        }),
+      ),
+    ),
+  );
+}
+function showCoach() {
+  coachStep = 0;
+  $('#zonecard').hidden = true;
+  coachEl.hidden = false;
+  renderCoach();
+  setTimeout(() => {
+    const b = $('#coach-next');
+    if (b) b.focus({ preventScroll: true });
+  }, 30);
+}
+function finishCoach() {
+  if (coachEl.hidden) return;
+  coachEl.hidden = true;
+  S.settings.coachSeen = true;
+  saveSettings();
+  showZoneCard(S.zone);
+}
+BM.coachVisible = () => !coachEl.hidden;
+
+// Section labels avoid the chrome: tell the 3D view whenever a card, the coach mark, the hint or the floor plan
+// appears, disappears or moves.
+if (window.MutationObserver) {
+  let queued = false;
+  const relabel = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      if (api() && api().refreshLabels) api().refreshLabels();
+    });
+  };
+  const mo = new MutationObserver(relabel);
+  for (const sel of ['#zonecard', '#tourcard', '#coach', '#hint', '#minimap', '#minimap-toggle', '#menu', '#welcome'])
+    if ($(sel)) mo.observe($(sel), { attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
+  mo.observe(app, { attributes: true, attributeFilter: ['class'] });
+  window.addEventListener('resize', relabel);
+}
+
+/* ---------- Layout: floor-plan collapse, landscape menu, rotation ---------- */
+initLayout();
+// The floor plan starts collapsed on short phones and in landscape, unless the visitor chose otherwise.
+function minimapOpen() {
+  if (S.settings.minimap === 'open') return true;
+  if (S.settings.minimap === 'closed') return false;
+  const m = layoutMode();
+  return !(m === 'phone-landscape' || (m === 'phone' && window.innerHeight < 700));
+}
+function applyMinimap() {
+  app.classList.toggle('minimap-closed', !minimapOpen());
+  measureChrome();
+  drawMinimap();
+}
+function setMinimap(open) {
+  S.settings.minimap = open ? 'open' : 'closed';
+  saveSettings();
+  applyMinimap();
+  const target = open ? $('#minimap-close') : $('#minimap-toggle');
+  if (target) target.focus({ preventScroll: true });
+}
+$('#minimap-close').addEventListener('click', (e) => {
+  e.stopPropagation();
+  setMinimap(false);
+});
+$('#minimap-toggle').addEventListener('click', () => setMinimap(true));
+applyMinimap();
+
+// Phone landscape: the bottom bar's actions live in a top-bar menu.
+const menuBtn = $('#btn-menu'),
+  menu = $('#menu');
+function closeMenu(focusBtn) {
+  if (menu.hidden) return;
+  menu.hidden = true;
+  menuBtn.setAttribute('aria-expanded', 'false');
+  if (focusBtn) menuBtn.focus({ preventScroll: true });
+}
+menuBtn.addEventListener('click', () => {
+  const open = menu.hidden;
+  menu.hidden = !open;
+  menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open) {
+    const first = menu.querySelector('button');
+    if (first) first.focus({ preventScroll: true });
+  }
+});
+menu.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  closeMenu(false);
+  const act = b.dataset.act;
+  if (act === 'directory') openSheet('directory');
+  else if (act === 'tour') tourButton();
+  else if (act === 'eyetest') {
+    if (S.has3D) goZone('eyetest');
+    else openSheet('eyetest');
+  } else if (act === 'info') openSheet('info');
+});
+document.addEventListener('pointerdown', (e) => {
+  if (!menu.hidden && !menu.contains(e.target) && !menuBtn.contains(e.target)) closeMenu(false);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !menu.hidden) {
+    e.preventDefault();
+    closeMenu(true);
+  }
+});
+
+// Rotating the phone or resizing changes the layout: keep the floor plan, sheet and 3D pause consistent.
+onLayoutChange(() => {
+  closeMenu(false);
+  applyMinimap();
+  if (sheet.classList.contains('open')) {
+    scrim.hidden = !isBottomSheet();
+    if (api()) api().setPaused(isBottomSheet());
+  }
+  onResize();
+});
 
 const nStyles = BM.PRODUCTS.filter((p) => p.type === 'frame').length;
 $('#welcome-lede').textContent =
