@@ -23,18 +23,25 @@ npm run dev       # site and API at http://localhost:5173
 
 ## Scripts
 
-| Command                  | What it does                                                                            |
-| ------------------------ | --------------------------------------------------------------------------------------- |
-| `npm run dev`            | Site and API at http://localhost:5173 with live reload                                  |
-| `npm run dev:phone`      | Same, reachable from phones on your Wi-Fi                                               |
-| `npm run build`          | Production build into `dist/`                                                           |
-| `npm run preview`        | Serves `dist/` and the API at http://localhost:4173 with the production headers         |
-| `npm test`               | Runs the tests once (Vitest); `npm run test:watch` keeps them running                   |
-| `npm run check`          | Format check, tests, build and the first-load size check; stops at the first failure    |
-| `npm run bundle:check`   | After a build: fails if the showroom's first load grew more than 10 KB gzipped          |
-| `npm run smoke -- <url>` | Checks a running site and its API, for example `npm run smoke -- http://localhost:4173` |
-| `npm run format`         | Formats all files with Prettier                                                         |
-| `npm run assets:check`   | Confirms every 3D model and texture in `assets-3d/` is present                          |
+| Command                  | What it does                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`            | Site and API at http://localhost:5173 with live reload                                                                         |
+| `npm run dev:phone`      | Same, reachable from phones on your Wi-Fi                                                                                      |
+| `npm run build`          | Production build into `dist/`                                                                                                  |
+| `npm run preview`        | Serves `dist/` and the API at http://localhost:4173 with the production headers                                                |
+| `npm test`               | Runs the tests once (Vitest); `npm run test:watch` keeps them running                                                          |
+| `npm run check`          | Format check, tests, build and the first-load size check; stops at the first failure                                           |
+| `npm run test:mobile`    | Builds, serves the production build and audits 16 phone, tablet and desktop profiles; writes `reports/mobile-audit/index.html` |
+| `npm run bundle:check`   | After a build: fails if the showroom's first load grew more than 10 KB gzipped                                                 |
+| `npm run smoke -- <url>` | Checks a running site and its API, for example `npm run smoke -- http://localhost:4173`                                        |
+| `npm run format`         | Formats all files with Prettier                                                                                                |
+| `npm run assets:check`   | Confirms every 3D model and texture in `assets-3d/` is present                                                                 |
+
+## Phones, tablets and desktops
+
+The layout adapts to four modes: phone portrait (bottom bar, bottom sheet), phone landscape (compact top bar with a menu, side-panel sheet), tablet (desktop arrangement with touch-sized targets) and desktop. Touch works like an app: swipe the sheet down to close it, the phone's Back button closes panels, every control is at least 44 px, fields never zoom on iOS and stay above the keyboard. The 3D store picks a quality tier for the device and recovers if the phone drops the graphics.
+
+Run the automated audit with `npm run test:mobile` (first install the browsers once: `npx playwright install chromium webkit firefox`), then open `reports/mobile-audit/index.html`. Finish on real devices with the checklist in [docs/mobile-testing.md](docs/mobile-testing.md).
 
 ## Virtual try-on
 
@@ -72,6 +79,7 @@ Payment, WhatsApp and CRM variables are listed in `.env.example` and [docs/backe
 - [docs/api.md](docs/api.md): API reference with curl examples
 - [docs/openapi.yaml](docs/openapi.yaml): OpenAPI 3.1 contract, including what a future backend must expose
 - [docs/backend-integration.md](docs/backend-integration.md): connecting a backend, Supabase, Razorpay, WhatsApp (WaMark), DGCC, rate limiting and DPDP notes
+- [docs/mobile-testing.md](docs/mobile-testing.md): the mobile audit, baseline and results, and the real-device checklist
 - [docs/try-on.md](docs/try-on.md), [docs/privacy-try-on.md](docs/privacy-try-on.md), [docs/try-on-testing.md](docs/try-on-testing.md): the virtual try-on
 - [docs/decisions.md](docs/decisions.md): why things are the way they are
 
@@ -116,7 +124,7 @@ brijman-virtual-showroom/
 │  ├─ scene/showroom.js       3D store, frames, walk planner, labels, product viewer
 │  ├─ assets/fonts/           Hanken Grotesk, Martian Mono and Unbounded (woff2) with licences
 │  └─ styles/                 main.css (design tokens, light and dark) and fonts.css
-├─ tests/                     unit, route, Vercel entry and repository contract tests
+├─ tests/                     unit, route, Vercel entry and repository contract tests; tests/mobile/ is the Playwright audit
 ├─ public/vendor/mediapipe/   Face model (committed) and the wasm runtime (copied at build time, gitignored)
 ├─ scripts/                   smoke.mjs, check-assets.mjs, copy-mediapipe.mjs, check-bundle.mjs
 ├─ assets-3d/                 Every 3D model (.glb) and texture (.png), for 3D artists (not loaded by the site)

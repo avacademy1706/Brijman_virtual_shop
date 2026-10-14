@@ -115,3 +115,43 @@ The bag moved to localStorage key `bm-bag-v2` (id, colour, size, configuration, 
 - **Kids' sunglasses follow the kids size rule** (S, M), since kids comes first in the brief's table.
 - **Fit uses the front's outer width from the real geometry** (`frameGeometry(...).outerWidth`) in the try-on, and `frontWidthMm` (2 × lens + bridge + endpieces) in the product sheet; both agree to ±0.5 mm.
 - **Browser test material.** The real-face browser checks used MediaPipe's public test portrait and a short clip made from it, kept outside the repository. The repository's tests use synthetic faces only.
+
+## 2026-10-14: Mobile layout modes, defined once
+
+Four modes, in `src/styles/main.css` and mirrored for JavaScript in `src/ui/layout.js`: phone portrait (≤ 600 px wide: compact top bar, bottom bar, bottom sheet), phone landscape (≤ 500 px tall: no bottom bar, a top-bar menu, a side-panel sheet at half the width), tablet (601–1024 px: the desktop arrangement with a 380–420 px sheet and touch-sized targets) and desktop. The old single 760 px breakpoint is gone. Landscape rules come last in the stylesheet so they win for short, wide phones.
+
+The store now fills the whole screen, under the notch; the bars, sheet footer and panels are padded with the safe-area insets instead of padding the whole page. Heights use `100dvh` and measured variables: `--bb-h` (bottom bar), `--mm-h` (floor plan), `--vvh` and `--kb` (visible height and keyboard overlap from `visualViewport`).
+
+## 2026-10-14: Nothing floats over another fixed element
+
+To meet the audit's no-overlap rule: the bottom sheet replaces the bottom bar while it is open (the bar is hidden, as in native apps); the sheet stops below the top bar; a message shown while the sheet is open appears as a banner inside the sheet instead of a floating toast; the coach mark steps aside while a panel is open; section labels hide behind any chrome (re-checked whenever cards, the coach mark, the hint or the floor plan change).
+
+## 2026-10-14: Back button support with history layers, safe against go() races
+
+`src/ui/history.js` pushes one history entry per open panel (each sheet view, the tour, the try-on, photo compare) and closes the top one on `popstate`. Closing a panel with its own button calls `history.go(-n)`. Because `go()` is asynchronous, a panel opened in the same moment could have its entry removed by the late `go()`, and Back would then leave the site (the audit caught this on iPad: the eye-test sheet closed and the try-on opened in the same tick). New entries now wait until a pending `go()` has finished. Unit tests cover the race with a fake history whose `go()` is asynchronous.
+
+## 2026-10-14: interactive-widget only where it is understood
+
+The brief asked for `interactive-widget=resizes-content` in the viewport meta. Safari and WebKit do not know the key and log "Viewport argument key … not recognized" as a console error, which the audit forbids. `src/ui/layout.js` therefore appends it at start-up only in Chromium browsers (detected by `navigator.userAgentData`). The keyboard behaviour itself (sheet above the keyboard, field kept in view) is driven by `visualViewport` in every browser. Its real effect on Chrome Android needs a real phone: see the checklist in `docs/mobile-testing.md`.
+
+## 2026-10-14: Local preview drops upgrade-insecure-requests
+
+Safari and WebKit apply `upgrade-insecure-requests` even to `http://localhost`, so `npm run preview` could not load its own scripts in those browsers (the WebKit audit failed with "SSL connect error"). `vite.config.js` removes that one directive from the preview headers only; production on Vercel (https) keeps it.
+
+## 2026-10-14: zod runs without generated code
+
+zod 4 probes whether `new Function` is allowed to pick a faster path; under our CSP (`script-src 'self'`) the probe is caught but still reports a policy violation. `shared/schemas.js` sets `z.config({ jitless: true })`, so zod never tries.
+
+## 2026-10-14: 3D quality tiers, culling and level of detail
+
+Tiers (low, medium, high) are chosen at start-up from `deviceMemory`, `hardwareConcurrency`, the GPU's `MAX_TEXTURE_SIZE`, the pointer type and the platform (iPhones and iPads start at medium; their GPUs are strong but they report few cores), then checked with a 1-second render benchmark. In Automatic mode the tier drops if fps stays under its target (30, 45, 50) for 3 s, after first lowering the pixel ratio. Info → Picture quality offers Automatic, High, Balanced and Battery saver.
+
+Shelf frames are instanced per section, archetype, part and material, so frustum culling skips whole sections: desktop draw calls fell from about 77 to 46 and rendered triangles from 472,504 to about 147,000, with 188 products and pixel-identical screenshots. Simplified frames (about 40 % of the triangles, `buildArch(..., { detail: 'low' })`) are used on the low tier everywhere and on medium for sections more than 4 m away; the high tier keeps full detail so desktops look exactly as before. Textures are drawn at full size and uploaded at most 512 px (low) or 1024 px (medium).
+
+On a lost graphics context the store pauses and shows "Restoring the 3D view…"; when the browser restores the context the environment map and shadows are rebuilt without a reload. If it is not restored within 8 s, or is lost a third time, the visitor gets Reload and Use the floor plan.
+
+## 2026-10-14: Mobile work not done, by choice
+
+- "Look around by moving your phone" (optional in the brief) was not added: it needs a permission button on iOS and extra Permissions-Policy entries, for little gain.
+- Haptics (optional) were not added.
+- The layout, touch and forms phases were committed together, because they change the same lines of `src/ui/app.js` and `src/styles/main.css`; the try-on and performance phases have their own commits.

@@ -265,13 +265,9 @@ test('mobile audit', async ({ page, browserName }, info) => {
         Math.hypot(pw.x - pt.x, pw.z - pt.z) > 0.08,
         'moved ' + Math.hypot(pw.x - pt.x, pw.z - pt.z).toFixed(2) + ' m',
       );
-      // Let the walk finish before the drag test.
-      for (let i = 0, prev = null; i < 16; i++) {
-        const q = await pose();
-        if (prev && Math.hypot(q.x - prev.x, q.z - prev.z) < 0.001) break;
-        prev = q;
-        await page.waitForTimeout(400);
-      }
+      // Let the walk finish before the drag test (slow software rendering makes walks take longer).
+      await page.waitForFunction(() => !window.BM.api.stats().moving, null, { timeout: 40000 }).catch(() => {});
+      await page.waitForTimeout(300);
       // Drag to look: must turn, must not walk.
       const p0 = await pose();
       const cx = vp.width / 2,

@@ -43,6 +43,8 @@ npm run check        # format check, tests, production build and the first-load 
 npm run build        # production build into dist/
 npm run preview      # production build and API at http://localhost:4173, with the live security headers
 npm run smoke -- http://localhost:4173   # checks the API and headers against the running preview
+npx playwright install chromium webkit firefox   # once: browsers for the mobile audit
+npm run test:mobile  # audits 16 phone, tablet and desktop profiles; report in reports/mobile-audit/index.html
 ```
 
 Run `npm run smoke` in a second terminal while `npm run preview` is running.
@@ -62,6 +64,17 @@ Quick checks in the browser:
 **The try-on camera needs HTTPS.** Browsers allow the camera only on `https://` or `localhost`, so it is blocked on the `http://192.168…` address. To test the try-on on a phone, push the branch and open the **Vercel preview** link (log in to Vercel on the phone, because previews are protected), or use the production URL after merging. Then follow `docs/try-on-testing.md`.
 
 **Without the API:** set `VITE_DATA_SOURCE=static` for the build (PowerShell: `$env:VITE_DATA_SOURCE="static"; npm run build`). The site then uses the bundled JSON and never calls `/api`, and checkout and booking say they are unavailable. This is useful for hosting a pure static preview.
+
+## 4b. Test on phones and tablets
+
+The automated audit (`npm run test:mobile`) checks layout, overlaps, touch targets, text sizes, the Back button, swipe-down, 3D gestures and checkout on iPhone, Android, iPad, Galaxy Tab and desktop profiles, portrait and landscape. It cannot replace real devices:
+
+- **Easiest:** push the branch and open the Vercel preview link on each phone (log in to Vercel there). The camera and try-on need this `https://` link.
+- **Same Wi-Fi, quick look:** `npm run dev:phone` and open the `Network:` address (everything except the camera works).
+- **Errors from an Android phone:** turn on USB debugging, connect the phone by cable, open `chrome://inspect` in Chrome on the computer and click **inspect** under the page.
+- **Errors from an iPhone:** needs a Mac. On the iPhone: Settings → Safari → Advanced → Web Inspector. On the Mac: Safari → Develop → your iPhone.
+
+Run the checklist in `docs/mobile-testing.md` on a budget Android phone, a mid-range Android phone, an iPhone, a tablet and an in-app browser (open the link from WhatsApp).
 
 ## 5. Put it live on Vercel
 
@@ -168,4 +181,5 @@ Keep product ids (`m01`, `w03`, `c01`…) and the order of colours stable: saved
 - [ ] Set up Vercel WAF rate limits for the API.
 - [ ] Run `npm audit` and `npm run check`.
 - [ ] Test on a real Android phone and an iPhone over mobile data.
+- [ ] Run the mobile checklist (`docs/mobile-testing.md`) on real phones, a tablet and the WhatsApp in-app browser.
 - [ ] Run the try-on device checklist (`docs/try-on-testing.md`) on an Android phone, an iPhone and a desktop.

@@ -2615,6 +2615,7 @@ async function start() {
         z: nav.z,
         yaw: nav.yaw,
         zoom,
+        moving: !!nav.moving,
         tier: tierName,
         dpr: QUAL.dpr,
         benchmarkFps: BM.benchmarkFps || null,

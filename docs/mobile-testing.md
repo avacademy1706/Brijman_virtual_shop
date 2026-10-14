@@ -44,4 +44,70 @@ The first audit on the code before this work: **440 failing checks across 16 pro
 
 Also found: in landscape the bottom bar and the sheet overlapped the top bar (626×26 px), and the bottom bar overlapped the bottom sheet on every phone (320×69 px).
 
-The fixes and the after figures are below once the work is complete.
+## After this work
+
+The same audit on the finished build: **836 checks passing, 0 failing** across all 16 profiles (before: 412 passing, 440 failing). Every item above is fixed:
+
+| #   | Fix                                                                                                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Every input, select and textarea is 16 px on touch screens.                                                                                                                                            |
+| 2   | The viewer canvas is `touch-action: pan-y` on touch, with the tilt locked: vertical swipes scroll the sheet, horizontal drags turn the frame, pinch zooms inside the viewer. Desktop keeps full orbit. |
+| 3   | `src/ui/layout.js` measures the bottom bar into `--bb-h` with a `ResizeObserver`.                                                                                                                      |
+| 4   | `src/ui/history.js`: Back closes sheet views one at a time, the directory, the tour, the try-on and photo compare; Back from the bare store leaves normally.                                           |
+| 5   | `--vvh` and `--kb` from `visualViewport`: the bottom sheet sits above the keyboard, and the focused field is scrolled into view inside the sheet only.                                                 |
+| 6   | The welcome card never grows past the space between the bars and scrolls inside itself.                                                                                                                |
+| 7   | All `:hover` rules are inside `@media (hover: hover) and (pointer: fine)`.                                                                                                                             |
+| 8   | 44 px targets on touch screens (labels keep a small pill inside a 44 px button).                                                                                                                       |
+| 9   | Minimum 11 px for micro-labels; the pill's label hides below 360 px instead of wrapping.                                                                                                               |
+| 10  | Labels avoid each other and all chrome, the tour stop first, then the nearest; at most 4 on phones.                                                                                                    |
+| 11  | The floor plan collapses to a button, collapsed by default on phones under 700 px tall and in landscape; the choice is remembered.                                                                     |
+| 12  | Touch: 10 px and 500 ms for a tap (mouse: 6 px, 650 ms); a drag never counts as a tap.                                                                                                                 |
+| 13  | No callout, magnifier or selection on the canvas and chrome; `touch-action: manipulation` on buttons; `text-size-adjust: 100%`.                                                                        |
+| 14  | `overscroll-behavior: none` on `html` and `body`, `contain` on scrolling panels.                                                                                                                       |
+| 15  | Drag the grip or header down to close: follows the finger, snaps back under 30 % or a slow flick, never starts while the content is scrolled.                                                          |
+| 16  | Quality tiers, per-section instancing and culling, simplified distant frames, texture caps (see below).                                                                                                |
+| 17  | "Restoring the 3D view…", full rebuild without a reload; Reload and floor plan offered if it fails. Tested by simulating a lost context.                                                               |
+| 18  | Full-bleed app at `100dvh`; safe-area padding on the top bar, bottom bar, sheet footer and try-on.                                                                                                     |
+
+Also new: a top-bar menu in phone landscape, a side-panel sheet in landscape, a 2-step first-visit coach mark, a touch ring where the floor is tapped, a ± button for prescription signs (iPhone's decimal keypad has no minus), keyboard "Next/Done" keys, and an "Open in Chrome or Safari" tip with a copy-link button when an in-app browser blocks the try-on camera.
+
+### Figures (headless browsers, software WebGL; compare before and after only)
+
+| Measure                                    | Before                      | After                                      |
+| ------------------------------------------ | --------------------------- | ------------------------------------------ |
+| Failing checks (16 profiles)               | 440                         | 0                                          |
+| Low-end Android, walking fps (4× throttle) | 5.6 portrait, 3.2 landscape | 11.2 portrait, 8.0 landscape (tier low)    |
+| Low-end Android, draw calls while walking  | 64                          | 26 portrait, 68 landscape                  |
+| Desktop 1366, draw calls                   | 77                          | 46                                         |
+| Desktop triangles rendered                 | 472,504                     | about 147,000, screenshots pixel-identical |
+| Low-end JavaScript heap                    | 19.6 MB                     | 20.7 MB                                    |
+| First load (gzipped)                       | 31.8 KB (before the try-on) | 38.2 KB (budget +10 KB)                    |
+
+The 3D-ready time on the throttled low-end profile is about 1 s longer (4.9 s), because of the start-up benchmark that picks the quality tier.
+
+## Manual checklist for real devices
+
+Run on at least a budget Android phone, a mid-range Android phone, an iPhone, a tablet, and the WhatsApp in-app browser. Add `?tryon-debug` to the URL for try-on fps.
+
+| Check                                                                  | Expected                                                                                 | Device | Browser | OS  | Pass | fps |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------ | ------- | --- | ---- | --- |
+| Open the site, portrait and landscape                                  | Nothing overlaps or is cut off; bars clear of the notch and home indicator               |        |         |     |      |     |
+| Tap a text field (search, checkout, eye test)                          | The page does not zoom; the field and the main button stay above the keyboard            |        |         |     |      |     |
+| Swipe the sheet grip down                                              | Sheet follows the finger and closes; a short pull snaps back                             |        |         |     |      |     |
+| Phone Back button or gesture with a sheet, the tour or the try-on open | It closes; Back again from the store leaves normally                                     |        |         |     |      |     |
+| Swipe up on the 3D frame in the product sheet                          | The sheet scrolls                                                                        |        |         |     |      |     |
+| Tap the floor, drag, pinch                                             | Ring shows, walks there; drag looks around without walking; pinch zooms                  |        |         |     |      |     |
+| Section labels while walking                                           | Never on top of each other or under the bars or cards; at most 4 on a phone              |        |         |     |      |     |
+| Rotate the phone with a sheet open                                     | Switches between bottom sheet and side panel without losing your place                   |        |         |     |      |     |
+| Info → Picture quality                                                 | Automatic, High, Balanced, Battery saver all work                                        |        |         |     |      |     |
+| Leave the app for a minute and come back (iOS especially)              | 3D view returns; if it shows "Restoring the 3D view…", it recovers                       |        |         |     |      |     |
+| Walk around for 30 s                                                   | At least 30 fps on a budget phone (Battery saver if needed), 45 on mid-range             |        |         |     |      |     |
+| Open the link from WhatsApp, then Try on                               | The site works; if the camera is blocked, the tip offers to copy the link or use a photo |        |         |     |      |     |
+| Long-press the 3D view and buttons                                     | No callout, magnifier or text selection                                                  |        |         |     |      |     |
+| Pull down on the top bar (Android)                                     | No pull-to-refresh                                                                       |        |         |     |      |     |
+
+## Debugging on real devices
+
+- **Android:** turn on USB debugging (Settings → Developer options), connect the phone by cable, open `chrome://inspect` in Chrome on the computer and click **inspect** under the page.
+- **iPhone:** needs a Mac. On the iPhone: Settings → Safari → Advanced → Web Inspector. On the Mac: Safari → Develop → your iPhone → the page.
+- **Many devices at once (optional, paid):** BrowserStack or LambdaTest.

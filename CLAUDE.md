@@ -12,6 +12,7 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 - `npm run check`: format check, tests, build, then `scripts/check-bundle.mjs` (first load may grow at most 10 KB gzipped over 32,552 bytes); stops at the first failure
 - `dev`, `build` and `preview` run `scripts/copy-mediapipe.mjs` first (copies the MediaPipe wasm to `public/vendor/mediapipe/<version>/wasm/`, gitignored, and checks the face model hash)
 - `npm run smoke -- <baseUrl>`: post-deploy check of the site, API and headers
+- `npm run test:mobile`: builds, serves the production build and runs the Playwright audit (`tests/mobile/`) on 16 device profiles; report in `reports/mobile-audit/index.html` (gitignored). Needs `npx playwright install chromium webkit firefox` once. `AUDIT_PHASE=before` writes a baseline
 - `npm run format` / `npm run format:check`: Prettier (printWidth 120, single quotes, trailing commas)
 - `npm run assets:check`: confirms every file listed in `assets-3d/catalogue.json` exists
 - The developer machine runs Windows. npm scripts must be cross-platform: use Node scripts, not bash, `rm -rf` or `export`.
@@ -37,6 +38,7 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 - Frame sizes: every frame has `sizes` and `defaultSize` in `data/catalogue.json` (rules in `shared/fit.js` `generateSizes`). Cart lines carry `sizeId` (required for frames); `priceOf(p, cfg, lens, sizeId)` adds an optional `priceDelta`.
 - `src/three/frame-model.js`: frame geometry and materials shared by the shelves (archetype build, unchanged), the product viewer and the try-on (`frameGeometry(p, sizeId)` builds true size from mm, with front, temples, lenses and hinges).
 - Virtual try-on (`src/tryon/`, lazy): `ui.js` (interface) → `engine.js` (MediaPipe `FaceLandmarker` 1.0.1, three.js render; API `start`, `setFrame`, `setNudge`, `snapshot`, `stop`, `on`) → `face-math.js` (Procrustes pose fit, iris-based face width, placement, occluder) and `one-euro.js`. Fit guide in `shared/fit.js`. See `docs/try-on.md`.
+- Layout and touch: `src/ui/layout.js` (layout modes, `--bb-h`, `--mm-h`, `--vvh`, `--kb`), `src/ui/history.js` (Back-button layers for sheet views, tour, try-on, photo compare). The scene picks a quality tier (low, medium, high) and instances shelf frames per section.
 - `src/lib/dom.js` has the DOM helpers `h`, `$`, `ic` and `money` (en-IN, ₹). `src/lib/drawings.js` has the SVG frame drawings, the size diagram and the canvas floor plan.
 - `src/styles/main.css` holds the design tokens for light and dark themes and all styles. `src/styles/fonts.css` and `src/assets/fonts/` hold the self-hosted fonts.
 - `assets-3d/` holds exported GLB models and PNG textures for 3D artists. The site does not load them, `.vercelignore` excludes them from deploys, and they must not be edited by hand.
@@ -55,6 +57,9 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 - The CSP in `vercel.json` allows `'wasm-unsafe-eval'` (try-on WebAssembly) and nothing else beyond `'self'`; `Permissions-Policy` allows `camera=(self)` only. MediaPipe is self-hosted under `/vendor/mediapipe/` (versioned paths, cached immutable); never load it from a CDN.
 - No camera frame, landmark, face measurement or photo may leave the device, be logged, put in a URL or stored. Try-on analytics (`src/tryon/analytics.js`) allow only the listed events and `good|narrow|wide`.
 - The try-on, MediaPipe and three.js must never be in the first load (`tests/unit/tryon-assets.test.js` and `npm run bundle:check`). The camera starts only after the shopper allows it and stops on close, `pagehide` and hidden pages.
+- Layout modes (main.css and layout.js must agree): phone portrait ≤ 600 px wide (bottom bar, bottom sheet); phone landscape ≤ 500 px tall (no bottom bar, top-bar menu, side-panel sheet); tablet 601–1024 px; desktop. Safe-area insets pad the chrome; never use bare `100vh`. No fixed element may overlap another (the audit checks it).
+- Touch rules: every control at least 44×44 px on `(pointer: coarse)`; inputs at least 16 px on touch; text at least 11 px; `:hover` only inside `@media (hover: hover) and (pointer: fine)`; no custom gesture within 16 px of the screen edge; every new panel adds a history layer (`pushLayer`/`dropLayer`) so Back closes it.
+- 3D performance: low and medium tiers use simplified distant frames and capped textures; the high tier must stay pixel-identical on desktop. Keep draw calls under about 120 on phones (`BM.api.stats()`).
 - Keep `build.assetsInlineLimit: 0` in `vite.config.js`. Inlined data: fonts break the `font-src 'self'` policy.
 - three.js is pinned at 0.180.0, Vite at 8.x, and Node must be 22.12 or newer.
 - Every new dependency is pinned to an exact version and must be justified. Prefer none.
