@@ -1840,8 +1840,11 @@ async function start() {
     }
     if (drag.active && e.pointerId === drag.id) {
       const lim = TAP[drag.touch ? 'touch' : 'mouse'];
-      if (!drag.moved && !wasPinch && e.type === 'pointerup' && performance.now() - drag.t < lim.ms)
+      if (!drag.moved && !wasPinch && e.type === 'pointerup' && performance.now() - drag.t < lim.ms) {
         tap(e.clientX, e.clientY, drag.touch);
+        // Opening a sheet can take a while on a slow phone; the click arrives only after that.
+        if (BM.lastSceneTap) BM.lastSceneTap.t = performance.now();
+      }
       // A light glide after a touch drag (none with reduced motion, none if the finger stopped before lifting).
       if (drag.moved && drag.touch && !RM && performance.now() - drag.lt < 80 && Math.abs(drag.v) > 0.3)
         inertia = { v: Math.max(-4, Math.min(4, drag.v)) };
@@ -1900,6 +1903,8 @@ async function start() {
     return best;
   }
   function tap(cx, cy, touch) {
+    // The browser sends a click at this point right after the pointerup; the UI swallows it (see app.js).
+    BM.lastSceneTap = { x: cx, y: cy, t: performance.now() };
     setRay(cx, cy);
     const hit = ray.intersectObjects(allHits, false)[0];
     if (!(hit && hit.object.userData.recs)) {

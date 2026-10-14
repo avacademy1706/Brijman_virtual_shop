@@ -307,30 +307,36 @@ test('mobile audit', async ({ page, browserName }, info) => {
         z0 === undefined ? 'zoom not exposed (manual check)' : 'zoom ' + z0.toFixed(2) + ' → ' + z1.toFixed(2),
       );
       // Tap a frame on a shelf, a little off its centre like a finger: opens the product, does not walk.
-      // m03 and p01 are thin wire frames that a touch tap used to miss.
+      // m03 and p01 are thin wire frames that a touch tap used to miss. Real touch and mouse input, so the click the
+      // browser sends after the tap is included (it used to land on the new backdrop and close the sheet in portrait).
       for (const pid of ['m03', 'p01']) {
         await run((id) => window.BM.api.goProduct(id, 0), pid);
         await page.waitForTimeout(500);
         await page.waitForFunction(() => !window.BM.api.stats().moving, null, { timeout: 40000 }).catch(() => {});
-        await page.waitForTimeout(300);
+        // On short phones the first-visit hint or the section card covers the middle of the screen: close them, as a
+        // person would.
+        await run(() => {
+          for (let i = 0; i < 3 && window.BM.coachVisible(); i++) document.querySelector('#coach-next').click();
+          const c = document.querySelector('#zc-close');
+          if (c && c.offsetParent) c.click();
+        });
+        await page.waitForTimeout(400);
         const f0 = await pose();
-        await run(
-          ([x, y, touch]) => {
-            const c = document.querySelector('#scene');
-            const o = {
-              pointerId: 1,
-              clientX: x,
-              clientY: y,
-              bubbles: true,
-              cancelable: true,
-              isPrimary: true,
-              pointerType: touch ? 'touch' : 'mouse',
-            };
-            c.dispatchEvent(new PointerEvent('pointerdown', { ...o, buttons: 1 }));
-            c.dispatchEvent(new PointerEvent('pointerup', { ...o, buttons: 0 }));
+        const fx = vp.width / 2 + (touch ? 10 : 0),
+          fy = vp.height / 2 + (touch ? 8 : 0);
+        const under = await run(
+          ([x, y]) => {
+            const e = document.elementFromPoint(x, y);
+            return e
+              ? e.tagName.toLowerCase() +
+                  (e.id ? '#' + e.id : '') +
+                  (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/s+/)[0] : '')
+              : 'nothing';
           },
-          [vp.width / 2 + (touch ? 10 : 0), vp.height / 2 + (touch ? 8 : 0), touch],
+          [fx, fy],
         );
+        if (touch) await page.touchscreen.tap(fx, fy);
+        else await page.mouse.click(fx, fy);
         await page.waitForTimeout(900);
         const opened = await run(() => document.querySelector('#sheet').classList.contains('open'));
         const f1 = await pose();
@@ -339,7 +345,11 @@ test('mobile audit', async ({ page, browserName }, info) => {
           '3D',
           'Tap on a frame opens it (' + pid + ')',
           opened && moved < 0.05,
-          (opened ? 'sheet open' : 'no sheet') + ', moved ' + moved.toFixed(2) + ' m',
+          (opened ? 'sheet open' : 'no sheet') +
+            ', moved ' +
+            moved.toFixed(2) +
+            ' m' +
+            (opened ? '' : ', under the tap: ' + under),
         );
         await run(
           () =>

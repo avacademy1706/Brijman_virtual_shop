@@ -160,3 +160,4 @@ On a lost graphics context the store pauses and shows "Restoring the 3D view…"
 
 - On phones, a tap on a thin wire frame (Cove, Aurum) often hit the shelf or the floor behind it, so the visitor walked instead of seeing the product. A tap or click that misses now opens the nearest frame within 32 CSS px on touch or 16 px with a mouse, if that frame is within 8 m and not behind what the tap hit. Taps on the open floor still walk.
 - The mobile audit taps two wire frames slightly off-centre on every profile to keep this fixed.
+- In portrait the product sheet opened on pointerup and the click the browser sends right after the tap landed on the new backdrop, closing the sheet again (landscape has no backdrop, so it worked there). `src/ui/app.js` now swallows that one click (within 40 px and 700 ms of the end of a 3D tap). The audit taps with real touch and mouse input so the click is included.
