@@ -5,9 +5,13 @@
   "description": "Walkable 3D eyewear showroom with frame details, lens options, a server-priced bag, demo checkout and eye-test booking. Vite, three.js and a Hono API on Vercel.",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-mediapipe.mjs",
     "dev": "vite",
+    "predev:phone": "node scripts/copy-mediapipe.mjs",
     "dev:phone": "vite --host",
+    "prebuild": "node scripts/copy-mediapipe.mjs",
     "build": "vite build",
+    "prepreview": "node scripts/copy-mediapipe.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
