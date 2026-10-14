@@ -6,6 +6,7 @@ import { BM } from '../core/bm.js';
 import { h, ic } from '../lib/dom.js';
 import { sizeOf, sizeMarking, fitResult, suggestSize } from '../../shared/fit.js';
 import { track } from './analytics.js';
+import { pushLayer, dropLayer } from '../ui/history.js';
 
 const MAX_PHOTOS = 4;
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -17,6 +18,7 @@ const MSG = {
   failed: 'Try-on couldn’t start on this device. You can still use a photo.',
   insecure: 'Camera needs a secure (https) page.',
   noCamera: 'No camera was found. You can use a photo instead.',
+  inApp: 'Open in Chrome or Safari to use the camera, or use a photo instead.',
   look: 'Look at the camera',
   noFace: 'No face found in this photo. Use a clear, front-facing photo in good light.',
   manyFaces: 'More than one face is in this photo. Use a photo of just you.',
@@ -25,6 +27,10 @@ const MSG = {
 };
 
 let open = null; // the current session; only one at a time
+
+/** In-app browsers (WhatsApp, Instagram, Facebook and similar) often block the camera. */
+export const inAppBrowser = () =>
+  /FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Snapchat|Line\/|LinkedInApp|; wv\)/i.test(navigator.userAgent || '');
 
 /**
  * Opens the try-on.
@@ -52,6 +58,12 @@ class Session {
     this.mode = null; // 'camera' | 'photo'
     this.camToken = 0;
     this.lastFocus = document.activeElement;
+    // Back (the phone's button or gesture) closes the try-on instead of leaving the site.
+    this.layer = pushLayer('tryon', () => {
+      this.layer = null;
+      this.close(true);
+    });
+    this.compareLayer = null;
     this.build();
     track('tryon_open', { productId: this.p.id });
     if (this.o.settings.tryonConsent) this.startCamera();
@@ -250,9 +262,44 @@ class Session {
     const first = this.sheet.querySelector('h2, button');
     if (first) setTimeout(() => first.focus({ preventScroll: true }), 30);
   }
-  hideSheet() {
+  hideSheet(fromHistory) {
+    if (this.compareLayer && fromHistory !== true) dropLayer(this.compareLayer);
+    this.compareLayer = null;
     this.sheet.hidden = true;
     this.sheet.replaceChildren();
+  }
+  /** The camera is blocked in an in-app browser: offer to copy the link, or use a photo. */
+  showInApp() {
+    const copy = h(
+      'button',
+      {
+        class: 'btn block',
+        type: 'button',
+        onclick: async () => {
+          try {
+            await navigator.clipboard.writeText(location.href);
+            copy.querySelector('span').textContent = 'Link copied';
+          } catch (e) {
+            copy.querySelector('span').textContent = location.href;
+          }
+        },
+      },
+      ic('share'),
+      h('span', null, 'Copy the link'),
+    );
+    this.showSheet(
+      h('span', { class: 'tryon-badge warn' }, ic('camera')),
+      h('h2', { tabindex: '-1' }, 'Open in your browser'),
+      h('p', null, MSG.inApp),
+      copy,
+      h(
+        'button',
+        { class: 'btn primary block', type: 'button', onclick: () => this.pickPhoto() },
+        ic('upload'),
+        h('span', null, 'Use a photo'),
+      ),
+      h('button', { class: 'link-btn', type: 'button', onclick: () => this.close() }, 'Close'),
+    );
   }
   showLoading() {
     this.bar = h('span');
@@ -339,7 +386,8 @@ class Session {
   async startCamera() {
     this.mode = 'camera';
     if (!window.isSecureContext) return this.showError(MSG.insecure);
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return this.showError(MSG.noCamera);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)
+      return inAppBrowser() ? this.showInApp() : this.showError(MSG.noCamera);
     try {
       await this.ensureEngine();
     } catch (e) {
@@ -358,6 +406,8 @@ class Session {
       });
     } catch (e) {
       const name = e && e.name;
+      if (inAppBrowser() && (name === 'NotAllowedError' || name === 'NotSupportedError' || name === 'SecurityError'))
+        return this.showInApp();
       if (name === 'NotAllowedError' || name === 'SecurityError') return this.showError(MSG.blocked);
       if (name === 'NotFoundError' || name === 'OverconstrainedError') return this.showError(MSG.noCamera);
       return this.showError(MSG.failed);
@@ -679,6 +729,11 @@ class Session {
       ),
     );
     this.sheet.classList.add('wide');
+    if (!this.compareLayer)
+      this.compareLayer = pushLayer('tryon-compare', () => {
+        this.compareLayer = null;
+        this.hideSheet(true);
+      });
   }
   removePhoto(i) {
     const [ph] = this.photos.splice(i, 1);
@@ -770,9 +825,12 @@ class Session {
   }
 
   /* ---------- Close: stop the camera, free everything ---------- */
-  close() {
+  close(fromHistory) {
     if (open !== this) return;
     open = null;
+    if (fromHistory !== true && this.layer) dropLayer(this.layer);
+    this.layer = null;
+    this.compareLayer = null;
     this.stopCamera();
     if (this.engine) this.engine.stop();
     for (const ph of this.photos) URL.revokeObjectURL(ph.url);

@@ -18,6 +18,10 @@ html.tryon-open body {
 .tryon {
   position: fixed;
   inset: 0;
+  height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  user-select: none;
   z-index: 100;
   background: #0b0f0d;
   color: var(--ink);
@@ -25,6 +29,8 @@ html.tryon-open body {
   --tsurf: color-mix(in srgb, var(--surface) 90%, transparent);
   --tpad-top: max(10px, env(safe-area-inset-top, 0px));
   --tpad-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  --tpad-left: max(10px, env(safe-area-inset-left, 0px));
+  --tpad-right: max(10px, env(safe-area-inset-right, 0px));
 }
 .tryon-stage {
   position: absolute;
@@ -52,8 +58,8 @@ html.tryon-open body {
 .tryon-top {
   position: absolute;
   top: var(--tpad-top);
-  left: 10px;
-  right: 10px;
+  left: var(--tpad-left);
+  right: var(--tpad-right);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -70,8 +76,10 @@ html.tryon-open body {
   color: var(--ink);
   box-shadow: var(--shadow);
 }
-.tryon-icon:hover {
-  border-color: var(--accent);
+@media (hover: hover) and (pointer: fine) {
+  .tryon-icon:hover {
+    border-color: var(--accent);
+  }
 }
 .tryon-title {
   min-width: 0;
@@ -143,7 +151,7 @@ html.tryon-open body {
 /* Nudge controls */
 .tryon-nudge {
   position: absolute;
-  right: 10px;
+  right: var(--tpad-right);
   top: 50%;
   transform: translateY(-50%);
   display: grid;
@@ -173,7 +181,7 @@ html.tryon-open body {
   bottom: 0;
   display: grid;
   gap: 8px;
-  padding: 10px 10px var(--tpad-bottom);
+  padding: 10px var(--tpad-right) var(--tpad-bottom) var(--tpad-left);
   background: linear-gradient(to top, color-mix(in srgb, var(--surface) 94%, transparent) 70%, transparent);
 }
 .tryon-row {
@@ -433,4 +441,46 @@ html.tryon-open body {
 }
 .tryon.rm .tryon-progress span {
   transition: none;
+}
+
+/* Touch screens: 44 px targets. */
+@media (pointer: coarse) {
+  .tryon-icon,
+  .tryon-swatch {
+    width: 44px;
+    height: 44px;
+  }
+  .tryon-chip,
+  .tryon-fit {
+    min-height: 44px;
+  }
+  .tryon-capture {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Phones in landscape: controls in a column on the right edge, within reach of the thumb; nudge on the left. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .tryon-panel {
+    left: auto;
+    top: calc(var(--tpad-top) + 52px);
+    width: min(330px, 46%);
+    overflow-y: auto;
+    align-content: end;
+    background: linear-gradient(to left, color-mix(in srgb, var(--surface) 94%, transparent) 75%, transparent);
+  }
+  .tryon-nudge {
+    right: auto;
+    left: var(--tpad-left);
+  }
+  .tryon-message {
+    left: 30%;
+  }
+  .tryon-actions .btn span {
+    display: none;
+  }
+  .tryon-actions .btn.primary span {
+    display: inline;
+  }
 }
