@@ -30,14 +30,22 @@ async function once(method, path, body, headers) {
   try {
     res = await fetch('/api/v1' + path, {
       method,
-      headers: Object.assign({ Accept: 'application/json' }, body ? { 'Content-Type': 'application/json' } : {}, headers),
+      headers: Object.assign(
+        { Accept: 'application/json' },
+        body ? { 'Content-Type': 'application/json' } : {},
+        headers,
+      ),
       body: body ? JSON.stringify(body) : undefined,
       credentials: 'same-origin',
       signal: ctrl.signal,
     });
   } catch (err) {
     const timeout = err && err.name === 'AbortError';
-    throw new ApiError(0, timeout ? 'timeout' : 'network', timeout ? 'The server took too long to answer. Try again.' : NETWORK_MSG);
+    throw new ApiError(
+      0,
+      timeout ? 'timeout' : 'network',
+      timeout ? 'The server took too long to answer. Try again.' : NETWORK_MSG,
+    );
   } finally {
     clearTimeout(timer);
   }

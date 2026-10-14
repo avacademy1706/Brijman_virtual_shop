@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
 
+import { apiPlugin } from './server/vite-api-plugin.js';
+
 // `npm run preview` serves the production build with the same security headers as Vercel,
 // so a Content-Security-Policy problem shows up locally before you deploy.
 const vercel = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8'));
@@ -9,6 +11,7 @@ const previewHeaders = Object.fromEntries((siteRule ? siteRule.headers : []).map
 delete previewHeaders['Strict-Transport-Security']; // preview runs on plain http
 
 export default defineConfig({
+  plugins: [apiPlugin()],
   build: {
     target: 'es2020',
     sourcemap: false,
@@ -17,6 +20,7 @@ export default defineConfig({
     // three.js is about 600 kB minified (about 150 kB over the network). It loads as its own chunk after the UI.
     chunkSizeWarningLimit: 900,
   },
-  server: { port: 5173 },
-  preview: { port: 4173, headers: previewHeaders },
+  // The API is same-origin only, so the dev and preview servers send no CORS headers either.
+  server: { port: 5173, cors: false },
+  preview: { port: 4173, cors: false, headers: previewHeaders },
 });

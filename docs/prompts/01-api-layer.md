@@ -21,14 +21,14 @@ Payments, a database, WhatsApp and DGCC are **not** included. The API leaves rea
 
 ## 1.2 Install once
 
-| Tool | Version | Link |
-| --- | --- | --- |
-| Node.js | 24 LTS (22.12 or newer works) | https://nodejs.org |
-| Git | latest | https://git-scm.com |
-| VS Code | latest | https://code.visualstudio.com |
-| Claude Code extension | latest | VS Code → Extensions (Ctrl+Shift+X) → search "Claude Code" → Install |
-| GitHub account | free | https://github.com |
-| Vercel account | Hobby (free) is enough | https://vercel.com/signup |
+| Tool                  | Version                       | Link                                                                 |
+| --------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| Node.js               | 24 LTS (22.12 or newer works) | https://nodejs.org                                                   |
+| Git                   | latest                        | https://git-scm.com                                                  |
+| VS Code               | latest                        | https://code.visualstudio.com                                        |
+| Claude Code extension | latest                        | VS Code → Extensions (Ctrl+Shift+X) → search "Claude Code" → Install |
+| GitHub account        | free                          | https://github.com                                                   |
+| Vercel account        | Hobby (free) is enough        | https://vercel.com/signup                                            |
 
 Check in a new terminal: `node -v` should print v22.12 or higher, and `git --version` should print a version.
 
@@ -110,15 +110,16 @@ npm run smoke -- https://YOUR-PROJECT.vercel.app
 
 ### Vercel settings to confirm in the dashboard
 
-| Setting | Where | Value |
-| --- | --- | --- |
-| Node.js version | Settings → Build and Deployment | 24.x (set automatically from `package.json`) |
-| Function region | Settings → Functions | Mumbai, `bom1` (set by `vercel.json`) |
+| Setting               | Where                            | Value                                                                                            |
+| --------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Node.js version       | Settings → Build and Deployment  | 24.x (set automatically from `package.json`)                                                     |
+| Function region       | Settings → Functions             | Mumbai, `bom1` (set by `vercel.json`)                                                            |
 | Environment variables | Settings → Environment Variables | None needed today. Add later only when connecting a backend (see `docs/backend-integration.md`). |
-| Domain | Settings → Domains | Add, for example, `showroom.clientdomain.com` and create the CNAME record Vercel shows |
-| Deployment Protection | Settings → Deployment Protection | Keep the default: previews require login and production stays public |
+| Domain                | Settings → Domains               | Add, for example, `showroom.clientdomain.com` and create the CNAME record Vercel shows           |
+| Deployment Protection | Settings → Deployment Protection | Keep the default: previews require login and production stays public                             |
 
 **Before launch:**
+
 - Replace the sample catalogue.
 - Allow indexing in `public/robots.txt`.
 - Remove or relabel the demo checkout.
@@ -126,14 +127,14 @@ npm run smoke -- https://YOUR-PROJECT.vercel.app
 
 ## 1.7 If something goes wrong
 
-| Problem | Fix |
-| --- | --- |
-| `/api/...` returns 404 on Vercel | Check that `vercel.json` has the `/api/(.*)` → `/api` rewrite and that `api/index.js` exists. Redeploy. |
-| `/api/...` works locally but not on Vercel | Open the deployment's **Logs** tab in Vercel and look for an import error or a missing file in `server/` or `data/`. |
+| Problem                                        | Fix                                                                                                                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/api/...` returns 404 on Vercel               | Check that `vercel.json` has the `/api/(.*)` → `/api` rewrite and that `api/index.js` exists. Redeploy.                                                                  |
+| `/api/...` works locally but not on Vercel     | Open the deployment's **Logs** tab in Vercel and look for an import error or a missing file in `server/` or `data/`.                                                     |
 | Console shows CSP errors only on preview links | The Vercel Toolbar on previews loads scripts from another domain. Either turn the toolbar off for the project or ignore it on previews. Never loosen the production CSP. |
-| `npm ci` fails | Delete `node_modules` and run `npm install`, then commit the new `package-lock.json`. |
-| PowerShell says "running scripts is disabled" | Use `npx vercel …`, switch the terminal to Command Prompt, or run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once. |
-| Smoke test fails with 401 on a preview URL | Previews are protected. Run it against the production URL. |
+| `npm ci` fails                                 | Delete `node_modules` and run `npm install`, then commit the new `package-lock.json`.                                                                                    |
+| PowerShell says "running scripts is disabled"  | Use `npx vercel …`, switch the terminal to Command Prompt, or run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.                                            |
+| Smoke test fails with 401 on a preview URL     | Previews are protected. Run it against the production URL.                                                                                                               |
 
 ---
 
@@ -142,6 +143,7 @@ npm run smoke -- https://YOUR-PROJECT.vercel.app
 You are working in the Brijman Virtual Showroom project.
 
 **Read first:**
+
 - `CLAUDE.md` and `README.md`.
 - If `CLAUDE.md` is missing, the rules in "Project rules (summary)" below apply.
 - Then read, before changing anything: `src/main.js`, `src/core/bm.js`, `src/data/store-layout.js`, `src/data/frames.js`, `src/data/catalogue.js`, `src/ui/app.js` (bag, checkout, eye test and product views, and `validateRx`), the data reads at the top of `src/scene/showroom.js`, `vercel.json`, `vite.config.js` and `package.json`.
@@ -166,6 +168,7 @@ You are working in the Brijman Virtual Showroom project.
 ## Goal
 
 The data that drives the store is now hard-coded in JavaScript:
+
 - catalogue
 - lens options and prices
 - shelf placement
@@ -184,18 +187,18 @@ You also set up local running, tests, a smoke test and the Vercel configuration,
 
 ## Decisions already made (follow these)
 
-| Area | Decision |
-| --- | --- |
-| API runtime | One Vercel Function, `api/index.js`, exporting `export default { fetch: app.fetch }`. The router is a Hono app in `server/app.js` with `basePath('/api')`. Vercel recommends one shared function with a router rather than one function per endpoint. |
-| Routing on Vercel | Add the rewrite `{ "source": "/api/(.*)", "destination": "/api" }` to `vercel.json`. Prove with a test, and with `vercel dev` if it is available, that the original path reaches the router. |
-| Versioning | All routes live under `/api/v1/…`. |
-| Validation | Zod schemas in `shared/schemas.js`, used by both the server and the browser. There is one source of rules. |
-| Shared logic | Pricing and lens rules move to `shared/pricing.js`. They are pure functions with no DOM or Node APIs. |
-| Data files | Business data goes in `data/*.json`. The 3D layout (`BM.L`, `BM.OBS`) and the frame shape maths (`BM.ARCH`, `BM.SHAPES`, `outline`) stay in code. |
-| Data source switch | Server: `DATA_SOURCE=static` (default) or `http`. Browser: `VITE_DATA_SOURCE=api` (default) or `static`. The browser flag is public and never carries a secret. |
-| Local API | The Vite plugin `server/vite-api-plugin.js` mounts the same Hono app on `/api` in `configureServer` and `configurePreviewServer`, so `npm run dev` and `npm run preview` serve the API without Vercel login. `vercel dev` must also work. |
-| Tests | Vitest. Test routes with Hono's `app.request()`, with no network calls. |
-| Versions | Pin every new package to an exact version released at least two weeks ago. `npm audit` must report 0 vulnerabilities. Expected additions: `hono`, `zod`, `vitest`, and `@hono/node-server` if the Vite plugin needs it. Justify anything beyond these in `docs/decisions.md`. |
+| Area               | Decision                                                                                                                                                                                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API runtime        | One Vercel Function, `api/index.js`, exporting `export default { fetch: app.fetch }`. The router is a Hono app in `server/app.js` with `basePath('/api')`. Vercel recommends one shared function with a router rather than one function per endpoint.                         |
+| Routing on Vercel  | Add the rewrite `{ "source": "/api/(.*)", "destination": "/api" }` to `vercel.json`. Prove with a test, and with `vercel dev` if it is available, that the original path reaches the router.                                                                                  |
+| Versioning         | All routes live under `/api/v1/…`.                                                                                                                                                                                                                                            |
+| Validation         | Zod schemas in `shared/schemas.js`, used by both the server and the browser. There is one source of rules.                                                                                                                                                                    |
+| Shared logic       | Pricing and lens rules move to `shared/pricing.js`. They are pure functions with no DOM or Node APIs.                                                                                                                                                                         |
+| Data files         | Business data goes in `data/*.json`. The 3D layout (`BM.L`, `BM.OBS`) and the frame shape maths (`BM.ARCH`, `BM.SHAPES`, `outline`) stay in code.                                                                                                                             |
+| Data source switch | Server: `DATA_SOURCE=static` (default) or `http`. Browser: `VITE_DATA_SOURCE=api` (default) or `static`. The browser flag is public and never carries a secret.                                                                                                               |
+| Local API          | The Vite plugin `server/vite-api-plugin.js` mounts the same Hono app on `/api` in `configureServer` and `configurePreviewServer`, so `npm run dev` and `npm run preview` serve the API without Vercel login. `vercel dev` must also work.                                     |
+| Tests              | Vitest. Test routes with Hono's `app.request()`, with no network calls.                                                                                                                                                                                                       |
+| Versions           | Pin every new package to an exact version released at least two weeks ago. `npm audit` must report 0 vulnerabilities. Expected additions: `hono`, `zod`, `vitest`, and `@hono/node-server` if the Vite plugin needs it. Justify anything beyond these in `docs/decisions.md`. |
 
 ## Target structure
 
@@ -257,6 +260,7 @@ The 3D scene reads `BM.PRODUCTS`, `BM.MERCH`, `BM.L` and `BM.OBS` synchronously 
 While data loads, the welcome card's status line shows "Loading the showroom…".
 
 If the API fails in `api` mode:
+
 - fall back to the bundled JSON;
 - show a short, non-blocking toast: "Showing the saved catalogue. Prices are confirmed at checkout.";
 - leave checkout and booking enabled; they still need the API and show a clear error if it is down.
@@ -275,18 +279,18 @@ All responses are JSON. Success responses use `{ "data": …, "meta": {…} }` a
 
 Every response carries `X-Request-Id`.
 
-| Method and path | Purpose | Notes |
-| --- | --- | --- |
-| `GET /api/v1/health` | Liveness | `{ status, dataSource, version, time }`. Response is `no-store`. |
-| `GET /api/v1/bootstrap` | Everything the first screen needs in one call | Store, zones, tour, catalogue, merchandising and lenses. Add an `ETag` and `Cache-Control: public, s-maxage=300, stale-while-revalidate=86400`. |
-| `GET /api/v1/store` | Store details, zones, tour | Cached like bootstrap. |
-| `GET /api/v1/products` | Search and filter | Query: `zone`, `q`, `shape`, `material`, `polarised`, `maxPrice`, `type`. The UI keeps its instant client-side search. |
-| `GET /api/v1/products/:id` | One product | 404 if unknown. |
-| `GET /api/v1/lenses` | Lens types, index, coatings, sun options, prescription options | Cached. |
-| `POST /api/v1/cart/quote` | Server prices for a bag | Body: `{ lines: [{ productId, colourIndex, config, qty }] }`. Recompute with `shared/pricing.js`. Return each line's unit price and line total, plus subtotal, delivery, total, `currency: "INR"`, `taxIncluded: true` and a `quoteId` (a hash of the inputs and prices). Reject unknown products, out-of-range colours, configs not allowed for the product, and quantity rules broken (frames are 1; contacts and care up to 12; at most 20 lines). Response is `no-store`. |
-| `POST /api/v1/orders` | Demo order | Body: lines, contact (name; Indian mobile of 10 digits starting 6–9; optional email), delivery (`home` with line1, city, 6-digit PIN code, or `store`), prescriptions per line where needed, and `consent: true`. Validate and re-quote, then return `{ orderRef: "BM-DEMO-XXXXXX", status: "demo_not_charged", total, lines }`. Store nothing in static mode. Accept an `Idempotency-Key` header (a UUID) and echo it back. Response is `no-store`. |
-| `GET /api/v1/eye-test/slots` | Available slots | Query: `from` (YYYY-MM-DD) and `days` (1–14). Generated from `data/eye-test.json` in IST (Asia/Kolkata), never server UTC. Past slots are excluded. |
-| `POST /api/v1/eye-test/bookings` | Demo booking | Body: `{ slotStart, name, mobile, consent: true }`. The slot must exist and be in the future. Returns `{ bookingRef: "BM-ET-DEMO-XXXX", status: "demo_not_booked" }`. Response is `no-store`. |
+| Method and path                  | Purpose                                                        | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/health`             | Liveness                                                       | `{ status, dataSource, version, time }`. Response is `no-store`.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `GET /api/v1/bootstrap`          | Everything the first screen needs in one call                  | Store, zones, tour, catalogue, merchandising and lenses. Add an `ETag` and `Cache-Control: public, s-maxage=300, stale-while-revalidate=86400`.                                                                                                                                                                                                                                                                                                                               |
+| `GET /api/v1/store`              | Store details, zones, tour                                     | Cached like bootstrap.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `GET /api/v1/products`           | Search and filter                                              | Query: `zone`, `q`, `shape`, `material`, `polarised`, `maxPrice`, `type`. The UI keeps its instant client-side search.                                                                                                                                                                                                                                                                                                                                                        |
+| `GET /api/v1/products/:id`       | One product                                                    | 404 if unknown.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `GET /api/v1/lenses`             | Lens types, index, coatings, sun options, prescription options | Cached.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `POST /api/v1/cart/quote`        | Server prices for a bag                                        | Body: `{ lines: [{ productId, colourIndex, config, qty }] }`. Recompute with `shared/pricing.js`. Return each line's unit price and line total, plus subtotal, delivery, total, `currency: "INR"`, `taxIncluded: true` and a `quoteId` (a hash of the inputs and prices). Reject unknown products, out-of-range colours, configs not allowed for the product, and quantity rules broken (frames are 1; contacts and care up to 12; at most 20 lines). Response is `no-store`. |
+| `POST /api/v1/orders`            | Demo order                                                     | Body: lines, contact (name; Indian mobile of 10 digits starting 6–9; optional email), delivery (`home` with line1, city, 6-digit PIN code, or `store`), prescriptions per line where needed, and `consent: true`. Validate and re-quote, then return `{ orderRef: "BM-DEMO-XXXXXX", status: "demo_not_charged", total, lines }`. Store nothing in static mode. Accept an `Idempotency-Key` header (a UUID) and echo it back. Response is `no-store`.                          |
+| `GET /api/v1/eye-test/slots`     | Available slots                                                | Query: `from` (YYYY-MM-DD) and `days` (1–14). Generated from `data/eye-test.json` in IST (Asia/Kolkata), never server UTC. Past slots are excluded.                                                                                                                                                                                                                                                                                                                           |
+| `POST /api/v1/eye-test/bookings` | Demo booking                                                   | Body: `{ slotStart, name, mobile, consent: true }`. The slot must exist and be in the future. Returns `{ bookingRef: "BM-ET-DEMO-XXXX", status: "demo_not_booked" }`. Response is `no-store`.                                                                                                                                                                                                                                                                                 |
 
 Keep these business rules exactly as they are now; tests must cover each one:
 
@@ -349,11 +353,11 @@ Keep these business rules exactly as they are now; tests must cover each one:
 
 Create `server/integrations/payments.js`, `notifications.js` and `crm.js`:
 
-| File | Planned use | Functions |
-| --- | --- | --- |
-| `payments.js` | Razorpay | `createPayment(order)`, `verifyWebhookSignature(rawBody, signature)` |
-| `notifications.js` | WhatsApp updates through WaMark | `sendOrderUpdate(order)`, `sendBookingUpdate(booking)` |
-| `crm.js` | Pushing orders and bookings to DGCC as leads | `pushLead(event)` |
+| File               | Planned use                                  | Functions                                                            |
+| ------------------ | -------------------------------------------- | -------------------------------------------------------------------- |
+| `payments.js`      | Razorpay                                     | `createPayment(order)`, `verifyWebhookSignature(rawBody, signature)` |
+| `notifications.js` | WhatsApp updates through WaMark              | `sendOrderUpdate(order)`, `sendBookingUpdate(booking)`               |
+| `crm.js`           | Pushing orders and bookings to DGCC as leads | `pushLead(event)`                                                    |
 
 Each function returns `{ skipped: true, reason: 'not_configured' }` until its env vars exist. The order and booking services call these hooks already. Document each hook's planned env vars in `docs/backend-integration.md`.
 
@@ -361,17 +365,17 @@ Each function returns `{ skipped: true, reason: 'not_configured' }` until its en
 
 `package.json` scripts, all cross-platform:
 
-| Script | Command and purpose |
-| --- | --- |
-| `dev` | `vite`: site and API on port 5173 through the Vite plugin |
-| `dev:phone` | `vite --host` |
-| `build` | `vite build` |
-| `preview` | `vite preview`: production build, API and the security headers from `vercel.json` |
-| `test` | `vitest run` |
-| `test:watch` | `vitest` |
-| `check` | format check, then tests, then build; stop at the first failure |
-| `smoke` | `node scripts/smoke.mjs`; the base URL comes as an argument |
-| Keep as they are | `format`, `format:check`, `assets:check` |
+| Script           | Command and purpose                                                               |
+| ---------------- | --------------------------------------------------------------------------------- |
+| `dev`            | `vite`: site and API on port 5173 through the Vite plugin                         |
+| `dev:phone`      | `vite --host`                                                                     |
+| `build`          | `vite build`                                                                      |
+| `preview`        | `vite preview`: production build, API and the security headers from `vercel.json` |
+| `test`           | `vitest run`                                                                      |
+| `test:watch`     | `vitest`                                                                          |
+| `check`          | format check, then tests, then build; stop at the first failure                   |
+| `smoke`          | `node scripts/smoke.mjs`; the base URL comes as an argument                       |
+| Keep as they are | `format`, `format:check`, `assets:check`                                          |
 
 `scripts/smoke.mjs <baseUrl>` uses Node's built-in `fetch` and no dependencies. It prints a pass or fail line for each check and exits with code 1 on any failure. It checks:
 
@@ -400,7 +404,7 @@ Also:
 
 - Keep `.vercelignore` excluding `assets-3d/`. Make sure `data/`, `server/` and `shared/` are **not** ignored, because the function needs them.
 - `engines.node` stays `>=22.12.0`, which Vercel maps to its Node 24 runtime.
-- **Do not deploy by yourself.** If the Vercel CLI is installed and logged in, you may *ask* to run `npx vercel` for a preview. The `.claude/settings.json` file will prompt the user. Otherwise, write the exact commands in your final reply.
+- **Do not deploy by yourself.** If the Vercel CLI is installed and logged in, you may _ask_ to run `npx vercel` for a preview. The `.claude/settings.json` file will prompt the user. Otherwise, write the exact commands in your final reply.
 - Never run `vercel env pull`, and never create or read `.env` files.
 
 ## Documentation

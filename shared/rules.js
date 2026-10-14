@@ -51,7 +51,8 @@ export function rxProblems(rx, needAdd) {
     }
   }
   const pd = blank(rx.pd) ? NaN : num(rx.pd);
-  if (isNaN(pd) || pd < RX.pd[0] || pd > RX.pd[1]) out.push({ path: 'pd', message: 'PD: enter a value from 50 to 76 mm.' });
+  if (isNaN(pd) || pd < RX.pd[0] || pd > RX.pd[1])
+    out.push({ path: 'pd', message: 'PD: enter a value from 50 to 76 mm.' });
   return out;
 }
 

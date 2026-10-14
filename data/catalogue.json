@@ -7,11 +7,7 @@
       "arch": "rectA",
       "mat": "Acetate",
       "price": 2490,
-      "size": [
-        53,
-        18,
-        145
-      ],
+      "size": [53, 18, 145],
       "weight": 24,
       "colors": [
         {
@@ -33,9 +29,7 @@
       ],
       "desc": "A slim everyday rectangle in polished acetate with five-barrel hinges.",
       "type": "frame",
-      "tags": [
-        "Bestseller"
-      ]
+      "tags": ["Bestseller"]
     },
     {
       "id": "m02",
@@ -44,11 +38,7 @@
       "arch": "squareA",
       "mat": "Acetate",
       "price": 2990,
-      "size": [
-        54,
-        19,
-        145
-      ],
+      "size": [54, 19, 145],
       "weight": 28,
       "colors": [
         {
@@ -80,11 +70,7 @@
       "arch": "roundM",
       "mat": "Titanium",
       "price": 3490,
-      "size": [
-        49,
-        21,
-        145
-      ],
+      "size": [49, 21, 145],
       "weight": 14,
       "colors": [
         {
@@ -100,9 +86,7 @@
       ],
       "desc": "Feather-light round titanium wire with adjustable nose pads.",
       "type": "frame",
-      "tags": [
-        "Titanium"
-      ]
+      "tags": ["Titanium"]
     },
     {
       "id": "m04",
@@ -111,11 +95,7 @@
       "arch": "rectM",
       "mat": "Stainless steel",
       "price": 2790,
-      "size": [
-        55,
-        17,
-        145
-      ],
+      "size": [55, 17, 145],
       "weight": 18,
       "colors": [
         {
@@ -145,11 +125,7 @@
       "arch": "browC",
       "mat": "Acetate and metal",
       "price": 3290,
-      "size": [
-        51,
-        20,
-        145
-      ],
+      "size": [51, 20, 145],
       "weight": 22,
       "colors": [
         {
@@ -179,11 +155,7 @@
       "arch": "geoM",
       "mat": "Titanium",
       "price": 3690,
-      "size": [
-        50,
-        20,
-        145
-      ],
+      "size": [50, 20, 145],
       "weight": 15,
       "colors": [
         {
@@ -199,9 +171,7 @@
       ],
       "desc": "Hexagonal titanium frame with a double-polished finish.",
       "type": "frame",
-      "tags": [
-        "Titanium"
-      ]
+      "tags": ["Titanium"]
     },
     {
       "id": "m07",
@@ -210,11 +180,7 @@
       "arch": "rectA",
       "mat": "TR90",
       "price": 1790,
-      "size": [
-        54,
-        17,
-        140
-      ],
+      "size": [54, 17, 140],
       "weight": 16,
       "colors": [
         {
@@ -232,9 +198,7 @@
       ],
       "desc": "Flexible TR90 rectangle that bends and springs back into shape.",
       "type": "frame",
-      "tags": [
-        "Flexible"
-      ]
+      "tags": ["Flexible"]
     },
     {
       "id": "m08",
@@ -243,11 +207,7 @@
       "arch": "ovalM",
       "mat": "Stainless steel",
       "price": 2190,
-      "size": [
-        52,
-        18,
-        140
-      ],
+      "size": [52, 18, 140],
       "weight": 17,
       "colors": [
         {
@@ -272,11 +232,7 @@
       "arch": "roundA",
       "mat": "Acetate",
       "price": 2690,
-      "size": [
-        49,
-        21,
-        145
-      ],
+      "size": [49, 21, 145],
       "weight": 23,
       "colors": [
         {
@@ -302,11 +258,7 @@
       "arch": "ovalA",
       "mat": "Acetate",
       "price": 2390,
-      "size": [
-        52,
-        18,
-        145
-      ],
+      "size": [52, 18, 145],
       "weight": 22,
       "colors": [
         {
@@ -332,11 +284,7 @@
       "arch": "rectM",
       "mat": "Titanium",
       "price": 3890,
-      "size": [
-        54,
-        18,
-        145
-      ],
+      "size": [54, 18, 145],
       "weight": 13,
       "colors": [
         {
@@ -352,9 +300,7 @@
       ],
       "desc": "Ultra-light titanium rectangle with flexible temples.",
       "type": "frame",
-      "tags": [
-        "Titanium"
-      ]
+      "tags": ["Titanium"]
     },
     {
       "id": "m12",
@@ -363,11 +309,7 @@
       "arch": "rectA",
       "mat": "Acetate",
       "price": 2290,
-      "size": [
-        52,
-        19,
-        145
-      ],
+      "size": [52, 19, 145],
       "weight": 21,
       "colors": [
         {
@@ -384,9 +326,7 @@
       ],
       "desc": "A mid-width rectangle in olive or clear crystal acetate.",
       "type": "frame",
-      "tags": [
-        "New"
-      ]
+      "tags": ["New"]
     },
     {
       "id": "w01",
@@ -395,11 +335,7 @@
       "arch": "cateyeA",
       "mat": "Acetate",
       "price": 2890,
-      "size": [
-        52,
-        17,
-        140
-      ],
+      "size": [52, 17, 140],
       "weight": 22,
       "colors": [
         {
@@ -421,9 +357,7 @@
       ],
       "desc": "An upswept cat-eye with a bold outer corner.",
       "type": "frame",
-      "tags": [
-        "Bestseller"
-      ]
+      "tags": ["Bestseller"]
     },
     {
       "id": "w02",
@@ -432,11 +366,7 @@
       "arch": "roundA",
       "mat": "Acetate",
       "price": 2490,
-      "size": [
-        48,
-        20,
-        140
-      ],
+      "size": [48, 20, 140],
       "weight": 20,
       "colors": [
         {
@@ -469,11 +399,7 @@
       "arch": "oversizeA",
       "mat": "Acetate",
       "price": 3190,
-      "size": [
-        55,
-        16,
-        140
-      ],
+      "size": [55, 16, 140],
       "weight": 27,
       "colors": [
         {
@@ -505,11 +431,7 @@
       "arch": "cateyeM",
       "mat": "Stainless steel",
       "price": 3390,
-      "size": [
-        52,
-        17,
-        140
-      ],
+      "size": [52, 17, 140],
       "weight": 15,
       "colors": [
         {
@@ -534,11 +456,7 @@
       "arch": "geoM",
       "mat": "Titanium",
       "price": 3590,
-      "size": [
-        51,
-        19,
-        140
-      ],
+      "size": [51, 19, 140],
       "weight": 14,
       "colors": [
         {
@@ -554,9 +472,7 @@
       ],
       "desc": "Geometric titanium with a light, open profile.",
       "type": "frame",
-      "tags": [
-        "Titanium"
-      ]
+      "tags": ["Titanium"]
     },
     {
       "id": "w06",
@@ -565,11 +481,7 @@
       "arch": "ovalA",
       "mat": "Acetate",
       "price": 2290,
-      "size": [
-        51,
-        18,
-        140
-      ],
+      "size": [51, 18, 140],
       "weight": 20,
       "colors": [
         {
@@ -600,11 +512,7 @@
       "arch": "rectA",
       "mat": "Acetate",
       "price": 1990,
-      "size": [
-        51,
-        17,
-        140
-      ],
+      "size": [51, 17, 140],
       "weight": 19,
       "colors": [
         {
@@ -630,11 +538,7 @@
       "arch": "roundM",
       "mat": "Stainless steel",
       "price": 2690,
-      "size": [
-        48,
-        20,
-        140
-      ],
+      "size": [48, 20, 140],
       "weight": 13,
       "colors": [
         {
@@ -659,11 +563,7 @@
       "arch": "rectA",
       "mat": "Acetate",
       "price": 2590,
-      "size": [
-        52,
-        17,
-        140
-      ],
+      "size": [52, 17, 140],
       "weight": 21,
       "colors": [
         {
@@ -680,9 +580,7 @@
       ],
       "desc": "A soft rectangle with rounded corners.",
       "type": "frame",
-      "tags": [
-        "New"
-      ]
+      "tags": ["New"]
     },
     {
       "id": "w10",
@@ -691,11 +589,7 @@
       "arch": "oversizeA",
       "mat": "Acetate",
       "price": 2990,
-      "size": [
-        54,
-        17,
-        140
-      ],
+      "size": [54, 17, 140],
       "weight": 25,
       "colors": [
         {
@@ -721,11 +615,7 @@
       "arch": "aviatorM",
       "mat": "Stainless steel",
       "price": 3990,
-      "size": [
-        58,
-        14,
-        140
-      ],
+      "size": [58, 14, 140],
       "weight": 26,
       "colors": [
         {
@@ -750,10 +640,7 @@
       ],
       "desc": "A teardrop aviator with a double bridge and polarised lenses.",
       "type": "frame",
-      "tags": [
-        "Polarised",
-        "Bestseller"
-      ],
+      "tags": ["Polarised", "Bestseller"],
       "sun": true,
       "polar": true
     },
@@ -764,11 +651,7 @@
       "arch": "squareA",
       "mat": "Acetate",
       "price": 3490,
-      "size": [
-        55,
-        18,
-        145
-      ],
+      "size": [55, 18, 145],
       "weight": 30,
       "colors": [
         {
@@ -787,9 +670,7 @@
       ],
       "desc": "Chunky square sunglasses with polarised lenses.",
       "type": "frame",
-      "tags": [
-        "Polarised"
-      ],
+      "tags": ["Polarised"],
       "sun": true,
       "polar": true
     },
@@ -800,11 +681,7 @@
       "arch": "cateyeA",
       "mat": "Acetate",
       "price": 3290,
-      "size": [
-        56,
-        17,
-        140
-      ],
+      "size": [56, 17, 140],
       "weight": 27,
       "colors": [
         {
@@ -834,11 +711,7 @@
       "arch": "roundM",
       "mat": "Stainless steel",
       "price": 2990,
-      "size": [
-        50,
-        22,
-        145
-      ],
+      "size": [50, 22, 145],
       "weight": 18,
       "colors": [
         {
@@ -866,11 +739,7 @@
       "arch": "geoM",
       "mat": "Stainless steel",
       "price": 3790,
-      "size": [
-        52,
-        20,
-        145
-      ],
+      "size": [52, 20, 145],
       "weight": 20,
       "colors": [
         {
@@ -889,9 +758,7 @@
       ],
       "desc": "Hexagonal sunglasses with mirrored, polarised lenses.",
       "type": "frame",
-      "tags": [
-        "Polarised"
-      ],
+      "tags": ["Polarised"],
       "sun": true,
       "polar": true
     },
@@ -902,11 +769,7 @@
       "arch": "rectA",
       "mat": "TR90",
       "price": 2690,
-      "size": [
-        56,
-        16,
-        140
-      ],
+      "size": [56, 16, 140],
       "weight": 22,
       "colors": [
         {
@@ -926,9 +789,7 @@
       ],
       "desc": "A light rectangle for driving and travel.",
       "type": "frame",
-      "tags": [
-        "Polarised"
-      ],
+      "tags": ["Polarised"],
       "sun": true,
       "polar": true
     },
@@ -939,11 +800,7 @@
       "arch": "browC",
       "mat": "Acetate and metal",
       "price": 3590,
-      "size": [
-        52,
-        20,
-        145
-      ],
+      "size": [52, 20, 145],
       "weight": 24,
       "colors": [
         {
@@ -966,9 +823,7 @@
       ],
       "desc": "Browline sunglasses with polarised G-15 lenses.",
       "type": "frame",
-      "tags": [
-        "Polarised"
-      ],
+      "tags": ["Polarised"],
       "sun": true,
       "polar": true
     },
@@ -979,11 +834,7 @@
       "arch": "ovalM",
       "mat": "Stainless steel",
       "price": 2490,
-      "size": [
-        51,
-        19,
-        140
-      ],
+      "size": [51, 19, 140],
       "weight": 16,
       "colors": [
         {
@@ -1011,11 +862,7 @@
       "arch": "roundA",
       "mat": "TR90",
       "price": 1290,
-      "size": [
-        44,
-        16,
-        125
-      ],
+      "size": [44, 16, 125],
       "weight": 12,
       "colors": [
         {
@@ -1036,9 +883,7 @@
       ],
       "desc": "A flexible round for ages 4 to 8, with soft temple tips.",
       "type": "frame",
-      "tags": [
-        "Flexible"
-      ],
+      "tags": ["Flexible"],
       "kids": true
     },
     {
@@ -1048,11 +893,7 @@
       "arch": "rectA",
       "mat": "TR90",
       "price": 1390,
-      "size": [
-        46,
-        15,
-        125
-      ],
+      "size": [46, 15, 125],
       "weight": 13,
       "colors": [
         {
@@ -1073,9 +914,7 @@
       ],
       "desc": "A sturdy rectangle with spring hinges, for ages 6 to 12.",
       "type": "frame",
-      "tags": [
-        "Flexible"
-      ],
+      "tags": ["Flexible"],
       "kids": true
     },
     {
@@ -1085,11 +924,7 @@
       "arch": "ovalA",
       "mat": "TR90",
       "price": 1190,
-      "size": [
-        42,
-        16,
-        120
-      ],
+      "size": [42, 16, 120],
       "weight": 11,
       "colors": [
         {
@@ -1115,11 +950,7 @@
       "arch": "squareA",
       "mat": "TR90",
       "price": 1490,
-      "size": [
-        47,
-        16,
-        130
-      ],
+      "size": [47, 16, 130],
       "weight": 14,
       "colors": [
         {
@@ -1145,11 +976,7 @@
       "arch": "roundA",
       "mat": "TR90",
       "price": 1290,
-      "size": [
-        44,
-        16,
-        125
-      ],
+      "size": [44, 16, 125],
       "weight": 12,
       "colors": [
         {
@@ -1167,9 +994,7 @@
       ],
       "desc": "Kids’ polarised sunglasses with UV400 lenses.",
       "type": "frame",
-      "tags": [
-        "Polarised"
-      ],
+      "tags": ["Polarised"],
       "kids": true,
       "sun": true,
       "polar": true
@@ -1181,11 +1006,7 @@
       "arch": "roundM",
       "mat": "Beta titanium, 18K gold plated",
       "price": 14900,
-      "size": [
-        48,
-        22,
-        145
-      ],
+      "size": [48, 22, 145],
       "weight": 12,
       "colors": [
         {
@@ -1201,10 +1022,7 @@
       ],
       "desc": "A hand-finished round in beta titanium with 18K gold plating.",
       "type": "frame",
-      "tags": [
-        "Atelier",
-        "Titanium"
-      ]
+      "tags": ["Atelier", "Titanium"]
     },
     {
       "id": "p02",
@@ -1213,11 +1031,7 @@
       "arch": "squareA",
       "mat": "Italian acetate",
       "price": 11900,
-      "size": [
-        53,
-        20,
-        145
-      ],
+      "size": [53, 20, 145],
       "weight": 30,
       "colors": [
         {
@@ -1234,9 +1048,7 @@
       ],
       "desc": "Hand-polished thick acetate square with seven-barrel hinges.",
       "type": "frame",
-      "tags": [
-        "Atelier"
-      ]
+      "tags": ["Atelier"]
     },
     {
       "id": "p03",
@@ -1245,11 +1057,7 @@
       "arch": "cateyeA",
       "mat": "Italian acetate",
       "price": 12900,
-      "size": [
-        53,
-        17,
-        140
-      ],
+      "size": [53, 17, 140],
       "weight": 26,
       "colors": [
         {
@@ -1265,9 +1073,7 @@
       ],
       "desc": "A sculpted cat-eye cut from a single acetate block.",
       "type": "frame",
-      "tags": [
-        "Atelier"
-      ]
+      "tags": ["Atelier"]
     },
     {
       "id": "p04",
@@ -1276,11 +1082,7 @@
       "arch": "aviatorM",
       "mat": "Titanium",
       "price": 16900,
-      "size": [
-        58,
-        14,
-        145
-      ],
+      "size": [58, 14, 145],
       "weight": 22,
       "colors": [
         {
@@ -1298,10 +1100,7 @@
       ],
       "desc": "A titanium aviator with polarised mineral-glass lenses.",
       "type": "frame",
-      "tags": [
-        "Atelier",
-        "Polarised"
-      ],
+      "tags": ["Atelier", "Polarised"],
       "sun": true,
       "polar": true
     },
@@ -1312,11 +1111,7 @@
       "arch": "geoM",
       "mat": "Titanium",
       "price": 13900,
-      "size": [
-        50,
-        20,
-        145
-      ],
+      "size": [50, 20, 145],
       "weight": 13,
       "colors": [
         {
@@ -1332,10 +1127,7 @@
       ],
       "desc": "A faceted titanium geometric with a satin finish.",
       "type": "frame",
-      "tags": [
-        "Atelier",
-        "Titanium"
-      ]
+      "tags": ["Atelier", "Titanium"]
     },
     {
       "id": "p06",
@@ -1344,11 +1136,7 @@
       "arch": "browC",
       "mat": "Acetate and titanium",
       "price": 10900,
-      "size": [
-        51,
-        21,
-        145
-      ],
+      "size": [51, 21, 145],
       "weight": 21,
       "colors": [
         {
@@ -1369,9 +1157,7 @@
       ],
       "desc": "A browline with a titanium lower rim and a hand-polished brow.",
       "type": "frame",
-      "tags": [
-        "Atelier"
-      ]
+      "tags": ["Atelier"]
     },
     {
       "id": "c01",
@@ -1390,9 +1176,7 @@
         }
       ],
       "desc": "Daily disposable silicone hydrogel lenses. A fresh pair every day.",
-      "tags": [
-        "Daily"
-      ]
+      "tags": ["Daily"]
     },
     {
       "id": "c02",
@@ -1411,9 +1195,7 @@
         }
       ],
       "desc": "Monthly lenses with a moisture-retaining surface.",
-      "tags": [
-        "Monthly"
-      ]
+      "tags": ["Monthly"]
     },
     {
       "id": "c03",
@@ -1428,9 +1210,7 @@
         }
       ],
       "desc": "Daily lenses that correct astigmatism.",
-      "tags": [
-        "Toric"
-      ]
+      "tags": ["Toric"]
     },
     {
       "id": "c04",
@@ -1453,9 +1233,7 @@
         }
       ],
       "desc": "Monthly coloured lenses, with or without power.",
-      "tags": [
-        "Coloured"
-      ]
+      "tags": ["Coloured"]
     },
     {
       "id": "c05",
