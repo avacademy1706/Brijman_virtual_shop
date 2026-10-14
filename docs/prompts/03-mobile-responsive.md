@@ -19,7 +19,7 @@ It builds on `01-api-layer.md`, which must be done. If `02-virtual-try-on.md` is
   - phones turned sideways;
   - foldables and tablets (iPad, Android tabs);
   - laptops and desktops.
-  Nothing overlaps, nothing is cut off, and the bars stay clear of the notch and home indicator.
+    Nothing overlaps, nothing is cut off, and the bars stay clear of the notch and home indicator.
 - **Touch that behaves like an app:**
   - swipe the bottom panel down to close it;
   - the phone's **Back** button closes panels instead of leaving the site;
@@ -39,10 +39,10 @@ It builds on `01-api-layer.md`, which must be done. If `02-virtual-try-on.md` is
 
 Before running the task, fill in the **Reported issues** table at the start of Part 2 (section 2.0) with what went wrong on your phone. One line per issue is enough, for example:
 
-| Device and browser | Screen | What happened |
-| --- | --- | --- |
-| Redmi Note 12, Chrome | Product sheet | Can't scroll the sheet when my finger starts on the 3D frame |
-| iPhone 13, Safari | Checkout | Page zooms in when I tap the mobile field, and the button hides behind the keyboard |
+| Device and browser    | Screen        | What happened                                                                       |
+| --------------------- | ------------- | ----------------------------------------------------------------------------------- |
+| Redmi Note 12, Chrome | Product sheet | Can't scroll the sheet when my finger starts on the 3D frame                        |
+| iPhone 13, Safari     | Checkout      | Page zooms in when I tap the mobile field, and the button hides behind the keyboard |
 
 Claude Code fixes these first, then runs the full audit. If you leave the table empty, it still runs the full audit.
 
@@ -73,6 +73,7 @@ The emulator in the browser is not enough. Always finish on real devices.
 - **Many devices at once (optional, paid):** BrowserStack or LambdaTest real-device clouds.
 
 Run the checklist Claude Code writes in `docs/mobile-testing.md` on at least:
+
 - one budget Android phone;
 - one mid-range Android phone;
 - one iPhone;
@@ -90,6 +91,7 @@ Add a line to the **Reported issues** table, then ask Claude Code: `Fix the new 
 You are working in the Brijman Virtual Showroom project.
 
 **Read first:**
+
 - `CLAUDE.md`, `README.md`, `docs/decisions.md` and `docs/setup-and-deploy.md`.
 - The current versions of:
   - `index.html`;
@@ -105,8 +107,8 @@ Follow the code as it is. File names may differ from earlier briefs.
 ## 2.0 Reported issues (from the developer's real devices; fix these first)
 
 | Device and browser | Screen | What happened |
-| --- | --- | --- |
-| _(add rows)_ | | |
+| ------------------ | ------ | ------------- |
+| _(add rows)_       |        |               |
 
 If this table is empty, continue with the full audit. Every reported row must end up in `docs/mobile-testing.md`, marked fixed with the commit that fixed it, or explained.
 
@@ -145,7 +147,7 @@ These come from reading the current code. Some may already be fixed; confirm eac
    - set the viewer canvas to `touch-action: pan-y`;
    - rotate on horizontal drags only;
    - allow pinch zoom only inside the viewer.
-   On desktop, keep full orbit.
+     On desktop, keep full orbit.
 3. **The bottom bar height is guessed.** `--bb-h` is never set (the CSS falls back to 66 px). Measure the real bottom bar with a `ResizeObserver` and set `--bb-h`. The dock, welcome card, toast and hint must use it.
 4. **No Back button support.** The Android and iOS Back gestures leave the site instead of closing what is open.
    - Push a history entry when opening a sheet, the directory, the tour, the try-on or the photo compare view; close it on `popstate`.
@@ -155,7 +157,7 @@ These come from reading the current code. Some may already be fixed; confirm eac
    - set `--vvh`, the visible height, and size the sheet from it;
    - keep the focused field scrolled into view inside the sheet body only, never by scrolling `#app`;
    - keep the primary action reachable.
-   Also add `interactive-widget=resizes-content` to the viewport meta, test it on Chrome Android, and record the result in `docs/decisions.md`.
+     Also add `interactive-widget=resizes-content` to the viewport meta, test it on Chrome Android, and record the result in `docs/decisions.md`.
 6. **The welcome card can overflow** on short screens (iPhone SE, landscape). Give it a max height that follows the visible area, between the top bar and the bottom bar, with its own scrolling.
 7. **Sticky hover on touch.** `:hover` rules stay applied after a tap. Wrap hover styles in `@media (hover: hover) and (pointer: fine)`.
 8. **Touch targets are too small:**
@@ -163,12 +165,12 @@ These come from reading the current code. Some may already be fixed; confirm eac
    - small text links;
    - floating zone labels about 26 px;
    - swatches 36 px.
-   Make every interactive element on `(pointer: coarse)` at least 44×44 px. Where the visual size should stay small, enlarge only the hit area with padding or a pseudo-element.
+     Make every interactive element on `(pointer: coarse)` at least 44×44 px. Where the visual size should stay small, enlarge only the hit area with padding or a pseudo-element.
 9. **Text too small to read on phones:**
    - eyebrows 9–10.5 px;
    - viewer hint and tags 10 px;
    - prescription headers 10 px.
-   The minimum is 11 px for uppercase micro-labels and 12 px for anything else. Body text stays at 15–16 px.
+     The minimum is 11 px for uppercase micro-labels and 12 px for anything else. Body text stays at 15–16 px.
 10. **Floating section labels overlap.** On small screens they also collide with the minimap and the cards. Add screen-space collision avoidance:
     - priority goes to the nearest label, and to the current tour target;
     - hide labels behind the top bar, minimap, dock and bottom bar, and any that overlap a higher-priority label;
@@ -178,7 +180,7 @@ These come from reading the current code. Some may already be fixed; confirm eac
 13. **Long-press and text-selection side effects:**
     - long-pressing the canvas, labels or controls can open the iOS callout or magnifier, or select text;
     - double-tapping a button can zoom on iOS.
-    Fix with `-webkit-touch-callout: none` and `user-select: none` on the 3D canvas and chrome (never on inputs or readable text), `touch-action: manipulation` on buttons, and `-webkit-text-size-adjust: 100%` on `html`.
+      Fix with `-webkit-touch-callout: none` and `user-select: none` on the 3D canvas and chrome (never on inputs or readable text), `touch-action: manipulation` on buttons, and `-webkit-text-size-adjust: 100%` on `html`.
 14. **Pull-to-refresh and overscroll.** Dragging down on the top bar or cards can trigger Android pull-to-refresh. Set `overscroll-behavior: none` on `html` and `body`, and keep `contain` on scrolling panels.
 15. **No swipe-down to close the sheet.** The grip is only decoration. Add drag-to-dismiss on the grip and header:
     - follow the finger;
@@ -190,27 +192,28 @@ These come from reading the current code. Some may already be fixed; confirm eac
     - all instances of an archetype share one `InstancedMesh` spanning the whole store, so frustum culling never helps;
     - shelf frames use full-detail geometry;
     - textures are full size on phones.
-    See section 2.6.
+      See section 2.6.
 17. **WebGL context loss.** It only shows a toast today. On iOS especially, the scene can stay black after the app returns from the background. Restore fully (see section 2.6).
 18. **Viewport height.** Check every full-height surface on iOS Safari and Chrome Android as the toolbar collapses and expands:
     - the app;
     - the sheet;
     - the try-on;
     - the welcome card.
-    Use `100dvh`, `svh` and `lvh` deliberately, keep `viewport-fit=cover` with safe-area padding on the top bar, bottom bar and sheet footer, and never use bare `100vh`.
+      Use `100dvh`, `svh` and `lvh` deliberately, keep `viewport-fit=cover` with safe-area padding on the top bar, bottom bar and sheet footer, and never use bare `100vh`.
 
 ## 2.4 Layout system
 
 Define the layout modes in one place (`src/styles/main.css`, plus `src/ui/layout.js` for JavaScript checks) and use them everywhere:
 
-| Mode | Rule | Layout |
-| --- | --- | --- |
-| Phone portrait | width ≤ 600 px, portrait | Compact top bar (brand mark, section pill, search, bag). Bottom bar with Directory, Tour, Eye test, Info. Dock cards above the bottom bar. Bottom sheet up to the visible height minus 56 px. Minimap collapsible. |
-| Phone landscape | height ≤ 500 px, landscape | **No bottom bar:** its actions move into the top bar's menu. The top bar is about 44 px. The sheet becomes a **right side panel** at 50 % width (minimum 320 px). Dock cards are narrower and sit bottom-left. Minimap collapsed. Welcome card scrolls. |
-| Tablet | 601–1024 px, touch | Desktop arrangement with a side sheet of 380–420 px, but touch-sized targets and no hover-only affordances. Bottom bar hidden. |
-| Desktop | 1025 px and wider, or a fine pointer with enough room | Current desktop layout. |
+| Mode            | Rule                                                  | Layout                                                                                                                                                                                                                                                  |
+| --------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phone portrait  | width ≤ 600 px, portrait                              | Compact top bar (brand mark, section pill, search, bag). Bottom bar with Directory, Tour, Eye test, Info. Dock cards above the bottom bar. Bottom sheet up to the visible height minus 56 px. Minimap collapsible.                                      |
+| Phone landscape | height ≤ 500 px, landscape                            | **No bottom bar:** its actions move into the top bar's menu. The top bar is about 44 px. The sheet becomes a **right side panel** at 50 % width (minimum 320 px). Dock cards are narrower and sit bottom-left. Minimap collapsed. Welcome card scrolls. |
+| Tablet          | 601–1024 px, touch                                    | Desktop arrangement with a side sheet of 380–420 px, but touch-sized targets and no hover-only affordances. Bottom bar hidden.                                                                                                                          |
+| Desktop         | 1025 px and wider, or a fine pointer with enough room | Current desktop layout.                                                                                                                                                                                                                                 |
 
 **Rules:**
+
 - **Gutter.** Use `clamp(12px, 3vw, 24px)`, plus safe-area insets on the sides in landscape (notch side).
 - **Type scale.** Use `clamp()` so headings shrink on small phones without wrapping badly. Test with 200 % browser text zoom: nothing important may be clipped.
 - **No overlaps.** No fixed element may cover another fixed element in any mode: top bar, minimap, dock, bottom bar, sheet, toast, hint, pin label, tooltips and try-on controls.
@@ -250,13 +253,14 @@ Define the layout modes in one place (`src/styles/main.css`, plus `src/ui/layout
 
 **Quality tiers.** Choose a tier at start-up from `navigator.hardwareConcurrency`, `navigator.deviceMemory` (where available), screen size, the WebGL `MAX_TEXTURE_SIZE`, and a 1-second render benchmark. The tier can drop at run time if fps stays under target for 3 s. It can be overridden in Info → Picture quality.
 
-| Tier | Typical device | Device pixel ratio | Shadows | Textures | Shelf frame detail | Target |
-| --- | --- | --- | --- | --- | --- | --- |
-| Low | Budget Android, 3–4 GB RAM | 1.0 | off | 512 px | simplified geometry: about 40 % of the triangles; fewer tube and outline segments | 30 fps or more |
-| Medium | Mid-range phones, older iPhones | 1.25–1.5 | off | 1024 px | normal | 45 fps or more |
-| High | Recent phones, tablets, laptops | up to 2 | on (desktop) | full | normal | 60 fps |
+| Tier   | Typical device                  | Device pixel ratio | Shadows      | Textures | Shelf frame detail                                                                | Target         |
+| ------ | ------------------------------- | ------------------ | ------------ | -------- | --------------------------------------------------------------------------------- | -------------- |
+| Low    | Budget Android, 3–4 GB RAM      | 1.0                | off          | 512 px   | simplified geometry: about 40 % of the triangles; fewer tube and outline segments | 30 fps or more |
+| Medium | Mid-range phones, older iPhones | 1.25–1.5           | off          | 1024 px  | normal                                                                            | 45 fps or more |
+| High   | Recent phones, tablets, laptops | up to 2            | on (desktop) | full     | normal                                                                            | 60 fps         |
 
 **Draw calls and culling:**
+
 - Split frame `InstancedMesh`es **per section** so frustum culling can skip whole sections behind the camera.
 - Set accurate bounding spheres per section mesh.
 - Keep the draw count shown by `BM.api.stats()` under about 120 on phones.
@@ -264,6 +268,7 @@ Define the layout modes in one place (`src/styles/main.css`, plus `src/ui/layout
 **Level of detail.** Shelf frames more than about 4 m away use the simplified geometry. The product viewer and the try-on always use full detail.
 
 **Memory:**
+
 - dispose of anything no longer used;
 - no texture larger than 1024 px on Low or Medium;
 - watch `renderer.info.memory` in debug mode;
@@ -272,17 +277,20 @@ Define the layout modes in one place (`src/styles/main.css`, plus `src/ui/layout
 **Context loss.** On `webglcontextlost`, pause and show "Restoring the 3D view…". On `webglcontextrestored`, rebuild the GPU resources, textures and instanced meshes, without reloading the page. If restoring fails twice, offer **Reload** and keep the floor plan fallback usable.
 
 **Page lifecycle:**
+
 - pause rendering on `visibilitychange` (hidden) and on `pagehide`;
 - resume on `pageshow`, including restores from the back-forward cache;
 - the try-on camera always stops when the page is hidden.
 
 **Loading:**
+
 - On a 4G profile, the welcome card and the floor plan are usable within 2.5 s.
 - The 3D view is ready within 6 s on Medium.
 - Show progress for the three.js chunk and for scene building.
 - Lazy-load anything not needed on the first screen.
 
 **Accessibility:**
+
 - reduced motion: no inertia, fades instead of slides, the tour jumps instead of walking;
 - touch targets of 44 px or more;
 - focus never lost when panels open or close;
@@ -293,6 +301,7 @@ Define the layout modes in one place (`src/styles/main.css`, plus `src/ui/layout
 Add `@playwright/test`, pinned to an exact version at least two weeks old, as a dev dependency. Use only the browsers Playwright downloads (`npx playwright install chromium webkit firefox`, documented in the README). Add `npm run test:mobile`, which builds, starts the preview server and runs the audit.
 
 **Device projects.** Use Playwright's built-in device descriptors, in both portrait and landscape:
+
 - iPhone SE;
 - iPhone 15 Pro (or the closest available);
 - Pixel 7;
@@ -305,6 +314,7 @@ Add `@playwright/test`, pinned to an exact version at least two weeks old, as a 
 Run Chromium for the Android and desktop profiles, and **WebKit** for the iPhone and iPad profiles. WebKit approximates Safari closely but is not identical; say so in the report.
 
 **Checks on every device and orientation:**
+
 1. **Welcome:** visible without clipping. Both buttons are in view or reachable by scrolling inside the card.
 2. **No overlap:**
    - compute the bounding boxes of the top bar, minimap, dock cards, bottom bar, sheet and toast;
@@ -322,6 +332,7 @@ Run Chromium for the Android and desktop profiles, and **WebKit** for the iPhone
 12. **No console errors and no CSP violations.**
 
 **Report.** Write `reports/mobile-audit/index.html`, a static page that works offline:
+
 - screenshots of each step for each device and orientation, before and after;
 - a pass or fail table;
 - the fps, draw count and heap figures;
