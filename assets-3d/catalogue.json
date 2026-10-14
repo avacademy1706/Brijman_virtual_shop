@@ -8,7 +8,7 @@
       "type": "Showroom",
       "name": "Complete showroom with all fixtures and products in place",
       "triangles": 590990,
-      "size_kb": 7051
+      "size_kb": 7087
     },
     {
       "file": "fixtures/Store_Shell.glb",
@@ -26,7 +26,7 @@
       "position_in_store_m": "0, 0, 8",
       "rotation_deg": 0,
       "triangles": 150,
-      "size_kb": 25
+      "size_kb": 30
     },
     {
       "file": "fixtures/Ceiling_Downlights.glb",
@@ -89,7 +89,7 @@
       "position_in_store_m": "-1.9, 0, 5.6",
       "rotation_deg": 0,
       "triangles": 28,
-      "size_kb": 70
+      "size_kb": 100
     },
     {
       "file": "fixtures/Wall_Signs.glb",

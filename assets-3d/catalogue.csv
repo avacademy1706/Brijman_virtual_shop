@@ -1,14 +1,14 @@
 ﻿file,type,sku,name,colour,section,shape,material,size_mm,weight_g,price_inr,packs,position_in_store_m,rotation_deg,triangles,size_kb
-showroom/Brijman_Showroom.glb,Showroom,,Complete showroom with all fixtures and products in place,,,,,,,,,,,590990,7051
+showroom/Brijman_Showroom.glb,Showroom,,Complete showroom with all fixtures and products in place,,,,,,,,,,,590990,7087
 fixtures/Store_Shell.glb,Fixture,,Store Shell,,,,,,,,,"0, 0, 0",0,148,208
-fixtures/Storefront.glb,Fixture,,Storefront,,,,,,,,,"0, 0, 8",0,150,25
+fixtures/Storefront.glb,Fixture,,Storefront,,,,,,,,,"0, 0, 8",0,150,30
 fixtures/Ceiling_Downlights.glb,Fixture,,Ceiling Downlights,,,,,,,,,world (not re-centred),0,2904,114
 fixtures/Sunglasses_Island.glb,Fixture,,Sunglasses Island,,,,,,,,,"-4, 0, 0.4",0,184,94
 fixtures/Lens_Bar.glb,Fixture,,Lens Bar,,,,,,,,,"4, 0, -0.2",0,2910,193
 fixtures/Atelier_Feature_Wall.glb,Fixture,,Atelier Feature Wall,,,,,,,,,"-0.6, 0, -8",0,110,58
 fixtures/Eye_Test_Room.glb,Fixture,,Eye Test Room,,,,,,,,,"8.6, 0, -5.6",0,894,159
 fixtures/Checkout_Counter.glb,Fixture,,Checkout Counter,,,,,,,,,"8.6, 0, 6.55",0,122,59
-fixtures/Directory_Totem.glb,Fixture,,Directory Totem,,,,,,,,,"-1.9, 0, 5.6",0,28,70
+fixtures/Directory_Totem.glb,Fixture,,Directory Totem,,,,,,,,,"-1.9, 0, 5.6",0,28,100
 fixtures/Wall_Signs.glb,Fixture,,Wall Signs,,,,,,,,,world (not re-centred),0,8,94
 fixtures/Ring_Light_and_Rug.glb,Fixture,,Ring Light and Rug,,,,,,,,,"0, 0, 0.6",0,5912,147
 fixtures/Men_Wall_Bay_1.glb,Fixture,,Men Wall Bay 1,,,,,,,,,"-11, 0, -2.2",90,252,51
