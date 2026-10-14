@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Nayan Eyewear · Virtual Showroom</title>
+    <meta
+      name="description"
+      content="Walk through the Nayan Eyewear showroom in 3D. Browse frames by section, check sizes, choose lenses and add to your bag."
+    />
+    <meta name="theme-color" content="#e8ece9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c1210" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Nayan Eyewear · Virtual Showroom" />
+    <meta
+      property="og:description"
+      content="Walk through the showroom in 3D, try frame colours and choose your lenses."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <canvas
+        id="scene"
+        aria-label="3D view of the Nayan Eyewear showroom. The directory, search and section cards give the same information without the 3D view."
+      ></canvas>
+      <canvas id="plan-fallback" hidden aria-label="Floor plan of the showroom. Tap a section to browse it."></canvas>
+      <div id="labels" class="labels"></div>
+      <div id="pin" class="pin" hidden><span class="pin-label" id="pin-label"></span></div>
+      <div id="tooltip" class="tooltip" hidden></div>
+      <div id="fade" class="fade" aria-hidden="true"></div>
+
+      <header class="topbar glass">
+        <button class="brand" id="brand-btn" type="button" aria-label="Store details and settings">
+          <svg class="brand-mark" viewBox="0 0 48 22" aria-hidden="true">
+            <defs>
+              <linearGradient id="coatgrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#63cfae" />
+                <stop offset=".55" stop-color="#8a7dff" />
+                <stop offset="1" stop-color="#f2b46a" />
+              </linearGradient>
+            </defs>
+            <circle cx="11" cy="11" r="8.4" fill="url(#coatgrad)" opacity=".8" />
+            <circle cx="37" cy="11" r="8.4" fill="url(#coatgrad)" opacity=".8" />
+            <circle cx="11" cy="11" r="8.4" fill="none" stroke="currentColor" stroke-width="2.4" />
+            <circle cx="37" cy="11" r="8.4" fill="none" stroke="currentColor" stroke-width="2.4" />
+            <path
+              d="M19.6 10.2c1.6-1.7 7.2-1.7 8.8 0"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span class="brand-text"
+            ><span class="brand-name">NAYAN</span><span class="brand-sub">Eyewear &middot; Virtual showroom</span></span
+          >
+        </button>
+        <button
+          class="zone-pill"
+          id="zone-pill"
+          type="button"
+          aria-label="You are in this section. Open the store directory."
+        >
+          <span class="zone-dot" aria-hidden="true"></span>
+          <span class="zone-pill-text"
+            ><span class="eyebrow">You&rsquo;re in</span
+            ><span class="zone-pill-name" id="zone-name">Welcome &amp; Directory</span></span
+          >
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m7 10 5 5 5-5" />
+          </svg>
+        </button>
+        <nav class="actions" aria-label="Showroom tools">
+          <button class="icon-btn hide-sm" id="btn-tour" type="button" aria-pressed="false">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="m10 8.5 5.5 3.5-5.5 3.5z" /></svg
+            ><span>Tour</span>
+          </button>
+          <button class="icon-btn hide-sm" id="btn-dir" type="button">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+              <path d="M9 4v14M15 6v14" /></svg
+            ><span>Directory</span>
+          </button>
+          <button class="icon-btn" id="btn-search" type="button" aria-label="Find a frame">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16 16 4.5 4.5" /></svg
+            ><span class="hide-sm">Search</span>
+          </button>
+          <button class="icon-btn bag-btn" id="btn-bag" type="button" aria-label="Open your bag">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 8h14l-1 12H6L5 8z" />
+              <path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></svg
+            ><span class="hide-sm">Bag</span><span class="badge" id="bag-count" hidden>0</span>
+          </button>
+        </nav>
+      </header>
+
+      <section class="minimap glass" id="minimap" aria-label="Floor plan">
+        <div class="minimap-head">
+          <span class="eyebrow">Floor plan</span
+          ><button class="link-btn" id="minimap-open" type="button">Directory</button>
+        </div>
+        <canvas
+          id="minimap-canvas"
+          role="img"
+          aria-label="Floor plan with your position and view direction. Click a spot to walk there."
+        ></canvas>
+      </section>
+
+      <div class="dock" id="dock">
+        <section class="card glass" id="zonecard" hidden aria-live="polite">
+          <p class="eyebrow" id="zc-eyebrow">Section</p>
+          <h2 id="zc-title">Section</h2>
+          <p class="blurb" id="zc-blurb"></p>
+          <div class="card-actions" id="zc-actions"></div>
+          <button class="card-close" id="zc-close" type="button" aria-label="Hide section card">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </section>
+        <section class="card glass" id="tourcard" hidden aria-live="polite">
+          <div class="tc-head">
+            <p class="eyebrow" id="tc-step">Stop 1 of 10</p>
+            <button class="link-btn" id="tc-exit" type="button">End tour</button>
+          </div>
+          <h2 id="tc-title">Welcome</h2>
+          <p class="blurb" id="tc-text"></p>
+          <div class="card-actions" id="tc-extra"></div>
+          <div class="tc-controls">
+            <button class="btn small" id="tc-prev" type="button">
+              <svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 5l-7 7 7 7" /></svg
+              ><span>Back</span>
+            </button>
+            <button class="btn small" id="tc-play" type="button" aria-pressed="true"><span>Pause</span></button>
+            <span class="grow"></span>
+            <button class="btn small primary" id="tc-next" type="button">
+              <span>Next stop</span
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </button>
+          </div>
+          <div class="tc-progress" aria-hidden="true"><span id="tc-bar"></span></div>
+        </section>
+      </div>
+
+      <section class="welcome glass" id="welcome" aria-labelledby="welcome-title">
+        <p class="eyebrow">Virtual showroom &middot; Sample store</p>
+        <h1 id="welcome-title">Walk through Nayan Eyewear</h1>
+        <p class="lede" id="welcome-lede">
+          Ten sections, 41 frame styles and a working bag. Every frame is drawn from its real millimetre size.
+        </p>
+        <ul class="howto">
+          <li>
+            <span class="ic"
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 21c4-4 6.5-7.2 6.5-10.3a6.5 6.5 0 1 0-13 0C5.5 13.8 8 17 12 21z" />
+                <circle cx="12" cy="10.5" r="2.2" /></svg></span
+            ><span><b>Tap the floor</b> to walk there. The route goes around fixtures.</span>
+          </li>
+          <li>
+            <span class="ic"
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3" />
+                <path d="M18 3v4h-4M6 21v-4h4" /></svg></span
+            ><span><b>Drag</b> to look around. Pinch or scroll to zoom.</span>
+          </li>
+          <li>
+            <span class="ic"
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="7" cy="14" r="3.5" />
+                <circle cx="17" cy="14" r="3.5" />
+                <path d="M10.5 13.6c1-.8 2-.8 3 0M3.5 14 5 8.5M20.5 14 19 8.5" /></svg></span
+            ><span><b>Tap a frame</b> for colours, sizes and lenses.</span>
+          </li>
+        </ul>
+        <p class="status" id="status" role="status">
+          <span class="spinner" aria-hidden="true"></span><span id="status-text">Building the showroom&hellip;</span>
+        </p>
+        <div class="welcome-actions">
+          <button class="btn primary" id="w-tour" type="button">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="m10 8.5 5.5 3.5-5.5 3.5z" /></svg
+            ><span>Take the guided tour</span>
+          </button>
+          <button class="btn" id="w-explore" type="button"><span>Explore on my own</span></button>
+        </div>
+      </section>
+      <p class="hint" id="hint" hidden>Tap the floor to walk &middot; drag to look around</p>
+
+      <nav class="bottombar" aria-label="Showroom tools">
+        <button id="bb-dir" type="button">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+            <path d="M9 4v14M15 6v14" /></svg
+          ><span>Directory</span>
+        </button>
+        <button id="bb-tour" type="button" aria-pressed="false">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="m10 8.5 5.5 3.5-5.5 3.5z" /></svg
+          ><span>Tour</span>
+        </button>
+        <button id="bb-eye" type="button">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" />
+            <circle cx="12" cy="12" r="3" /></svg
+          ><span>Eye test</span>
+        </button>
+        <button id="bb-info" type="button">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v5.5M12 7.6v.1" /></svg
+          ><span>Info</span>
+        </button>
+      </nav>
+
+      <div class="scrim" id="scrim" hidden></div>
+      <aside class="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" aria-hidden="true" inert>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <header class="sheet-head">
+          <button class="icon-btn sq" id="sheet-back" type="button" aria-label="Back" hidden>
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </button>
+          <h2 id="sheet-title" tabindex="-1">Details</h2>
+          <button class="icon-btn sq" id="sheet-close" type="button" aria-label="Close">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </header>
+        <div class="sheet-body" id="sheet-body"></div>
+        <footer class="sheet-foot" id="sheet-foot" hidden></footer>
+      </aside>
+      <div class="toast" id="toast" role="status" hidden></div>
+    </div>
+
+    <noscript
+      ><p style="padding: 24px; font: 16px system-ui">
+        The virtual showroom needs JavaScript. Please turn it on and reload the page.
+      </p></noscript
+    >
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

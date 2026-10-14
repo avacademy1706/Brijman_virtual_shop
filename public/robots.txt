@@ -1,0 +1,6 @@
+# This prototype uses sample stock and a placeholder brand, so search engines are asked not to index it.
+# Before launch, replace the two lines below with:
+#   User-agent: *
+#   Allow: /
+User-agent: *
+Disallow: /
