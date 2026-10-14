@@ -1,9 +1,9 @@
 // Small DOM, formatting and storage helpers.
-import { NY } from '../core/ny.js';
+import { BM } from '../core/bm.js';
 
 /* ---------- Small helpers ---------- */
 const money = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
-NY.money = money;
+BM.money = money;
 const $ = (s, r) => (r || document).querySelector(s);
 function h(tag, attrs, ...kids) {
   const e = document.createElement(tag);

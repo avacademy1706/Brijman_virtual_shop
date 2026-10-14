@@ -1,4 +1,4 @@
-# Nayan Eyewear · Virtual Showroom
+# Brijman Eyewear · Virtual Showroom
 
 A walkable 3D eyewear showroom for the web. Visitors tap the floor to walk (the route goes around fixtures), drag to look around, and use the floor plan, directory, guided tour or search to find a section or frame. Tapping a frame opens its colours, size guide, lens options and prescription entry, and items go into a bag with a demo checkout.
 
@@ -6,7 +6,7 @@ It is a static site. It is built with [Vite](https://vite.dev) and [three.js](ht
 
 **Everything is in this folder:** the source code, the fonts (`src/assets/fonts`), the favicon, and every 3D model and texture from the showroom as `.glb` and `.png` files in [`assets-3d/`](assets-3d/README.md). That is the full store, 39 fixtures, all 92 frames in every colour, 7 contact lens and care products, a frame library and 23 textures. The only things downloaded during setup are the code libraries (three.js, Vite and Prettier), by `npm ci`.
 
-> **Sample data.** "Nayan Eyewear", the frames, prices and stock levels are placeholders. Checkout and eye-test booking are demos: they take no payment and create no booking. See [Customise for a client](#6-customise-for-a-client).
+> **Sample data.** "Brijman Eyewear", the frames, prices and stock levels are placeholders. Checkout and eye-test booking are demos: they take no payment and create no booking. See [Customise for a client](#6-customise-for-a-client).
 
 ---
 
@@ -30,7 +30,7 @@ npm -v
 
 ## 1. Open the project in VS Code
 
-1. Unzip `nayan-virtual-showroom.zip` somewhere simple, for example `C:\Projects\nayan-virtual-showroom`.
+1. Unzip `brijman-virtual-showroom.zip` somewhere simple, for example `C:\Projects\brijman-virtual-showroom`.
 2. In VS Code choose **File → Open Folder…** and pick that folder.
 3. When VS Code suggests the recommended extensions (Prettier, EditorConfig), click **Install**.
 4. Open a terminal with **Terminal → New Terminal** (or <kbd>Ctrl</kbd>+<kbd>`</kbd>).
@@ -63,7 +63,7 @@ npm run preview   # serves dist/ at http://localhost:4173
 
 Every push to GitHub then deploys automatically, and every pull request gets its own preview link.
 
-1. Create an empty **private** repository on GitHub, for example `nayan-virtual-showroom`.
+1. Create an empty **private** repository on GitHub, for example `brijman-virtual-showroom`.
 2. In the VS Code terminal, inside the project folder:
 
    ```bash
@@ -71,7 +71,7 @@ Every push to GitHub then deploys automatically, and every pull request gets its
    git add .
    git commit -m "Virtual showroom: first version"
    git branch -M main
-   git remote add origin https://github.com/YOUR-ACCOUNT/nayan-virtual-showroom.git
+   git remote add origin https://github.com/YOUR-ACCOUNT/brijman-virtual-showroom.git
    git push -u origin main
    ```
 
@@ -84,7 +84,7 @@ Every push to GitHub then deploys automatically, and every pull request gets its
    - Build Command: `npm run build`
    - Output Directory: `dist`
    - Environment Variables: **none needed**
-5. Click **Deploy**. After about a minute you get a link like `https://nayan-virtual-showroom.vercel.app`.
+5. Click **Deploy**. After about a minute you get a link like `https://brijman-virtual-showroom.vercel.app`.
 
 From now on, `git push` to `main` updates the live site.
 
@@ -106,17 +106,17 @@ In Vercel open the project, then **Settings → Domains → Add**, for example `
 
 ## 6. Customise for a client
 
-Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> and search for `Nayan` to find every place the placeholder brand appears.
+Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> and search for `Brijman` to find every place the placeholder brand appears.
 
 | To change                                          | Edit                                                                                                                                                                       |
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Store name, hours, services, address               | `src/data/store-layout.js` → `NY.STORE`                                                                                                                                    |
-| Section names, descriptions, tour text, tour order | `src/data/store-layout.js` → `NY.ZONES`, `NY.TOUR`, `NY.TOUR_TEXT`                                                                                                         |
-| Floor plan and fixture positions (metres)          | `src/data/store-layout.js` → `NY.L`                                                                                                                                        |
+| Store name, hours, services, address               | `src/data/store-layout.js` → `BM.STORE`                                                                                                                                    |
+| Section names, descriptions, tour text, tour order | `src/data/store-layout.js` → `BM.ZONES`, `BM.TOUR`, `BM.TOUR_TEXT`                                                                                                         |
+| Floor plan and fixture positions (metres)          | `src/data/store-layout.js` → `BM.L`                                                                                                                                        |
 | Frames, colours, sizes, prices                     | `src/data/catalogue.js` → the `F(...)` lines. Arguments: id, name, section, shape, material, price in ₹, `[lens, bridge, temple]` in mm, weight in g, colours, description |
-| Which frame sits on which shelf                    | `src/data/catalogue.js` → `NY.MERCH`                                                                                                                                       |
-| Lens types, coatings and their prices              | `src/data/catalogue.js` → `NY.LENS`                                                                                                                                        |
-| Frame shapes (outline maths)                       | `src/data/frames.js` → `NY.ARCH`, `NY.SHAPES`                                                                                                                              |
+| Which frame sits on which shelf                    | `src/data/catalogue.js` → `BM.MERCH`                                                                                                                                       |
+| Lens types, coatings and their prices              | `src/data/catalogue.js` → `BM.LENS`                                                                                                                                        |
+| Frame shapes (outline maths)                       | `src/data/frames.js` → `BM.ARCH`, `BM.SHAPES`                                                                                                                              |
 | Brand colours, fonts, spacing                      | `src/styles/main.css` → the `:root` block at the top                                                                                                                       |
 | Logo and title in the top bar, welcome text        | `index.html`                                                                                                                                                               |
 | Shop signs, directory screen, materials, lighting  | `src/scene/showroom.js`                                                                                                                                                    |
@@ -163,7 +163,7 @@ Frames are generated from their real millimetre sizes, so a 53□18-145 frame re
 ## Project structure
 
 ```
-nayan-virtual-showroom/
+brijman-virtual-showroom/
 ├─ index.html               Page shell: top bar, floor-plan card, section and tour cards, detail sheet
 ├─ assets-3d/               Every 3D model (.glb) and texture (.png), with catalogue.csv and its own README
 │  ├─ showroom/             The complete store with all products placed
@@ -175,7 +175,7 @@ nayan-virtual-showroom/
 ├─ src/
 │  ├─ main.js               Entry: fonts, styles, UI, then the 3D scene as a separate chunk
 │  ├─ assets/fonts/         Hanken Grotesk, Martian Mono and Unbounded (woff2) with licences
-│  ├─ core/ny.js            Shared namespace for data and the UI ↔ 3D bridge
+│  ├─ core/bm.js            Shared namespace for data and the UI ↔ 3D bridge
 │  ├─ data/
 │  │  ├─ store-layout.js    Store details, floor plan, sections, tour, fixture footprints
 │  │  ├─ frames.js          Frame shapes and the lens outline generator

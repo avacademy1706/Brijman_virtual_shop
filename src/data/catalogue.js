@@ -1,5 +1,5 @@
 // Sample catalogue, shelf merchandising, lens options and pricing (INR). Replace with the client's stock.
-import { NY } from '../core/ny.js';
+import { BM } from '../core/bm.js';
 
 import './frames.js';
 
@@ -588,7 +588,7 @@ F(
 // Contacts and care
 K(
   'c01',
-  'Nayan Daily 1-Day',
+  'Brijman Daily 1-Day',
   'contacts',
   '#3f88c5',
   [
@@ -600,7 +600,7 @@ K(
 );
 K(
   'c02',
-  'Nayan Monthly Comfort',
+  'Brijman Monthly Comfort',
   'contacts',
   '#2f9a7f',
   [
@@ -612,7 +612,7 @@ K(
 );
 K(
   'c03',
-  'Nayan Toric Daily',
+  'Brijman Toric Daily',
   'contacts',
   '#8b5fbf',
   [{ n: '30 lenses', p: 2150 }],
@@ -621,7 +621,7 @@ K(
 );
 K(
   'c04',
-  'Nayan Colour Tones',
+  'Brijman Colour Tones',
   'contacts',
   '#c56b4f',
   [
@@ -652,14 +652,14 @@ K(
   [{ n: 'Kit', p: 250 }],
   'Two cases, tweezers and a mirror in a travel pouch.',
 );
-NY.PRODUCTS = P;
-NY.byId = {};
+BM.PRODUCTS = P;
+BM.byId = {};
 P.forEach((p) => {
-  NY.byId[p.id] = p;
+  BM.byId[p.id] = p;
 });
 
 /* Which product sits on which shelf (lowest shelf first). */
-NY.MERCH = {
+BM.MERCH = {
   men: [
     ['m03', 'm04', 'm11', 'm08'],
     ['m07', 'm01', 'm02', 'm12'],
@@ -701,7 +701,7 @@ NY.MERCH = {
 };
 
 /* ---------- Lenses and pricing ---------- */
-NY.LENS = {
+BM.LENS = {
   types: [
     { id: 'zero', n: 'Zero power', d: 'No prescription. Anti-glare lenses for screens or style.', p: 0 },
     { id: 'sv', n: 'Single vision', d: 'One power, for distance or for reading.', p: 1200 },
@@ -729,9 +729,9 @@ NY.LENS = {
     { id: 'test', n: 'Book a free eye test first', d: 'We hold the frame until your test.' },
   ],
 };
-NY.colorOf = (p, ci) =>
+BM.colorOf = (p, ci) =>
   p.colors ? p.colors[(((ci || 0) % p.colors.length) + p.colors.length) % p.colors.length] : null;
-NY.lensRules = (p) => {
+BM.lensRules = (p) => {
   if (p.type !== 'frame') return null;
   if (p.sun) return { mode: 'sun' };
   const kids = p.zone === 'kids';
@@ -741,47 +741,47 @@ NY.lensRules = (p) => {
     index: kids ? ['156', '160'] : ['156', '160', '167', '174'],
   };
 };
-NY.defaultCfg = (p) => {
+BM.defaultCfg = (p) => {
   if (p.type !== 'frame') return { pack: 0 };
   if (p.sun) return { sunlens: 'plano', rx: 'later' };
   return { type: 'zero', index: '156', coats: [], rx: 'later' };
 };
-NY.needsRx = (p, cfg) => p.type === 'frame' && (p.sun ? cfg.sunlens === 'rxsun' : cfg.type !== 'zero');
-NY.needsAdd = (p, cfg) => p.type === 'frame' && !p.sun && (cfg.type === 'bf' || cfg.type === 'pg');
-NY.priceOf = (p, cfg) => {
+BM.needsRx = (p, cfg) => p.type === 'frame' && (p.sun ? cfg.sunlens === 'rxsun' : cfg.type !== 'zero');
+BM.needsAdd = (p, cfg) => p.type === 'frame' && !p.sun && (cfg.type === 'bf' || cfg.type === 'pg');
+BM.priceOf = (p, cfg) => {
   if (p.type !== 'frame') return p.packs[cfg.pack || 0].p;
   let t = p.price;
   if (p.sun) return t + (cfg.sunlens === 'rxsun' ? 2900 : 0);
-  const ty = NY.LENS.types.find((x) => x.id === cfg.type) || NY.LENS.types[0];
+  const ty = BM.LENS.types.find((x) => x.id === cfg.type) || BM.LENS.types[0];
   t += ty.p;
   if (cfg.type !== 'zero') {
-    const ix = NY.LENS.index.find((x) => x.id === cfg.index);
+    const ix = BM.LENS.index.find((x) => x.id === cfg.index);
     if (ix) t += ix.p;
   }
   for (const c of cfg.coats || []) {
-    const co = NY.LENS.coats.find((x) => x.id === c);
+    const co = BM.LENS.coats.find((x) => x.id === c);
     if (co) t += co.p;
   }
   return t;
 };
-NY.cfgSummary = (p, cfg) => {
+BM.cfgSummary = (p, cfg) => {
   if (p.type !== 'frame') return p.packs[cfg.pack || 0].n;
   const parts = [];
   if (p.sun)
     parts.push(cfg.sunlens === 'rxsun' ? 'Prescription sun lenses' : 'UV400 lenses' + (p.polar ? ', polarised' : ''));
   else {
-    const ty = NY.LENS.types.find((x) => x.id === cfg.type);
+    const ty = BM.LENS.types.find((x) => x.id === cfg.type);
     parts.push(ty ? ty.n : 'Zero power');
     if (cfg.type !== 'zero') {
-      const ix = NY.LENS.index.find((x) => x.id === cfg.index);
+      const ix = BM.LENS.index.find((x) => x.id === cfg.index);
       if (ix) parts.push(ix.n);
     }
     for (const c of cfg.coats || []) {
-      const co = NY.LENS.coats.find((x) => x.id === c);
+      const co = BM.LENS.coats.find((x) => x.id === c);
       if (co) parts.push(co.n);
     }
   }
-  if (NY.needsRx(p, cfg))
+  if (BM.needsRx(p, cfg))
     parts.push(
       cfg.rx === 'now' ? 'Prescription entered' : cfg.rx === 'test' ? 'Eye test first' : 'Prescription to follow',
     );

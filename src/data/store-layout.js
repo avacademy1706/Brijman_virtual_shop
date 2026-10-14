@@ -1,11 +1,11 @@
 // Store identity, floor plan (metres), sections and the guided tour. Edit this file to change the layout copy.
-import { NY } from '../core/ny.js';
+import { BM } from '../core/bm.js';
 
 /* =====================================================================
    SAMPLE STORE DATA. Replace with the client's brand and catalogue.
    ===================================================================== */
-NY.STORE = {
-  name: 'Nayan Eyewear',
+BM.STORE = {
+  name: 'Brijman Eyewear',
   tagline: 'Opticians and eyewear studio',
   hours: 'Open daily, 10:30 am to 9:00 pm',
   address: 'Sample showroom. Replace with the client’s address.',
@@ -18,7 +18,7 @@ NY.STORE = {
 };
 
 /* Floor plan in metres. x runs left to right, z runs back (-8) to entrance (+8). */
-NY.L = {
+BM.L = {
   x0: -11,
   x1: 11,
   z0: -8,
@@ -71,7 +71,7 @@ NY.L = {
   rug: { x: 0, z: 0.6, r: 2.0 },
 };
 
-NY.ZONES = [
+BM.ZONES = [
   {
     id: 'welcome',
     name: 'Welcome & Directory',
@@ -164,8 +164,8 @@ NY.ZONES = [
     blurb: 'Every frame gets a free fitting here. Review your bag and pay at the counter or online.',
   },
 ];
-NY.TOUR = ['welcome', 'kids', 'men', 'sun', 'contacts', 'premium', 'eyetest', 'lensbar', 'women', 'checkout'];
-NY.TOUR_TEXT = {
+BM.TOUR = ['welcome', 'kids', 'men', 'sun', 'contacts', 'premium', 'eyetest', 'lensbar', 'women', 'checkout'];
+BM.TOUR_TEXT = {
   welcome:
     'This is the entrance. The directory screen on your left maps every section, and the concierge desk handles repairs and collections.',
   kids: 'Kids’ frames are flexible TR90, sized for ages 3 to 12. The low shelf keeps them at a child’s eye level.',
@@ -179,13 +179,13 @@ NY.TOUR_TEXT = {
   women: 'Cat-eye, round and oversized shapes in tortoise, crystal and fine metal.',
   checkout: 'Frames get a free fitting at the counter. Your bag and checkout are one tap away.',
 };
-NY.zoneById = (id) => NY.ZONES.find((z) => z.id === id) || null;
-NY.zoneAt = (x, z) =>
-  NY.ZONES.find((zn) => x >= zn.rect[0] && x <= zn.rect[2] && z >= zn.rect[1] && z <= zn.rect[3]) || null;
+BM.zoneById = (id) => BM.ZONES.find((z) => z.id === id) || null;
+BM.zoneAt = (x, z) =>
+  BM.ZONES.find((zn) => x >= zn.rect[0] && x <= zn.rect[2] && z >= zn.rect[1] && z <= zn.rect[3]) || null;
 
 /* Fixture footprints, shared by the 3D builder, the walk planner and the floor plan. */
-NY.obstacles = function () {
-  const L = NY.L,
+BM.obstacles = function () {
+  const L = BM.L,
     o = [];
   const r = (x0, z0, x1, z1, k) =>
     o.push({ t: 'r', x0: Math.min(x0, x1), z0: Math.min(z0, z1), x1: Math.max(x0, x1), z1: Math.max(z0, z1), k });
@@ -230,4 +230,4 @@ NY.obstacles = function () {
   c(L.mirrorStool[0], L.mirrorStool[1], 0.2, 'stool');
   return o;
 };
-NY.OBS = NY.obstacles();
+BM.OBS = BM.obstacles();

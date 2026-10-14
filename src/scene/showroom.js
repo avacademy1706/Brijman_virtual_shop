@@ -4,20 +4,20 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-import { NY } from '../core/ny.js';
+import { BM } from '../core/bm.js';
 start().catch((err) => {
   console.error(err);
-  if (NY && NY.fail3D) NY.fail3D(err);
+  if (BM && BM.fail3D) BM.fail3D(err);
 });
 
 async function start() {
-  if (!NY || !NY.L) throw new Error('Showroom data missing');
-  const L = NY.L,
+  if (!BM || !BM.L) throw new Error('Showroom data missing');
+  const L = BM.L,
     H = L.H,
     EYE = 1.62;
   const V2 = THREE.Vector2,
     V3 = THREE.Vector3;
-  const RM = !!NY.reduceMotion;
+  const RM = !!BM.reduceMotion;
   const canvas = document.getElementById('scene');
   const coarse = window.matchMedia('(pointer: coarse)').matches;
 
@@ -25,7 +25,7 @@ async function start() {
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   } catch (e) {
-    NY.fail3D(e);
+    BM.fail3D(e);
     return;
   }
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -334,7 +334,7 @@ async function start() {
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.font = '600 50px "Unbounded", "Avenir Next", sans-serif';
-    g.fillText('NAYAN', W / 2, 96);
+    g.fillText('BRIJMAN', W / 2, 96);
     g.font = '500 18px "Martian Mono", ui-monospace, monospace';
     g.fillStyle = '#9fcbbc';
     g.fillText('STORE DIRECTORY', W / 2, 148);
@@ -342,7 +342,7 @@ async function start() {
       mh = (mw * 16) / 22;
     g.save();
     g.translate(28, 190);
-    const m = NY.drawPlan(g, mw, mh, {
+    const m = BM.drawPlan(g, mw, mh, {
       colors: {
         floor: '#1f4c42',
         zone: '#25594c',
@@ -368,8 +368,8 @@ async function start() {
     g.fillText('●  YOU ARE HERE', 40, 190 + mh + 34);
     let y = 190 + mh + 84;
     g.font = '600 24px "Hanken Grotesk", system-ui, sans-serif';
-    NY.TOUR.forEach((id, i) => {
-      const z = NY.zoneById(id);
+    BM.TOUR.forEach((id, i) => {
+      const z = BM.zoneById(id);
       g.fillStyle = '#9fcbbc';
       g.font = '500 16px "Martian Mono", ui-monospace, monospace';
       g.fillText(String(i + 1).padStart(2, '0'), 40, y);
@@ -764,7 +764,7 @@ async function start() {
   // exterior
   plane('pavement', 60, 24, 0, -0.02, L.z1 + 12, -Math.PI / 2);
   plane('outside', 70, 24, 0, 8, L.z1 + 20, 0, Math.PI);
-  sign('NAYAN EYEWEAR', { w: 3.4, h: 0.3, color: '#efe6d2', track: 0.22 }, 0, H - 0.2, L.z1 - 0.055, Math.PI);
+  sign('BRIJMAN EYEWEAR', { w: 3.4, h: 0.3, color: '#efe6d2', track: 0.22 }, 0, H - 0.2, L.z1 - 0.055, Math.PI);
 
   // ceiling lights
   {
@@ -1229,7 +1229,7 @@ async function start() {
     return out;
   }
   function buildArch(a) {
-    const base = NY.outline(a.shape, a.A, a.B, 56).map((p) => new V2(p.x, p.y));
+    const base = BM.outline(a.shape, a.A, a.B, 56).map((p) => new V2(p.x, p.y));
     const style = a.style,
       th = a.thick || 1;
     const rimT = style === 'acetate' ? 0.0042 * th : 0.0012;
@@ -1278,7 +1278,7 @@ async function start() {
         g.applyMatrix4(m);
         met.push(g);
         if (style === 'combo') {
-          const idx = NY.topArc(pts, a.B * 0.06);
+          const idx = BM.topArc(pts, a.B * 0.06);
           if (idx.length > 2) {
             const outer = offsetPts(pts, 0.0058);
             const shape = new THREE.Shape(idx.map((i) => outer[i]).concat(idx.map((i) => pts[i]).reverse()));
@@ -1394,7 +1394,7 @@ async function start() {
     return res;
   }
   const ARCHGEO = {};
-  const archGeo = (id) => ARCHGEO[id] || (ARCHGEO[id] = buildArch(NY.ARCH[id]));
+  const archGeo = (id) => ARCHGEO[id] || (ARCHGEO[id] = buildArch(BM.ARCH[id]));
 
   const phys = (o) => new THREE.MeshPhysicalMaterial(o);
   const FM = {
@@ -1453,11 +1453,11 @@ async function start() {
   const records = [];
   const jit = rng(99);
   function addDisplay(pid, ci, slot) {
-    const p = NY.byId[pid];
+    const p = BM.byId[pid];
     if (!p) return null;
-    const a = NY.ARCH[p.arch],
+    const a = BM.ARCH[p.arch],
       G = archGeo(p.arch),
-      col = NY.colorOf(p, ci);
+      col = BM.colorOf(p, ci);
     const scale = p.size[0] / 1000 / a.A;
     const yLift = -G.minY * scale + 0.0015;
     const ry = slot.ry + (jit() - 0.5) * 0.08;
@@ -1481,11 +1481,11 @@ async function start() {
     const per = Math.ceil(row.length / pids.length);
     row.forEach((s, i) => {
       const pi = Math.min(pids.length - 1, Math.floor(i / per));
-      const p = NY.byId[pids[pi]];
+      const p = BM.byId[pids[pi]];
       if (p) addDisplay(p.id, (i - pi * per) % p.colors.length, s);
     });
   }
-  const MR = NY.MERCH;
+  const MR = BM.MERCH;
   rowsMen.forEach((rows, b) => rows.forEach((row, s) => placeRow(row, [MR.men[b][s]])));
   rowsWomen.forEach((rows, b) => rows.forEach((row, s) => placeRow(row, [MR.women[b][s]])));
   rowsSun.forEach((row, i) => placeRow(row, MR.sun[i]));
@@ -1538,7 +1538,7 @@ async function start() {
       case: { geo: caseGeo, mat: std({ color: 0xffffff, roughness: 0.5 }), items: [] },
     };
     function cluster(pid, base, ry) {
-      const p = NY.byId[pid];
+      const p = BM.byId[pid];
       if (!p) return;
       const kind = p.type === 'contacts' ? 'box' : pid === 'c05' ? 'bottle' : pid === 'c06' ? 'small' : 'case';
       const rx = new V3(Math.cos(ry), 0, -Math.sin(ry)),
@@ -1637,7 +1637,7 @@ async function start() {
           z = L.z0 + (r + 0.5) * cell;
         let b = x < L.x0 + R || x > L.x1 - R || z < L.z0 + R || z > L.z1 - R;
         if (!b)
-          for (const o of NY.OBS) {
+          for (const o of BM.OBS) {
             if (o.t === 'r') {
               if (x > o.x0 - R && x < o.x1 + R && z > o.z0 - R && z < o.z1 + R) {
                 b = true;
@@ -1824,7 +1824,7 @@ async function start() {
     keepAlive = 0,
     paused = false,
     labelsOn = true;
-  let curZone = (NY.zoneAt(nav.x, nav.z) || {}).id || null;
+  let curZone = (BM.zoneAt(nav.x, nav.z) || {}).id || null;
   const kick = (ms) => {
     keepAlive = Math.max(keepAlive, performance.now() + (ms || 400));
   };
@@ -1861,12 +1861,12 @@ async function start() {
   const fadeEl = document.getElementById('fade');
 
   function updateZone(force) {
-    const z = NY.zoneAt(nav.x, nav.z),
+    const z = BM.zoneAt(nav.x, nav.z),
       id = z ? z.id : null;
     if (id !== curZone) {
       curZone = id;
-      if (NY.onZoneChange) NY.onZoneChange(id);
-    } else if (force && NY.onZoneChange) NY.onZoneChange(id);
+      if (BM.onZoneChange) BM.onZoneChange(id);
+    } else if (force && BM.onZoneChange) BM.onZoneChange(id);
   }
   function arrive() {
     nav.moving = false;
@@ -1875,7 +1875,7 @@ async function start() {
     nav.info = null;
     updateZone(false);
     if (info.reason === 'product' && info.rec) highlight(info.rec);
-    if (NY.onArrive) NY.onArrive({ zone: curZone, reason: info.reason, id: info.id, tag: info.tag });
+    if (BM.onArrive) BM.onArrive({ zone: curZone, reason: info.reason, id: info.id, tag: info.tag });
     kick(700);
   }
   function teleport(end, look) {
@@ -1906,12 +1906,12 @@ async function start() {
     if (!end) return false;
     const pts = findPath(new V2(nav.x, nav.z), end);
     if (!pts) {
-      if (NY.toast) NY.toast('That spot can’t be reached from here.');
+      if (BM.toast) BM.toast('That spot can’t be reached from here.');
       return false;
     }
     nav.info = info || { reason: 'point' };
     const endLook = look ? yawPitch(end.x, end.y, look) : null;
-    if (NY.settings && NY.settings.move === 'jump') return teleport(end, endLook);
+    if (BM.settings && BM.settings.move === 'jump') return teleport(end, endLook);
     const cum = [0];
     for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
     const len = cum[cum.length - 1];
@@ -1988,7 +1988,7 @@ async function start() {
       drag.active = false;
       pinch = { d: pdist(), z: zoom };
     }
-    if (NY.onUserNav) NY.onUserNav('down');
+    if (BM.onUserNav) BM.onUserNav('down');
     kick();
   });
   canvas.addEventListener('pointermove', (e) => {
@@ -2065,15 +2065,15 @@ async function start() {
     const o = hit.object;
     if (o.userData.recs) {
       const rec = o.userData.recs[hit.instanceId];
-      if (rec && NY.onProductTap) {
+      if (rec && BM.onProductTap) {
         nav.turn = yawPitch(nav.x, nav.z, rec.center);
         kick();
-        NY.onProductTap(rec.pid, rec.ci);
+        BM.onProductTap(rec.pid, rec.ci);
       }
       return;
     }
     if (o.userData.action) {
-      if (NY.onFeatureTap) NY.onFeatureTap(o.userData.action);
+      if (BM.onFeatureTap) BM.onFeatureTap(o.userData.action);
       return;
     }
     let x = hit.point.x,
@@ -2087,7 +2087,7 @@ async function start() {
       x += (dx / d) * 0.95;
       z += (dz / d) * 0.95;
     }
-    if (NY.onUserNav) NY.onUserNav('walk');
+    if (BM.onUserNav) BM.onUserNav('walk');
     goTo(x, z, look, { reason: 'point' });
   }
 
@@ -2105,9 +2105,9 @@ async function start() {
     bag: '<b>Checkout counter</b>Click to open your bag',
   };
   function tipFor(rec) {
-    const p = NY.byId[rec.pid];
-    if (p.type !== 'frame') return '<b>' + esc(p.name) + '</b>from ' + NY.money(Math.min(...p.packs.map((x) => x.p)));
-    return '<b>' + esc(p.name) + '</b>' + esc(NY.colorOf(p, rec.ci).n) + ' · ' + NY.money(p.price);
+    const p = BM.byId[rec.pid];
+    if (p.type !== 'frame') return '<b>' + esc(p.name) + '</b>from ' + BM.money(Math.min(...p.packs.map((x) => x.p)));
+    return '<b>' + esc(p.name) + '</b>' + esc(BM.colorOf(p, rec.ci).n) + ' · ' + BM.money(p.price);
   }
   function showTip(cx, cy, html) {
     const r = appEl.getBoundingClientRect();
@@ -2197,7 +2197,7 @@ async function start() {
     nav.moving = false;
     nav.turn = null;
     dest.visible = false;
-    if (NY.onUserNav) NY.onUserNav('keys');
+    if (BM.onUserNav) BM.onUserNav('keys');
     kick();
   });
   window.addEventListener('keyup', (e) => {
@@ -2216,8 +2216,8 @@ async function start() {
   function highlight(rec) {
     if (pulse) setPose(pulse.rec, 0);
     pulse = { rec, until: performance.now() + 6500 };
-    const p = NY.byId[rec.pid];
-    pinLabel.textContent = p.name + (p.type === 'frame' ? ' · ' + NY.colorOf(p, rec.ci).n : '');
+    const p = BM.byId[rec.pid];
+    pinLabel.textContent = p.name + (p.type === 'frame' ? ' · ' + BM.colorOf(p, rec.ci).n : '');
     pinEl.hidden = false;
     kick(6600);
   }
@@ -2248,7 +2248,7 @@ async function start() {
      Floating section labels
      ------------------------------------------------------------------ */
   const labelsEl = document.getElementById('labels');
-  const labels = NY.ZONES.map((z) => {
+  const labels = BM.ZONES.map((z) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'zlabel';
@@ -2256,7 +2256,7 @@ async function start() {
     b.innerHTML = '<i aria-hidden="true"></i><span>' + esc(z.short) + '</span>';
     b.setAttribute('aria-label', 'Walk to ' + z.name);
     b.addEventListener('click', () => {
-      if (NY.onUserNav) NY.onUserNav('label');
+      if (BM.onUserNav) BM.onUserNav('label');
       goTo(z.view.p[0], z.view.p[1], new V3(z.view.t[0], z.view.t[1], z.view.t[2]), { reason: 'zone', id: z.id });
     });
     labelsEl.appendChild(b);
@@ -2337,9 +2337,9 @@ async function start() {
     return VW;
   }
   function buildViewerModel(pid, ci) {
-    const p = NY.byId[pid],
+    const p = BM.byId[pid],
       G = archGeo(p.arch),
-      col = NY.colorOf(p, ci);
+      col = BM.colorOf(p, ci);
     for (const m of VW.mats) m.dispose();
     VW.mats = [];
     VW.group.clear();
@@ -2349,7 +2349,7 @@ async function start() {
       VW.mats.push(mat);
       VW.group.add(new THREE.Mesh(G[pt.part], mat));
     }
-    VW.group.scale.setScalar(p.size[0] / 1000 / NY.ARCH[p.arch].A);
+    VW.group.scale.setScalar(p.size[0] / 1000 / BM.ARCH[p.arch].A);
   }
   function sizeViewer() {
     if (!VW || !VW.el) return;
@@ -2432,7 +2432,7 @@ async function start() {
   }
   let slow = 0;
   function adapt(dt) {
-    if (!NY.settings || NY.settings.quality !== 'auto') return;
+    if (!BM.settings || BM.settings.quality !== 'auto') return;
     if (dt > 1 / 36) slow++;
     else slow = Math.max(0, slow - 1);
     if (slow > 40 && QUAL.dpr > 1) {
@@ -2518,7 +2518,7 @@ async function start() {
       }
     } else if (walked && performance.now() - walkedAt > 500) {
       walked = false;
-      if (NY.onArrive) NY.onArrive({ zone: curZone, reason: 'walk' });
+      if (BM.onArrive) BM.onArrive({ zone: curZone, reason: 'walk' });
     }
     if (pulse) {
       act = true;
@@ -2541,7 +2541,7 @@ async function start() {
     needs = false;
     updateLabels();
     updatePin();
-    if ((frameN++ & 1) === 0 && NY.onPose) NY.onPose(pose());
+    if ((frameN++ & 1) === 0 && BM.onPose) BM.onPose(pose());
   }
   let last = performance.now();
   function loop(now) {
@@ -2561,7 +2561,7 @@ async function start() {
 
   canvas.addEventListener('webglcontextlost', (e) => {
     e.preventDefault();
-    if (NY.toast) NY.toast('The 3D view paused. It resumes when the browser restores it.');
+    if (BM.toast) BM.toast('The 3D view paused. It resumes when the browser restores it.');
   });
   canvas.addEventListener('webglcontextrestored', () => {
     renderer.shadowMap.needsUpdate = true;
@@ -2578,13 +2578,13 @@ async function start() {
       kick();
     }).observe(canvas);
 
-  applyQuality((NY.settings && NY.settings.quality) || 'auto');
+  applyQuality((BM.settings && BM.settings.quality) || 'auto');
   if (camera.aspect < 0.75) nav.pitch = -0.13;
   render();
 
-  NY.attach3D({
+  BM.attach3D({
     goZone(id, tag) {
-      const z = NY.zoneById(id);
+      const z = BM.zoneById(id);
       if (!z) return;
       goTo(z.view.p[0], z.view.p[1], new V3(z.view.t[0], z.view.t[1], z.view.t[2]), { reason: 'zone', id, tag });
     },

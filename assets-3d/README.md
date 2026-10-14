@@ -6,10 +6,10 @@ The website does **not** load these files. It builds the same store, fixtures an
 
 | Folder | Contents | Files |
 | --- | --- | --- |
-| `showroom/` | `Nayan_Showroom.glb`: the complete store with every fixture and all 188 products on display, grouped by fixture and by section | 1 |
+| `showroom/` | `Brijman_Showroom.glb`: the complete store with every fixture and all 188 products on display, grouped by fixture and by section | 1 |
 | `fixtures/` | Each fixture on its own, moved to its own floor point: wall bays, sunglasses island, lens bar, vitrines, eye test room, counters, desk, totem, stools, plants, shell, storefront, lighting, signs | 39 |
 | `frames/<Section>/` | Every frame style in every colour, one file each, at true size. Named `SKU_Name_Colour.glb` | 92 |
-| `frames/Nayan_Frame_Library.glb` | All 92 frames on one grid: rows are styles, columns are colours, 220 mm apart | 1 |
+| `frames/Brijman_Frame_Library.glb` | All 92 frames on one grid: rows are styles, columns are colours, 220 mm apart | 1 |
 | `products/` | Contact lens boxes and lens care products (solution, drops, case kit), one unit each | 7 |
 | `textures/` | Source textures as PNG: terrazzo, walnut, oak, tortoise (havana and honey), fluted panel normal map, Snellen chart, directory screen, lens bar screen, box label, soft shadow masks | 13 |
 | `textures/signs/` | Every shop sign as a transparent PNG | 10 |
@@ -34,7 +34,7 @@ Run `npm run assets:check` to confirm every file in the catalogue is present.
 | 3ds Max | Use File → Import if your version lists glTF. Otherwise import into Blender and export FBX. |
 | Unreal Engine 5 | Drag the `.glb` into the Content Browser (glTF import through Interchange). Import fixtures and frames separately for the cleanest result. |
 | Unity | Add the glTFast package, then drag the `.glb` into Assets. |
-| Web (three.js) | `new GLTFLoader().load('/models/NY-M01_Arlo_Jet_black.glb', …)` after copying the file to `public/models/` |
+| Web (three.js) | `new GLTFLoader().load('/models/BM-M01_Arlo_Jet_black.glb', …)` after copying the file to `public/models/` |
 
 ## Not included
 
@@ -44,4 +44,4 @@ Run `npm run assets:check` to confirm every file in the catalogue is present.
 
 ## Sample data
 
-The brand "Nayan Eyewear", the frame names, prices and SKUs are placeholders. These files match the sample catalogue. When `src/data/catalogue.js` changes, the website updates by itself, but these model files need to be exported again.
+The brand "Brijman Eyewear", the frame names, prices and SKUs are placeholders. These files match the sample catalogue. When `src/data/catalogue.js` changes, the website updates by itself, but these model files need to be exported again.

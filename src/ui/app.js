@@ -1,19 +1,19 @@
 // Showroom interface: welcome, section cards, guided tour, detail sheet, search, bag, checkout and floor plan.
-import { NY } from '../core/ny.js';
+import { BM } from '../core/bm.js';
 import '../data/store-layout.js';
 import '../data/frames.js';
 import '../data/catalogue.js';
 import { money, $, h, ic, store, esc } from '../lib/dom.js';
 import { drawYou } from '../lib/drawings.js';
 
-const RM = NY.reduceMotion;
+const RM = BM.reduceMotion;
 void esc;
 
 /* =====================================================================
    UI STATE
    ===================================================================== */
 const S = {
-  cart: (store.get('ny-bag-v1', []) || []).filter((l) => l && NY.byId[l.pid]),
+  cart: (store.get('bm-bag-v1', []) || []).filter((l) => l && BM.byId[l.pid]),
   stack: [],
   zone: 'welcome',
   has3D: false,
@@ -23,14 +23,14 @@ const S = {
   lastFocus: null,
   cardDismissed: null,
 };
-S.settings = Object.assign({ move: RM ? 'jump' : 'walk', quality: 'auto', labels: true }, store.get('ny-settings', {}));
-NY.settings = S.settings;
+S.settings = Object.assign({ move: RM ? 'jump' : 'walk', quality: 'auto', labels: true }, store.get('bm-settings', {}));
+BM.settings = S.settings;
 const saveCart = () =>
   store.set(
-    'ny-bag-v1',
+    'bm-bag-v1',
     S.cart.map((l) => ({ key: l.key, pid: l.pid, ci: l.ci, cfg: l.cfg, qty: l.qty, unit: l.unit })),
   );
-const saveSettings = () => store.set('ny-settings', S.settings);
+const saveSettings = () => store.set('bm-settings', S.settings);
 
 const app = $('#app'),
   sheet = $('#sheet'),
@@ -38,7 +38,7 @@ const app = $('#app'),
   sheetFoot = $('#sheet-foot'),
   scrim = $('#scrim');
 const isNarrow = () => window.matchMedia('(max-width: 760px)').matches;
-const api = () => (S.has3D ? NY.api : null);
+const api = () => (S.has3D ? BM.api : null);
 
 let toastT = null;
 function toast(msg) {
@@ -50,7 +50,7 @@ function toast(msg) {
     t.hidden = true;
   }, 2400);
 }
-NY.toast = toast;
+BM.toast = toast;
 
 function updateBadge() {
   const n = S.cart.reduce((a, l) => a + l.qty, 0),
@@ -95,10 +95,10 @@ function hideWelcome(showHint) {
 
 /* ---------- Current zone ---------- */
 function setZoneName(id) {
-  const z = NY.zoneById(id);
+  const z = BM.zoneById(id);
   $('#zone-name').textContent = z ? z.name : 'Showroom floor';
 }
-NY.onZoneChange = (id) => {
+BM.onZoneChange = (id) => {
   S.zone = id;
   setZoneName(id);
   drawMinimap();
@@ -106,11 +106,11 @@ NY.onZoneChange = (id) => {
 
 /* ---------- Zone card ---------- */
 function zoneCount(id) {
-  return NY.PRODUCTS.filter((p) => p.zone === id).length;
+  return BM.PRODUCTS.filter((p) => p.zone === id).length;
 }
 function nextZone(id) {
-  const i = NY.TOUR.indexOf(id);
-  return NY.TOUR[(i + 1) % NY.TOUR.length];
+  const i = BM.TOUR.indexOf(id);
+  return BM.TOUR[(i + 1) % BM.TOUR.length];
 }
 function btn(label, opts) {
   opts = opts || {};
@@ -126,7 +126,7 @@ function btn(label, opts) {
 }
 function zoneActions(z) {
   const acts = [];
-  const nz = NY.zoneById(nextZone(z.id));
+  const nz = BM.zoneById(nextZone(z.id));
   const next = btn('Next: ' + nz.short, { icon: 'arrow', onclick: () => goZone(nz.id) });
   switch (z.id) {
     case 'welcome':
@@ -163,14 +163,14 @@ function zoneActions(z) {
 }
 function showZoneCard(id) {
   if (S.tour.on) return;
-  const z = NY.zoneById(id),
+  const z = BM.zoneById(id),
     card = $('#zonecard');
   if (!z) {
     card.hidden = true;
     return;
   }
-  const idx = NY.TOUR.indexOf(z.id) + 1;
-  let eb = 'Section ' + idx + ' of ' + NY.TOUR.length;
+  const idx = BM.TOUR.indexOf(z.id) + 1;
+  let eb = 'Section ' + idx + ' of ' + BM.TOUR.length;
   const n = zoneCount(z.id);
   if (n) eb += ' · ' + n + (z.id === 'contacts' ? ' products' : ' styles');
   $('#zc-eyebrow').textContent = eb;
@@ -189,7 +189,7 @@ $('#zc-close').addEventListener('click', () => {
 function goZone(id, tag) {
   const a = api();
   if (!a) {
-    const z = NY.zoneById(id);
+    const z = BM.zoneById(id);
     if (z) openSheet(zoneSheet(id), { zone: id });
     return;
   }
@@ -214,7 +214,7 @@ function locate(pid, ci) {
   a.goProduct(pid, ci);
 }
 
-NY.onArrive = (info) => {
+BM.onArrive = (info) => {
   if (S.tour.on && info.tag === 'tour') {
     tourArrived();
     return;
@@ -231,16 +231,16 @@ NY.onArrive = (info) => {
     showZoneCard(info.zone);
   }
 };
-NY.onUserNav = () => {
+BM.onUserNav = () => {
   hideWelcome(true);
   if (S.tour.on && S.tour.playing) pauseTour();
 };
-NY.onProductTap = (pid, ci) => {
+BM.onProductTap = (pid, ci) => {
   hideWelcome(false);
   pauseTour();
   openSheet('product', { pid, ci });
 };
-NY.onFeatureTap = (action) => {
+BM.onFeatureTap = (action) => {
   hideWelcome(false);
   pauseTour();
   if (action === 'directory') openSheet('directory');
@@ -265,7 +265,7 @@ function startTour(i) {
   }
   clearTimeout(S.tour.timer);
   S.tour.on = true;
-  S.tour.i = Math.max(0, Math.min(NY.TOUR.length - 1, i || 0));
+  S.tour.i = Math.max(0, Math.min(BM.TOUR.length - 1, i || 0));
   S.tour.playing = !RM;
   S.tour.arrived = false;
   hideWelcome(false);
@@ -274,16 +274,16 @@ function startTour(i) {
   $('#tourcard').hidden = false;
   setTourPressed(true);
   renderTour();
-  api().goZone(NY.TOUR[S.tour.i], 'tour');
+  api().goZone(BM.TOUR[S.tour.i], 'tour');
 }
 function renderTour() {
-  const id = NY.TOUR[S.tour.i],
-    z = NY.zoneById(id);
-  $('#tc-step').textContent = 'Stop ' + (S.tour.i + 1) + ' of ' + NY.TOUR.length;
+  const id = BM.TOUR[S.tour.i],
+    z = BM.zoneById(id);
+  $('#tc-step').textContent = 'Stop ' + (S.tour.i + 1) + ' of ' + BM.TOUR.length;
   $('#tc-title').textContent = z.name;
-  $('#tc-text').textContent = S.tour.arrived ? NY.TOUR_TEXT[id] : 'Walking there…';
+  $('#tc-text').textContent = S.tour.arrived ? BM.TOUR_TEXT[id] : 'Walking there…';
   $('#tc-prev').disabled = S.tour.i === 0;
-  const last = S.tour.i === NY.TOUR.length - 1;
+  const last = S.tour.i === BM.TOUR.length - 1;
   $('#tc-next span').textContent = last ? 'Finish tour' : 'Next stop';
   const play = $('#tc-play');
   play.replaceChildren(ic(S.tour.playing ? 'pause' : 'play'), h('span', null, S.tour.playing ? 'Pause' : 'Play'));
@@ -348,14 +348,14 @@ function tourArrived() {
 }
 function nextStop() {
   clearTimeout(S.tour.timer);
-  if (S.tour.i >= NY.TOUR.length - 1) {
+  if (S.tour.i >= BM.TOUR.length - 1) {
     endTour();
     return;
   }
   S.tour.i++;
   S.tour.arrived = false;
   renderTour();
-  api() && api().goZone(NY.TOUR[S.tour.i], 'tour');
+  api() && api().goZone(BM.TOUR[S.tour.i], 'tour');
 }
 function prevStop() {
   clearTimeout(S.tour.timer);
@@ -363,7 +363,7 @@ function prevStop() {
   S.tour.i--;
   S.tour.arrived = false;
   renderTour();
-  api() && api().goZone(NY.TOUR[S.tour.i], 'tour');
+  api() && api().goZone(BM.TOUR[S.tour.i], 'tour');
 }
 function pauseTour() {
   if (!S.tour.on || !S.tour.playing) return;
@@ -377,7 +377,7 @@ function togglePlay() {
   clearTimeout(S.tour.timer);
   if (S.tour.playing) {
     if (S.tour.arrived) S.tour.timer = setTimeout(nextStop, 7500);
-    else api() && api().goZone(NY.TOUR[S.tour.i], 'tour');
+    else api() && api().goZone(BM.TOUR[S.tour.i], 'tour');
   }
   renderTour();
 }
@@ -394,7 +394,7 @@ $('#tc-play').addEventListener('click', togglePlay);
 $('#tc-exit').addEventListener('click', endTour);
 function tourButton() {
   if (S.tour.on) endTour();
-  else startTour(NY.TOUR.indexOf(S.zone) > 0 ? NY.TOUR.indexOf(S.zone) : 0);
+  else startTour(BM.TOUR.indexOf(S.zone) > 0 ? BM.TOUR.indexOf(S.zone) : 0);
 }
 
 /* =====================================================================
@@ -510,7 +510,7 @@ function priceTag(p) {
 }
 function metaLine(p) {
   if (p.type !== 'frame') return p.type === 'care' ? 'Lens care' : 'Contact lenses';
-  return NY.SHAPE_LABEL[NY.ARCH[p.arch].shape] + ' · ' + p.mat;
+  return BM.SHAPE_LABEL[BM.ARCH[p.arch].shape] + ' · ' + p.mat;
 }
 function dots(p) {
   if (p.type !== 'frame') return null;
@@ -531,7 +531,7 @@ function productRow(p, opts) {
   const hit = h(
     'button',
     { class: 'row-hit', type: 'button', onclick: () => openSheet('product', { pid: p.id, ci: 0 }, true) },
-    h('span', { class: 'thumb', html: NY.frameSVG(p, 0, 96, 40) }),
+    h('span', { class: 'thumb', html: BM.frameSVG(p, 0, 96, 40) }),
     h(
       'span',
       { class: 'row-main' },
@@ -557,24 +557,24 @@ function productRow(p, opts) {
 
 /* ---------- View: product ---------- */
 VIEWS.product = function (d) {
-  const p = NY.byId[d.pid];
+  const p = BM.byId[d.pid];
   if (d.ci == null) d.ci = 0;
   d.ci =
     ((d.ci % (p.colors ? p.colors.length : 1)) + (p.colors ? p.colors.length : 1)) % (p.colors ? p.colors.length : 1);
-  d.cfg = d.cfg || NY.defaultCfg(p);
+  d.cfg = d.cfg || BM.defaultCfg(p);
   d.qty = d.qty || 1;
   d.rx = d.rx || { r: {}, l: {}, pd: '' };
   const frame = p.type === 'frame';
   const body = h('div', { class: 'pd' });
 
   const viewer = h('div', { class: 'viewer' });
-  const art = h('div', { class: 'viewer-art', html: NY.frameSVG(p, d.ci, 320, 130) });
+  const art = h('div', { class: 'viewer-art', html: BM.frameSVG(p, d.ci, 320, 130) });
   viewer.append(art);
   if (frame)
     viewer.append(h('span', { class: 'viewer-hint', id: 'viewer-hint' }, S.has3D ? 'Drag to turn' : 'Front view'));
   body.append(viewer);
 
-  const zone = NY.zoneById(p.zone);
+  const zone = BM.zoneById(p.zone);
   const eyebrow = frame ? zone.short + (p.sun ? ' · Sunglasses' : ' · Optical frame') : zone.short;
   const head = h(
     'div',
@@ -607,7 +607,7 @@ VIEWS.product = function (d) {
 
   // Colours
   if (frame) {
-    const name = h('span', { class: 'swatch-name', id: 'swatch-name' }, NY.colorOf(p, d.ci).n);
+    const name = h('span', { class: 'swatch-name', id: 'swatch-name' }, BM.colorOf(p, d.ci).n);
     const group = h('div', { class: 'swatches', role: 'radiogroup', 'aria-label': 'Colour' });
     p.colors.forEach((c, i) => {
       const b = h('button', {
@@ -625,7 +625,7 @@ VIEWS.product = function (d) {
         d.ci = i;
         group.querySelectorAll('.swatch').forEach((s, k) => s.setAttribute('aria-checked', k === i ? 'true' : 'false'));
         name.textContent = c.n;
-        art.innerHTML = NY.frameSVG(p, i, 320, 130);
+        art.innerHTML = BM.frameSVG(p, i, 320, 130);
         if (api()) api().setViewerColor(i);
       });
       group.append(b);
@@ -639,13 +639,13 @@ VIEWS.product = function (d) {
 
   // Details
   if (frame) {
-    const a = NY.ARCH[p.arch];
+    const a = BM.ARCH[p.arch];
     const hash = [...p.id].reduce((x, ch) => x + ch.charCodeAt(0), 0);
     const specs = h(
       'dl',
       { class: 'specs' },
       h('dt', null, 'Shape'),
-      h('dd', null, NY.SHAPE_LABEL[a.shape]),
+      h('dd', null, BM.SHAPE_LABEL[a.shape]),
       h('dt', null, 'Material'),
       h('dd', null, p.mat),
       h('dt', null, 'Size'),
@@ -653,19 +653,19 @@ VIEWS.product = function (d) {
       h('dt', null, 'Weight'),
       h('dd', null, p.weight + ' g'),
       h('dt', null, 'Suits faces'),
-      h('dd', null, NY.FACES[a.shape].join(', ')),
+      h('dd', null, BM.FACES[a.shape].join(', ')),
       h('dt', null, 'Rim'),
       h('dd', null, a.style === 'combo' ? 'Browline, full rim' : 'Full rim'),
       h('dt', null, 'Stock'),
       h('dd', null, hash % 4 === 0 ? 'Only 2 left in this colour' : 'In stock at this showroom'),
       h('dt', null, 'Code'),
-      h('dd', null, h('span', { class: 'mono' }, 'NY-' + p.id.toUpperCase() + '-' + p.size[0])),
+      h('dd', null, h('span', { class: 'mono' }, 'BM-' + p.id.toUpperCase() + '-' + p.size[0])),
     );
     body.append(section('Details', h('p', { class: 'pd-desc' }, p.desc), specs));
     body.append(
       section(
         'Size guide',
-        h('div', { class: 'sizeguide', html: NY.sizeSVG(p) }),
+        h('div', { class: 'sizeguide', html: BM.sizeSVG(p) }),
         h(
           'p',
           { class: 'field-note' },
@@ -702,7 +702,7 @@ VIEWS.product = function (d) {
   const foot = h('div', { class: 'foot-row' }, h('div', { class: 'foot-total' }, totalEl, noteEl), addBtn);
 
   function refreshTotal() {
-    const unit = NY.priceOf(p, d.cfg);
+    const unit = BM.priceOf(p, d.cfg);
     totalEl.textContent = money(unit * (frame ? 1 : d.qty));
     noteEl.textContent = frame
       ? unit > p.price
@@ -760,13 +760,13 @@ VIEWS.product = function (d) {
       refreshTotal();
       return;
     }
-    const rules = NY.lensRules(p);
+    const rules = BM.lensRules(p);
     if (rules.mode === 'sun') {
       cfgBox.append(
         radioGroup(
           'sl',
           'Lenses',
-          NY.LENS.sun.map((o) => ({
+          BM.LENS.sun.map((o) => ({
             id: o.id,
             n: o.n + (o.id === 'plano' && p.polar ? ', polarised' : ''),
             d: o.d,
@@ -784,7 +784,7 @@ VIEWS.product = function (d) {
         radioGroup(
           'lt',
           'Lens type',
-          NY.LENS.types
+          BM.LENS.types
             .filter((t) => rules.types.includes(t.id))
             .map((t) => ({ id: t.id, n: t.n, d: t.d, pl: t.p ? '+' + money(t.p) : 'Included' })),
           d.cfg.type,
@@ -799,7 +799,7 @@ VIEWS.product = function (d) {
         radioGroup(
           'lx',
           'Lens thickness (index)',
-          NY.LENS.index
+          BM.LENS.index
             .filter((t) => rules.index.includes(t.id))
             .map((t) => ({
               id: t.id,
@@ -819,7 +819,7 @@ VIEWS.product = function (d) {
         checkGroup(
           'ct',
           'Coatings',
-          NY.LENS.coats.map((t) => ({
+          BM.LENS.coats.map((t) => ({
             id: t.id,
             n: t.n,
             d: t.d,
@@ -834,12 +834,12 @@ VIEWS.product = function (d) {
         ),
       );
     }
-    if (NY.needsRx(p, d.cfg)) {
+    if (BM.needsRx(p, d.cfg)) {
       cfgBox.append(
         radioGroup(
           'rx',
           'Prescription',
-          NY.LENS.rx.map((o) => ({ id: o.id, n: o.n, d: o.d })),
+          BM.LENS.rx.map((o) => ({ id: o.id, n: o.n, d: o.d })),
           d.cfg.rx,
           (v) => {
             d.cfg.rx = v;
@@ -847,7 +847,7 @@ VIEWS.product = function (d) {
           },
         ),
       );
-      if (d.cfg.rx === 'now') cfgBox.append(rxForm(d, NY.needsAdd(p, d.cfg)));
+      if (d.cfg.rx === 'now') cfgBox.append(rxForm(d, BM.needsAdd(p, d.cfg)));
       if (d.cfg.rx === 'test')
         cfgBox.append(
           h(
@@ -862,8 +862,8 @@ VIEWS.product = function (d) {
   renderCfg();
 
   addBtn.addEventListener('click', () => {
-    if (frame && NY.needsRx(p, d.cfg) && d.cfg.rx === 'now') {
-      const errs = validateRx(d.rx, NY.needsAdd(p, d.cfg));
+    if (frame && BM.needsRx(p, d.cfg) && d.cfg.rx === 'now') {
+      const errs = validateRx(d.rx, BM.needsAdd(p, d.cfg));
       const box = $('#rx-err');
       if (errs.length) {
         if (box) {
@@ -879,7 +879,7 @@ VIEWS.product = function (d) {
     setTimeout(() => {
       if (document.contains(addBtn)) addBtn.replaceChildren(ic('bag'), h('span', null, 'Add to bag'));
     }, 1600);
-    if (frame && NY.needsRx(p, d.cfg) && d.cfg.rx === 'test') openSheet('eyetest', {}, true);
+    if (frame && BM.needsRx(p, d.cfg) && d.cfg.rx === 'test') openSheet('eyetest', {}, true);
   });
 
   return {
@@ -1057,11 +1057,11 @@ function validateRx(rx, needAdd) {
   if (isNaN(pd) || pd < 50 || pd > 76) errs.push('PD: enter a value from 50 to 76 mm.');
   return errs;
 }
-NY.validateRx = validateRx;
+BM.validateRx = validateRx;
 function addToBag(p, d) {
   const cfg = JSON.parse(JSON.stringify(d.cfg));
-  if (p.type === 'frame' && !NY.needsRx(p, cfg)) delete cfg.rx;
-  const unit = NY.priceOf(p, cfg),
+  if (p.type === 'frame' && !BM.needsRx(p, cfg)) delete cfg.rx;
+  const unit = BM.priceOf(p, cfg),
     qty = p.type === 'frame' ? 1 : d.qty;
   const key = p.id + '|' + d.ci + '|' + JSON.stringify(cfg);
   const ex = S.cart.find((l) => l.key === key);
@@ -1074,17 +1074,17 @@ function addToBag(p, d) {
 
 /* ---------- View: browse a section ---------- */
 VIEWS.browse = function (d) {
-  const z = NY.zoneById(d.zone);
-  const items = NY.PRODUCTS.filter((p) => p.zone === d.zone);
+  const z = BM.zoneById(d.zone);
+  const items = BM.PRODUCTS.filter((p) => p.zone === d.zone);
   const body = h('div', { class: 'stack' });
   body.append(h('p', { class: 'lede' }, z.blurb));
-  const shapes = [...new Set(items.filter((p) => p.type === 'frame').map((p) => NY.ARCH[p.arch].shape))];
+  const shapes = [...new Set(items.filter((p) => p.type === 'frame').map((p) => BM.ARCH[p.arch].shape))];
   const list = h('div', { class: 'list' });
   let filter = d.filter || 'all';
   function draw() {
     list.replaceChildren(
       ...items
-        .filter((p) => filter === 'all' || (p.type === 'frame' && NY.ARCH[p.arch].shape === filter))
+        .filter((p) => filter === 'all' || (p.type === 'frame' && BM.ARCH[p.arch].shape === filter))
         .map((p) => productRow(p)),
     );
   }
@@ -1109,7 +1109,7 @@ VIEWS.browse = function (d) {
       });
       return c;
     };
-    chips.append(mk('all', 'All'), ...shapes.map((s) => mk(s, NY.SHAPE_LABEL[s])));
+    chips.append(mk('all', 'All'), ...shapes.map((s) => mk(s, BM.SHAPE_LABEL[s])));
     body.append(chips);
   }
   draw();
@@ -1119,8 +1119,8 @@ VIEWS.browse = function (d) {
 
 /* ---------- View: search ---------- */
 const QUICK = [
-  ['round', 'Round', (p) => p.type === 'frame' && NY.ARCH[p.arch].shape === 'round'],
-  ['cateye', 'Cat-eye', (p) => p.type === 'frame' && NY.ARCH[p.arch].shape === 'cateye'],
+  ['round', 'Round', (p) => p.type === 'frame' && BM.ARCH[p.arch].shape === 'round'],
+  ['cateye', 'Cat-eye', (p) => p.type === 'frame' && BM.ARCH[p.arch].shape === 'cateye'],
   ['titanium', 'Titanium', (p) => p.type === 'frame' && /titanium/i.test(p.mat)],
   ['polar', 'Polarised', (p) => !!p.polar],
   ['under', 'Under ₹2,500', (p) => p.type === 'frame' && p.price < 2500],
@@ -1128,10 +1128,10 @@ const QUICK = [
   ['contacts', 'Contact lenses', (p) => p.type === 'contacts'],
 ];
 function haystack(p) {
-  const parts = [p.name, p.desc, NY.zoneById(p.zone).name, (p.tags || []).join(' ')];
+  const parts = [p.name, p.desc, BM.zoneById(p.zone).name, (p.tags || []).join(' ')];
   if (p.type === 'frame')
     parts.push(
-      NY.SHAPE_LABEL[NY.ARCH[p.arch].shape],
+      BM.SHAPE_LABEL[BM.ARCH[p.arch].shape],
       p.mat,
       p.colors.map((c) => c.n).join(' '),
       p.sun ? 'sunglasses sun' : 'eyeglasses spectacles optical',
@@ -1177,7 +1177,7 @@ VIEWS.search = function (d) {
     d.q = input.value;
     const words = q.split(/\s+/).filter(Boolean);
     const qf = QUICK.find((x) => x[0] === quick);
-    const res = NY.PRODUCTS.filter((p) => (!qf || qf[2](p)) && words.every((w) => haystack(p).includes(w)));
+    const res = BM.PRODUCTS.filter((p) => (!qf || qf[2](p)) && words.every((w) => haystack(p).includes(w)));
     count.textContent = res.length
       ? res.length + (res.length === 1 ? ' match' : ' matches')
       : 'No matches. Try a shape like “round”, a colour like “havana”, or a material like “titanium”.';
@@ -1213,8 +1213,8 @@ VIEWS.directory = function () {
       btn('Take the guided tour', { primary: true, icon: 'play', cls: 'block', onclick: () => startTour(0) }),
     );
   const list = h('div', { class: 'zone-list' });
-  NY.TOUR.forEach((id, i) => {
-    const z = NY.zoneById(id),
+  BM.TOUR.forEach((id, i) => {
+    const z = BM.zoneById(id),
       n = zoneCount(id);
     const b = h(
       'button',
@@ -1258,7 +1258,7 @@ VIEWS.directory = function () {
         const r = cv.getBoundingClientRect();
         if (!bigMap || !bigMap._m) return;
         const w = bigMap._m.toWorld(e.clientX - r.left, e.clientY - r.top);
-        const z = NY.zoneAt(w.x, w.z);
+        const z = BM.zoneAt(w.x, w.z);
         if (S.has3D) {
           closeSheet();
           if (z) goZone(z.id);
@@ -1280,7 +1280,7 @@ function drawBigMap() {
   bigMap.height = Math.round(r.height * dpr);
   const g = bigMap.getContext('2d');
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const m = NY.drawPlan(g, r.width, r.height, { colors: MC, current: S.zone, labels: true, pad: 10 });
+  const m = BM.drawPlan(g, r.width, r.height, { colors: MC, current: S.zone, labels: true, pad: 10 });
   if (S.has3D) drawYou(g, m, mm.pose, { colors: MC, cone: 30, dot: 5 });
   bigMap._m = m;
 }
@@ -1311,8 +1311,8 @@ VIEWS.bag = function () {
   function draw() {
     list.replaceChildren(
       ...S.cart.map((l, idx) => {
-        const p = NY.byId[l.pid];
-        const col = p.type === 'frame' ? NY.colorOf(p, l.ci).n : '';
+        const p = BM.byId[l.pid];
+        const col = p.type === 'frame' ? BM.colorOf(p, l.ci).n : '';
         const val = h('span', null, String(l.qty));
         const q = h(
           'div',
@@ -1362,7 +1362,7 @@ VIEWS.bag = function () {
         return h(
           'div',
           { class: 'line' },
-          h('span', { class: 'thumb', html: NY.frameSVG(p, l.ci, 96, 40) }),
+          h('span', { class: 'thumb', html: BM.frameSVG(p, l.ci, 96, 40) }),
           h(
             'div',
             { class: 'line-main' },
@@ -1372,7 +1372,7 @@ VIEWS.bag = function () {
               h('b', null, p.name),
               h('span', { class: 'price sm' }, money(l.unit * l.qty)),
             ),
-            h('p', { class: 'line-cfg' }, [col, NY.cfgSummary(p, l.cfg)].filter(Boolean).join(' · ')),
+            h('p', { class: 'line-cfg' }, [col, BM.cfgSummary(p, l.cfg)].filter(Boolean).join(' · ')),
             h('div', { class: 'line-acts' }, q, rm),
           ),
         );
@@ -1434,7 +1434,7 @@ VIEWS.checkout = function (d) {
   );
   const sum = h('div', { class: 'totals' });
   S.cart.forEach((l) => {
-    const p = NY.byId[l.pid];
+    const p = BM.byId[l.pid];
     sum.append(
       h(
         'div',
@@ -1471,7 +1471,7 @@ VIEWS.checkout = function (d) {
       primary: true,
       icon: 'check',
       onclick: () => {
-        const ref = 'NY-DEMO-' + String(Math.floor(1000 + Math.random() * 9000));
+        const ref = 'BM-DEMO-' + String(Math.floor(1000 + Math.random() * 9000));
         const n = S.cart.reduce((a, l) => a + l.qty, 0);
         S.cart = [];
         saveCart();
@@ -1627,7 +1627,7 @@ VIEWS.lensguide = function () {
   const types = h(
     'div',
     { class: 'guide' },
-    NY.LENS.types.map((t) =>
+    BM.LENS.types.map((t) =>
       h(
         'div',
         { class: 'guide-row' },
@@ -1641,7 +1641,7 @@ VIEWS.lensguide = function () {
   const coats = h(
     'div',
     { class: 'guide' },
-    NY.LENS.coats.map((t) =>
+    BM.LENS.coats.map((t) =>
       h(
         'div',
         { class: 'guide-row' },
@@ -1653,7 +1653,7 @@ VIEWS.lensguide = function () {
   );
   body.append(section('Coatings', coats));
   const bars = h('div', { class: 'bars' });
-  NY.LENS.index.forEach((t) => {
+  BM.LENS.index.forEach((t) => {
     const n = parseFloat(t.n);
     const rel = (1.56 - 1) / (n - 1);
     bars.append(
@@ -1682,7 +1682,7 @@ VIEWS.lensguide = function () {
 
 /* ---------- View: store details and settings ---------- */
 VIEWS.info = function () {
-  const st = NY.STORE;
+  const st = BM.STORE;
   const body = h('div', { class: 'stack' });
   body.append(
     section(
@@ -1810,11 +1810,11 @@ function drawMinimap() {
   const g = cv.getContext('2d');
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.clearRect(0, 0, r.width, r.height);
-  mm.m = NY.drawPlan(g, r.width, r.height, { colors: MC, current: S.zone, pad: 3 });
+  mm.m = BM.drawPlan(g, r.width, r.height, { colors: MC, current: S.zone, pad: 3 });
   drawYou(g, mm.m, mm.pose, { colors: MC, cone: r.width < 150 ? 16 : 24, dot: r.width < 150 ? 3.5 : 4.5 });
 }
 let mmQueued = false;
-NY.onPose = (pose) => {
+BM.onPose = (pose) => {
   mm.pose = pose;
   if (mmQueued) return;
   mmQueued = true;
@@ -1831,7 +1831,7 @@ mm.cv.addEventListener('click', (e) => {
   }
   const r = mm.cv.getBoundingClientRect();
   const w = mm.m.toWorld(e.clientX - r.left, e.clientY - r.top);
-  if (w.x < NY.L.x0 || w.x > NY.L.x1 || w.z < NY.L.z0 || w.z > NY.L.z1) return;
+  if (w.x < BM.L.x0 || w.x > BM.L.x1 || w.z < BM.L.z0 || w.z > BM.L.z1) return;
   pauseTour();
   hideWelcome(false);
   api().goPoint(w.x, w.z);
@@ -1873,7 +1873,7 @@ function drawFallback() {
     bottom = isNarrow() ? 90 : 40;
   g.save();
   g.translate(0, top);
-  const m = NY.drawPlan(g, r.width, Math.max(160, r.height - top - bottom), {
+  const m = BM.drawPlan(g, r.width, Math.max(160, r.height - top - bottom), {
     colors: MC,
     current: null,
     labels: true,
@@ -1886,10 +1886,10 @@ $('#plan-fallback').addEventListener('click', (e) => {
   if (!fbMap) return;
   const r = e.currentTarget.getBoundingClientRect();
   const w = fbMap.m.toWorld(e.clientX - r.left, e.clientY - r.top - fbMap.top);
-  const z = NY.zoneAt(w.x, w.z);
+  const z = BM.zoneAt(w.x, w.z);
   if (z) openSheet(zoneSheet(z.id), { zone: z.id });
 });
-NY.fail3D = function (err) {
+BM.fail3D = function (err) {
   if (S.has3D || S.failed) return;
   S.failed = true;
   if (err) console.warn('3D view unavailable:', err);
@@ -1904,12 +1904,12 @@ NY.fail3D = function (err) {
   drawFallback();
 };
 const failTimer = setTimeout(() => {
-  if (!S.has3D) NY.fail3D(new Error('3D view did not load in time'));
+  if (!S.has3D) BM.fail3D(new Error('3D view did not load in time'));
 }, 25000);
 
-NY.attach3D = function (a) {
+BM.attach3D = function (a) {
   clearTimeout(failTimer);
-  NY.api = a;
+  BM.api = a;
   S.has3D = true;
   if (S.failed) {
     S.failed = false;
@@ -1963,7 +1963,7 @@ $('#bb-eye').addEventListener('click', () => {
 });
 $('#bb-info').addEventListener('click', () => openSheet('info'));
 
-const nStyles = NY.PRODUCTS.filter((p) => p.type === 'frame').length;
+const nStyles = BM.PRODUCTS.filter((p) => p.type === 'frame').length;
 $('#welcome-lede').textContent =
   'Ten sections, ' + nStyles + ' frame styles and a working bag. Every frame is drawn from its real millimetre size.';
 setZoneName('welcome');

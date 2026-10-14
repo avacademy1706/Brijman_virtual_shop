@@ -1,5 +1,5 @@
 // SVG drawings of frames and the canvas floor plan (used by the minimap, directory and in-store screen).
-import { NY } from '../core/ny.js';
+import { BM } from '../core/bm.js';
 
 import '../data/store-layout.js';
 import '../data/frames.js';
@@ -12,13 +12,13 @@ function pathFrom(pts, X, Y) {
   });
   return d + 'Z';
 }
-NY.frameSVG = function (p, ci, w, hh) {
+BM.frameSVG = function (p, ci, w, hh) {
   w = w || 160;
   hh = hh || 64;
-  if (p.type !== 'frame') return NY.boxSVG(p, w, hh);
-  const a = NY.ARCH[p.arch],
-    col = NY.colorOf(p, ci);
-  const pts = NY.outline(a.shape, a.A, a.B, 56);
+  if (p.type !== 'frame') return BM.boxSVG(p, w, hh);
+  const a = BM.ARCH[p.arch],
+    col = BM.colorOf(p, ci);
+  const pts = BM.outline(a.shape, a.A, a.B, 56);
   const total = 2 * a.A + a.dbl + 0.016,
     s = (w - 10) / total,
     cx = w / 2,
@@ -48,7 +48,7 @@ NY.frameSVG = function (p, ci, w, hh) {
     (style === 'combo' ? 1.4 : sw) +
     '" stroke-linejoin="round"/>';
   if (style === 'combo') {
-    const idx = NY.topArc(pts, a.B * 0.06);
+    const idx = BM.topArc(pts, a.B * 0.06);
     const arc = (X) =>
       idx.map((i, k) => (k ? 'L' : 'M') + X(pts[i].x).toFixed(1) + ' ' + Y(pts[i].y).toFixed(1)).join('');
     o +=
@@ -113,7 +113,7 @@ NY.frameSVG = function (p, ci, w, hh) {
     '" stroke-linecap="round"/>';
   return o + '</svg>';
 };
-NY.boxSVG = function (p, w, hh) {
+BM.boxSVG = function (p, w, hh) {
   w = w || 160;
   hh = hh || 64;
   const c = p.color;
@@ -141,8 +141,8 @@ NY.boxSVG = function (p, w, hh) {
     '" stroke-width="2"/></svg>'
   );
 };
-NY.sizeSVG = function (p) {
-  const a = NY.ARCH[p.arch],
+BM.sizeSVG = function (p) {
+  const a = BM.ARCH[p.arch],
     lw = p.size[0],
     br = p.size[1],
     tl = p.size[2];
@@ -150,7 +150,7 @@ NY.sizeSVG = function (p) {
     A = a.A * k,
     Bh = a.B * k,
     D = br / 1000;
-  const pts = NY.outline(a.shape, A, Bh, 64);
+  const pts = BM.outline(a.shape, A, Bh, 64);
   const W = 320,
     Hh = 158,
     s = (W - 64) / (2 * A + D),
@@ -227,8 +227,8 @@ NY.sizeSVG = function (p) {
 };
 
 /* ---------- Floor plan drawing (minimap, directory, fallback) ---------- */
-NY.drawPlan = function (g, w, hh, o) {
-  const L = NY.L,
+BM.drawPlan = function (g, w, hh, o) {
+  const L = BM.L,
     col = o.colors,
     pad = o.pad == null ? 6 : o.pad;
   const s = Math.min((w - 2 * pad) / (L.x1 - L.x0), (hh - 2 * pad) / (L.z1 - L.z0));
@@ -238,13 +238,13 @@ NY.drawPlan = function (g, w, hh, o) {
     Z = (z) => oz + (z - L.z0) * s;
   g.fillStyle = col.floor;
   g.fillRect(X(L.x0), Z(L.z0), (L.x1 - L.x0) * s, (L.z1 - L.z0) * s);
-  for (const zn of NY.ZONES) {
+  for (const zn of BM.ZONES) {
     const r = zn.rect;
     g.fillStyle = zn.id === o.current ? col.zoneOn : col.zone;
     g.fillRect(X(r[0]) + 1, Z(r[1]) + 1, (r[2] - r[0]) * s - 2, (r[3] - r[1]) * s - 2);
   }
   g.fillStyle = col.item;
-  for (const ob of NY.OBS) {
+  for (const ob of BM.OBS) {
     if (ob.k === 'wall') continue;
     if (ob.t === 'r')
       g.fillRect(X(ob.x0), Z(ob.z0), Math.max(1, (ob.x1 - ob.x0) * s), Math.max(1, (ob.z1 - ob.z0) * s));
@@ -280,7 +280,7 @@ NY.drawPlan = function (g, w, hh, o) {
     g.textBaseline = 'middle';
     const fs = o.labelSize || Math.max(9, Math.min(13, s * 0.42));
     g.font = '600 ' + fs + 'px "Hanken Grotesk", system-ui, sans-serif';
-    for (const zn of NY.ZONES) {
+    for (const zn of BM.ZONES) {
       const r = zn.rect;
       let lx = (r[0] + r[2]) / 2,
         lz = (r[1] + r[3]) / 2;

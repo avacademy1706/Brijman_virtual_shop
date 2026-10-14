@@ -3,9 +3,9 @@
 import './styles/fonts.css';
 import './styles/main.css';
 
-import { NY } from './core/ny.js';
+import { BM } from './core/bm.js';
 import './ui/app.js';
 
 import('./scene/showroom.js').catch((err) => {
-  if (NY.fail3D) NY.fail3D(err);
+  if (BM.fail3D) BM.fail3D(err);
 });

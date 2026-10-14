@@ -1,5 +1,5 @@
 {
-  "name": "nayan-virtual-showroom",
+  "name": "brijman-virtual-showroom",
   "private": true,
   "version": "1.0.0",
   "description": "Walkable 3D eyewear showroom with frame details, lens options and a demo bag. Static site built with Vite and three.js.",

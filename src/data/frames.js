@@ -1,8 +1,8 @@
 // Frame shapes and the lens outline generator. Sizes are in metres; 0.053 = 53 mm lens width.
-import { NY } from '../core/ny.js';
+import { BM } from '../core/bm.js';
 
 /* ---------- Frame archetypes (canonical sizes in metres) ---------- */
-NY.ARCH = {
+BM.ARCH = {
   rectA: { shape: 'rect', style: 'acetate', A: 0.053, B: 0.038, dbl: 0.018 },
   squareA: { shape: 'square', style: 'acetate', A: 0.052, B: 0.044, dbl: 0.019, thick: 1.25 },
   roundA: { shape: 'round', style: 'acetate', A: 0.048, B: 0.046, dbl: 0.02 },
@@ -17,7 +17,7 @@ NY.ARCH = {
   aviatorM: { shape: 'aviator', style: 'metal', A: 0.058, B: 0.05, dbl: 0.014, dbridge: true },
   browC: { shape: 'brow', style: 'combo', A: 0.051, B: 0.04, dbl: 0.02 },
 };
-NY.SHAPES = {
+BM.SHAPES = {
   rect: { pTop: 5, pBot: 5, taper: 0.04 },
   square: { pTop: 4.2, pBot: 4.2, taper: 0.06 },
   round: { pTop: 2, pBot: 2 },
@@ -28,7 +28,7 @@ NY.SHAPES = {
   brow: { pTop: 3.6, pBot: 3.0, taper: 0.05 },
   geo: { poly: 6 },
 };
-NY.SHAPE_LABEL = {
+BM.SHAPE_LABEL = {
   rect: 'Rectangle',
   square: 'Square',
   round: 'Round',
@@ -39,7 +39,7 @@ NY.SHAPE_LABEL = {
   brow: 'Browline',
   geo: 'Geometric',
 };
-NY.FACES = {
+BM.FACES = {
   rect: ['Round', 'Oval'],
   square: ['Round', 'Oval'],
   round: ['Square', 'Heart', 'Oval'],
@@ -52,9 +52,9 @@ NY.FACES = {
 };
 
 /* Lens outline for the lens on the wearer's left (viewer's right). Nose side is -x. Counter-clockwise. */
-NY.outline = function (shape, A, B, n) {
+BM.outline = function (shape, A, B, n) {
   n = n || 64;
-  const s = NY.SHAPES[shape],
+  const s = BM.SHAPES[shape],
     a = A / 2;
   let pts = [];
   if (s.poly) {
@@ -123,7 +123,7 @@ NY.outline = function (shape, A, B, n) {
   return pts;
 };
 /* Indices of the contiguous upper arc (y > yCut), in outline order. */
-NY.topArc = function (pts, yCut) {
+BM.topArc = function (pts, yCut) {
   const n = pts.length,
     inn = (i) => pts[(i + n) % n].y > yCut;
   let s = -1;

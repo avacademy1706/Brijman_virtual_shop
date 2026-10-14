@@ -1,5 +1,5 @@
 ﻿file,type,sku,name,colour,section,shape,material,size_mm,weight_g,price_inr,packs,position_in_store_m,rotation_deg,triangles,size_kb
-showroom/Nayan_Showroom.glb,Showroom,,Complete showroom with all fixtures and products in place,,,,,,,,,,,590990,7051
+showroom/Brijman_Showroom.glb,Showroom,,Complete showroom with all fixtures and products in place,,,,,,,,,,,590990,7051
 fixtures/Store_Shell.glb,Fixture,,Store Shell,,,,,,,,,"0, 0, 0",0,148,208
 fixtures/Storefront.glb,Fixture,,Storefront,,,,,,,,,"0, 0, 8",0,150,25
 fixtures/Ceiling_Downlights.glb,Fixture,,Ceiling Downlights,,,,,,,,,world (not re-centred),0,2904,114
@@ -39,103 +39,103 @@ fixtures/Plant_4.glb,Fixture,,Plant 4,,,,,,,,,"4.4, 0, -7.4",0,1340,40
 fixtures/Plant_5.glb,Fixture,,Plant 5,,,,,,,,,"10.45, 0, -2.75",0,1340,40
 fixtures/Plant_6.glb,Fixture,,Plant 6,,,,,,,,,"-10.45, 0, -3.75",0,1340,40
 fixtures/Contacts_Display_Table.glb,Fixture,,Contacts Display Table,,,,,,,,,"-8.8, 0, -6.2",0,24,31
-frames/Men/NY-M01_Arlo_Jet_black.glb,Optical frame,NY-M01-53,Arlo,Jet black,Men’s Collection,Rectangle,Acetate,53-18-145,24,2490,,,,3024,182
-frames/Men/NY-M01_Arlo_Havana_tortoise.glb,Optical frame,NY-M01-53,Arlo,Havana tortoise,Men’s Collection,Rectangle,Acetate,53-18-145,24,2490,,,,3024,219
-frames/Men/NY-M01_Arlo_Bottle_green.glb,Optical frame,NY-M01-53,Arlo,Bottle green,Men’s Collection,Rectangle,Acetate,53-18-145,24,2490,,,,3024,182
-frames/Men/NY-M02_Brook_Matte_black.glb,Optical frame,NY-M02-54,Brook,Matte black,Men’s Collection,Square,Acetate,54-19-145,28,2990,,,,3024,181
-frames/Men/NY-M02_Brook_Navy.glb,Optical frame,NY-M02-54,Brook,Navy,Men’s Collection,Square,Acetate,54-19-145,28,2990,,,,3024,181
-frames/Men/NY-M02_Brook_Havana_tortoise.glb,Optical frame,NY-M02-54,Brook,Havana tortoise,Men’s Collection,Square,Acetate,54-19-145,28,2990,,,,3024,219
-frames/Men/NY-M03_Cove_Gold.glb,Optical frame,NY-M03-49,Cove,Gold,Men’s Collection,Round,Titanium,49-21-145,14,3490,,,,3212,85
-frames/Men/NY-M03_Cove_Gunmetal.glb,Optical frame,NY-M03-49,Cove,Gunmetal,Men’s Collection,Round,Titanium,49-21-145,14,3490,,,,3212,85
-frames/Men/NY-M04_Drift_Gunmetal.glb,Optical frame,NY-M04-55,Drift,Gunmetal,Men’s Collection,Rectangle,Stainless steel,55-17-145,18,2790,,,,3212,85
-frames/Men/NY-M04_Drift_Silver.glb,Optical frame,NY-M04-55,Drift,Silver,Men’s Collection,Rectangle,Stainless steel,55-17-145,18,2790,,,,3212,85
-frames/Men/NY-M04_Drift_Black.glb,Optical frame,NY-M04-55,Drift,Black,Men’s Collection,Rectangle,Stainless steel,55-17-145,18,2790,,,,3212,85
-frames/Men/NY-M05_Elm_Jet_black_Gold.glb,Optical frame,NY-M05-51,Elm,Jet black · Gold,Men’s Collection,Browline,Acetate and metal,51-20-145,22,3290,,,,4292,157
-frames/Men/NY-M05_Elm_Havana_Silver.glb,Optical frame,NY-M05-51,Elm,Havana · Silver,Men’s Collection,Browline,Acetate and metal,51-20-145,22,3290,,,,4292,194
-frames/Men/NY-M06_Flint_Gunmetal.glb,Optical frame,NY-M06-50,Flint,Gunmetal,Men’s Collection,Geometric,Titanium,50-20-145,15,3690,,,,3212,85
-frames/Men/NY-M06_Flint_Gold.glb,Optical frame,NY-M06-50,Flint,Gold,Men’s Collection,Geometric,Titanium,50-20-145,15,3690,,,,3212,85
-frames/Men/NY-M07_Grove_Matte_black.glb,Optical frame,NY-M07-54,Grove,Matte black,Men’s Collection,Rectangle,TR90,54-17-140,16,1790,,,,3024,182
-frames/Men/NY-M07_Grove_Grey_crystal.glb,Optical frame,NY-M07-54,Grove,Grey crystal,Men’s Collection,Rectangle,TR90,54-17-140,16,1790,,,,3024,182
-frames/Men/NY-M08_Haven_Silver.glb,Optical frame,NY-M08-52,Haven,Silver,Men’s Collection,Oval,Stainless steel,52-18-140,17,2190,,,,3212,85
-frames/Men/NY-M08_Haven_Gunmetal.glb,Optical frame,NY-M08-52,Haven,Gunmetal,Men’s Collection,Oval,Stainless steel,52-18-140,17,2190,,,,3212,85
-frames/Men/NY-M09_Indus_Havana_tortoise.glb,Optical frame,NY-M09-49,Indus,Havana tortoise,Men’s Collection,Round,Acetate,49-21-145,23,2690,,,,3024,219
-frames/Men/NY-M09_Indus_Jet_black.glb,Optical frame,NY-M09-49,Indus,Jet black,Men’s Collection,Round,Acetate,49-21-145,23,2690,,,,3024,181
-frames/Men/NY-M10_Jasper_Navy.glb,Optical frame,NY-M10-52,Jasper,Navy,Men’s Collection,Oval,Acetate,52-18-145,22,2390,,,,3024,181
-frames/Men/NY-M10_Jasper_Grey_crystal.glb,Optical frame,NY-M10-52,Jasper,Grey crystal,Men’s Collection,Oval,Acetate,52-18-145,22,2390,,,,3024,182
-frames/Men/NY-M11_Kabir_Black.glb,Optical frame,NY-M11-54,Kabir,Black,Men’s Collection,Rectangle,Titanium,54-18-145,13,3890,,,,3212,85
-frames/Men/NY-M11_Kabir_Gold.glb,Optical frame,NY-M11-54,Kabir,Gold,Men’s Collection,Rectangle,Titanium,54-18-145,13,3890,,,,3212,85
-frames/Men/NY-M12_Loch_Olive.glb,Optical frame,NY-M12-52,Loch,Olive,Men’s Collection,Rectangle,Acetate,52-19-145,21,2290,,,,3024,182
-frames/Men/NY-M12_Loch_Crystal.glb,Optical frame,NY-M12-52,Loch,Crystal,Men’s Collection,Rectangle,Acetate,52-19-145,21,2290,,,,3024,182
-frames/Women/NY-W01_Mira_Havana_tortoise.glb,Optical frame,NY-W01-52,Mira,Havana tortoise,Women’s Collection,Cat-eye,Acetate,52-17-140,22,2890,,,,3024,220
-frames/Women/NY-W01_Mira_Burgundy.glb,Optical frame,NY-W01-52,Mira,Burgundy,Women’s Collection,Cat-eye,Acetate,52-17-140,22,2890,,,,3024,182
-frames/Women/NY-W01_Mira_Jet_black.glb,Optical frame,NY-W01-52,Mira,Jet black,Women’s Collection,Cat-eye,Acetate,52-17-140,22,2890,,,,3024,182
-frames/Women/NY-W02_Nila_Blush_crystal.glb,Optical frame,NY-W02-48,Nila,Blush crystal,Women’s Collection,Round,Acetate,48-20-140,20,2490,,,,3024,181
-frames/Women/NY-W02_Nila_Honey_tortoise.glb,Optical frame,NY-W02-48,Nila,Honey tortoise,Women’s Collection,Round,Acetate,48-20-140,20,2490,,,,3024,219
-frames/Women/NY-W02_Nila_Ivory.glb,Optical frame,NY-W02-48,Nila,Ivory,Women’s Collection,Round,Acetate,48-20-140,20,2490,,,,3024,181
-frames/Women/NY-W03_Opal_Jet_black.glb,Optical frame,NY-W03-55,Opal,Jet black,Women’s Collection,Oversized square,Acetate,55-16-140,27,3190,,,,3024,182
-frames/Women/NY-W03_Opal_Olive.glb,Optical frame,NY-W03-55,Opal,Olive,Women’s Collection,Oversized square,Acetate,55-16-140,27,3190,,,,3024,182
-frames/Women/NY-W03_Opal_Honey_tortoise.glb,Optical frame,NY-W03-55,Opal,Honey tortoise,Women’s Collection,Oversized square,Acetate,55-16-140,27,3190,,,,3024,219
-frames/Women/NY-W04_Pari_Rose_gold.glb,Optical frame,NY-W04-52,Pari,Rose gold,Women’s Collection,Cat-eye,Stainless steel,52-17-140,15,3390,,,,3212,85
-frames/Women/NY-W04_Pari_Gold.glb,Optical frame,NY-W04-52,Pari,Gold,Women’s Collection,Cat-eye,Stainless steel,52-17-140,15,3390,,,,3212,85
-frames/Women/NY-W05_Quill_Rose_gold.glb,Optical frame,NY-W05-51,Quill,Rose gold,Women’s Collection,Geometric,Titanium,51-19-140,14,3590,,,,3212,85
-frames/Women/NY-W05_Quill_Silver.glb,Optical frame,NY-W05-51,Quill,Silver,Women’s Collection,Geometric,Titanium,51-19-140,14,3590,,,,3212,85
-frames/Women/NY-W06_Rhea_Blush_pink.glb,Optical frame,NY-W06-51,Rhea,Blush pink,Women’s Collection,Oval,Acetate,51-18-140,20,2290,,,,3024,182
-frames/Women/NY-W06_Rhea_Bottle_green.glb,Optical frame,NY-W06-51,Rhea,Bottle green,Women’s Collection,Oval,Acetate,51-18-140,20,2290,,,,3024,182
-frames/Women/NY-W06_Rhea_Crystal.glb,Optical frame,NY-W06-51,Rhea,Crystal,Women’s Collection,Oval,Acetate,51-18-140,20,2290,,,,3024,182
-frames/Women/NY-W07_Sana_Navy.glb,Optical frame,NY-W07-51,Sana,Navy,Women’s Collection,Rectangle,Acetate,51-17-140,19,1990,,,,3024,182
-frames/Women/NY-W07_Sana_Blush_crystal.glb,Optical frame,NY-W07-51,Sana,Blush crystal,Women’s Collection,Rectangle,Acetate,51-17-140,19,1990,,,,3024,182
-frames/Women/NY-W08_Tara_Rose_gold.glb,Optical frame,NY-W08-48,Tara,Rose gold,Women’s Collection,Round,Stainless steel,48-20-140,13,2690,,,,3212,85
-frames/Women/NY-W08_Tara_Gold.glb,Optical frame,NY-W08-48,Tara,Gold,Women’s Collection,Round,Stainless steel,48-20-140,13,2690,,,,3212,85
-frames/Women/NY-W09_Uma_Burgundy.glb,Optical frame,NY-W09-52,Uma,Burgundy,Women’s Collection,Rectangle,Acetate,52-17-140,21,2590,,,,3024,182
-frames/Women/NY-W09_Uma_Havana_tortoise.glb,Optical frame,NY-W09-52,Uma,Havana tortoise,Women’s Collection,Rectangle,Acetate,52-17-140,21,2590,,,,3024,219
-frames/Women/NY-W10_Veda_Ivory.glb,Optical frame,NY-W10-54,Veda,Ivory,Women’s Collection,Oversized square,Acetate,54-17-140,25,2990,,,,3024,182
-frames/Women/NY-W10_Veda_Blush_crystal.glb,Optical frame,NY-W10-54,Veda,Blush crystal,Women’s Collection,Oversized square,Acetate,54-17-140,25,2990,,,,3024,182
-frames/Sunglasses/NY-S01_Kite_Gold_G_15_green_lens.glb,Sunglasses,NY-S01-58,Kite,Gold · G-15 green lens,Sunglasses Island,Aviator,Stainless steel,58-14-140,26,3990,,,,3452,91
-frames/Sunglasses/NY-S01_Kite_Silver_Blue_mirror_lens.glb,Sunglasses,NY-S01-58,Kite,Silver · Blue mirror lens,Sunglasses Island,Aviator,Stainless steel,58-14-140,26,3990,,,,3452,91
-frames/Sunglasses/NY-S01_Kite_Gunmetal_Grey_lens.glb,Sunglasses,NY-S01-58,Kite,Gunmetal · Grey lens,Sunglasses Island,Aviator,Stainless steel,58-14-140,26,3990,,,,3452,91
-frames/Sunglasses/NY-S02_Laguna_Jet_black_Grey_lens.glb,Sunglasses,NY-S02-55,Laguna,Jet black · Grey lens,Sunglasses Island,Square,Acetate,55-18-145,30,3490,,,,3024,181
-frames/Sunglasses/NY-S02_Laguna_Havana_tortoise_Brown_lens.glb,Sunglasses,NY-S02-55,Laguna,Havana tortoise · Brown lens,Sunglasses Island,Square,Acetate,55-18-145,30,3490,,,,3024,219
-frames/Sunglasses/NY-S03_Marina_Jet_black_Grey_lens.glb,Sunglasses,NY-S03-56,Marina,Jet black · Grey lens,Sunglasses Island,Cat-eye,Acetate,56-17-140,27,3290,,,,3024,182
-frames/Sunglasses/NY-S03_Marina_Honey_tortoise_Brown_lens.glb,Sunglasses,NY-S03-56,Marina,Honey tortoise · Brown lens,Sunglasses Island,Cat-eye,Acetate,56-17-140,27,3290,,,,3024,220
-frames/Sunglasses/NY-S04_Noor_Gold_Brown_lens.glb,Sunglasses,NY-S04-50,Noor,Gold · Brown lens,Sunglasses Island,Round,Stainless steel,50-22-145,18,2990,,,,3212,85
-frames/Sunglasses/NY-S04_Noor_Silver_Grey_lens.glb,Sunglasses,NY-S04-50,Noor,Silver · Grey lens,Sunglasses Island,Round,Stainless steel,50-22-145,18,2990,,,,3212,85
-frames/Sunglasses/NY-S05_Orbit_Gold_Gold_mirror_lens.glb,Sunglasses,NY-S05-52,Orbit,Gold · Gold mirror lens,Sunglasses Island,Geometric,Stainless steel,52-20-145,20,3790,,,,3212,85
-frames/Sunglasses/NY-S05_Orbit_Gunmetal_Grey_lens.glb,Sunglasses,NY-S05-52,Orbit,Gunmetal · Grey lens,Sunglasses Island,Geometric,Stainless steel,52-20-145,20,3790,,,,3212,85
-frames/Sunglasses/NY-S06_Palm_Matte_black_Blue_mirror_lens.glb,Sunglasses,NY-S06-56,Palm,Matte black · Blue mirror lens,Sunglasses Island,Rectangle,TR90,56-16-140,22,2690,,,,3024,182
-frames/Sunglasses/NY-S06_Palm_Olive_G_15_green_lens.glb,Sunglasses,NY-S06-56,Palm,Olive · G-15 green lens,Sunglasses Island,Rectangle,TR90,56-16-140,22,2690,,,,3024,182
-frames/Sunglasses/NY-S07_Ravi_Havana_Gold_G_15_green_lens.glb,Sunglasses,NY-S07-52,Ravi,Havana · Gold · G-15 green lens,Sunglasses Island,Browline,Acetate and metal,52-20-145,24,3590,,,,4292,194
-frames/Sunglasses/NY-S07_Ravi_Jet_black_Silver_Grey_lens.glb,Sunglasses,NY-S07-52,Ravi,Jet black · Silver · Grey lens,Sunglasses Island,Browline,Acetate and metal,52-20-145,24,3590,,,,4292,157
-frames/Sunglasses/NY-S08_Sol_Gold_Rose_lens.glb,Sunglasses,NY-S08-51,Sol,Gold · Rose lens,Sunglasses Island,Oval,Stainless steel,51-19-140,16,2490,,,,3212,85
-frames/Sunglasses/NY-S08_Sol_Silver_Green_lens.glb,Sunglasses,NY-S08-51,Sol,Silver · Green lens,Sunglasses Island,Oval,Stainless steel,51-19-140,16,2490,,,,3212,85
-frames/Kids/NY-K01_Pip_Sky_blue.glb,Optical frame,NY-K01-44,Pip,Sky blue,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
-frames/Kids/NY-K01_Pip_Coral.glb,Optical frame,NY-K01-44,Pip,Coral,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
-frames/Kids/NY-K01_Pip_Sunflower.glb,Optical frame,NY-K01-44,Pip,Sunflower,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
-frames/Kids/NY-K02_Bolt_Navy.glb,Optical frame,NY-K02-46,Bolt,Navy,Kids Corner,Rectangle,TR90,46-15-125,13,1390,,,,3024,182
-frames/Kids/NY-K02_Bolt_Fire_red.glb,Optical frame,NY-K02-46,Bolt,Fire red,Kids Corner,Rectangle,TR90,46-15-125,13,1390,,,,3024,182
-frames/Kids/NY-K02_Bolt_Lime.glb,Optical frame,NY-K02-46,Bolt,Lime,Kids Corner,Rectangle,TR90,46-15-125,13,1390,,,,3024,182
-frames/Kids/NY-K03_Moon_Lilac.glb,Optical frame,NY-K03-42,Moon,Lilac,Kids Corner,Oval,TR90,42-16-120,11,1190,,,,3024,181
-frames/Kids/NY-K03_Moon_Mint.glb,Optical frame,NY-K03-42,Moon,Mint,Kids Corner,Oval,TR90,42-16-120,11,1190,,,,3024,181
-frames/Kids/NY-K04_Zip_Jet_black.glb,Optical frame,NY-K04-47,Zip,Jet black,Kids Corner,Square,TR90,47-16-130,14,1490,,,,3024,181
-frames/Kids/NY-K04_Zip_Tangerine.glb,Optical frame,NY-K04-47,Zip,Tangerine,Kids Corner,Square,TR90,47-16-130,14,1490,,,,3024,181
-frames/Kids/NY-K05_Sunny_Sunflower_Grey_lens.glb,Sunglasses,NY-K05-44,Sunny,Sunflower · Grey lens,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
-frames/Kids/NY-K05_Sunny_Coral_Brown_lens.glb,Sunglasses,NY-K05-44,Sunny,Coral · Brown lens,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
-frames/Atelier/NY-P01_Aurum_18K_gold.glb,Optical frame,NY-P01-48,Aurum,18K gold,Atelier Premium Gallery,Round,"Beta titanium, 18K gold plated",48-22-145,12,14900,,,,3212,85
-frames/Atelier/NY-P01_Aurum_Palladium.glb,Optical frame,NY-P01-48,Aurum,Palladium,Atelier Premium Gallery,Round,"Beta titanium, 18K gold plated",48-22-145,12,14900,,,,3212,85
-frames/Atelier/NY-P02_Noir_Jet_black.glb,Optical frame,NY-P02-53,Noir,Jet black,Atelier Premium Gallery,Square,Italian acetate,53-20-145,30,11900,,,,3024,181
-frames/Atelier/NY-P02_Noir_Dark_havana.glb,Optical frame,NY-P02-53,Noir,Dark havana,Atelier Premium Gallery,Square,Italian acetate,53-20-145,30,11900,,,,3024,219
-frames/Atelier/NY-P03_Seraph_Jet_black.glb,Optical frame,NY-P03-53,Seraph,Jet black,Atelier Premium Gallery,Cat-eye,Italian acetate,53-17-140,26,12900,,,,3024,182
-frames/Atelier/NY-P03_Seraph_Burgundy.glb,Optical frame,NY-P03-53,Seraph,Burgundy,Atelier Premium Gallery,Cat-eye,Italian acetate,53-17-140,26,12900,,,,3024,182
-frames/Atelier/NY-P04_Atlas_18K_gold_G_15_green_lens.glb,Sunglasses,NY-P04-58,Atlas,18K gold · G-15 green lens,Atelier Premium Gallery,Aviator,Titanium,58-14-145,22,16900,,,,3452,91
-frames/Atelier/NY-P04_Atlas_Palladium_Grey_lens.glb,Sunglasses,NY-P04-58,Atlas,Palladium · Grey lens,Atelier Premium Gallery,Aviator,Titanium,58-14-145,22,16900,,,,3452,91
-frames/Atelier/NY-P05_Vela_Rose_gold.glb,Optical frame,NY-P05-50,Vela,Rose gold,Atelier Premium Gallery,Geometric,Titanium,50-20-145,13,13900,,,,3212,85
-frames/Atelier/NY-P05_Vela_Gold.glb,Optical frame,NY-P05-50,Vela,Gold,Atelier Premium Gallery,Geometric,Titanium,50-20-145,13,13900,,,,3212,85
-frames/Atelier/NY-P06_Ember_Havana_Gold.glb,Optical frame,NY-P06-51,Ember,Havana · Gold,Atelier Premium Gallery,Browline,Acetate and titanium,51-21-145,21,10900,,,,4292,194
-frames/Atelier/NY-P06_Ember_Jet_black_Gold.glb,Optical frame,NY-P06-51,Ember,Jet black · Gold,Atelier Premium Gallery,Browline,Acetate and titanium,51-21-145,21,10900,,,,4292,157
-frames/Nayan_Frame_Library.glb,Library,,"Every frame in every colour on one grid (rows = styles, columns = colours, 220 mm spacing)",,,,,,,,,,,293032,5234
-products/NY-C01_Nayan_Daily_1_Day.glb,Contact lenses,NY-C01,Nayan Daily 1-Day,,Contact Lenses & Care,,,,,1450,30 lenses ₹1450 | 90 lenses ₹3950,,,12,4
-products/NY-C02_Nayan_Monthly_Comfort.glb,Contact lenses,NY-C02,Nayan Monthly Comfort,,Contact Lenses & Care,,,,,750,6 lenses ₹1350 | 3 lenses ₹750,,,12,4
-products/NY-C03_Nayan_Toric_Daily.glb,Contact lenses,NY-C03,Nayan Toric Daily,,Contact Lenses & Care,,,,,2150,30 lenses ₹2150,,,12,4
-products/NY-C04_Nayan_Colour_Tones.glb,Contact lenses,NY-C04,Nayan Colour Tones,,Contact Lenses & Care,,,,,1200,"2 lenses, hazel ₹1200 | 2 lenses, grey ₹1200 | 2 lenses, blue ₹1200",,,12,4
-products/NY-C05_All_in_One_Solution.glb,Lens care,NY-C05,All-in-One Solution,,Contact Lenses & Care,,,,,240,360 ml ₹550 | 120 ml travel ₹240,,,252,8
-products/NY-C06_Comfort_Drops.glb,Lens care,NY-C06,Comfort Drops,,Contact Lenses & Care,,,,,350,10 ml ₹350,,,252,8
-products/NY-C07_Lens_Case_Kit.glb,Lens care,NY-C07,Lens Case Kit,,Contact Lenses & Care,,,,,250,Kit ₹250,,,12,2
+frames/Men/BM-M01_Arlo_Jet_black.glb,Optical frame,BM-M01-53,Arlo,Jet black,Men’s Collection,Rectangle,Acetate,53-18-145,24,2490,,,,3024,182
+frames/Men/BM-M01_Arlo_Havana_tortoise.glb,Optical frame,BM-M01-53,Arlo,Havana tortoise,Men’s Collection,Rectangle,Acetate,53-18-145,24,2490,,,,3024,219
+frames/Men/BM-M01_Arlo_Bottle_green.glb,Optical frame,BM-M01-53,Arlo,Bottle green,Men’s Collection,Rectangle,Acetate,53-18-145,24,2490,,,,3024,182
+frames/Men/BM-M02_Brook_Matte_black.glb,Optical frame,BM-M02-54,Brook,Matte black,Men’s Collection,Square,Acetate,54-19-145,28,2990,,,,3024,181
+frames/Men/BM-M02_Brook_Navy.glb,Optical frame,BM-M02-54,Brook,Navy,Men’s Collection,Square,Acetate,54-19-145,28,2990,,,,3024,181
+frames/Men/BM-M02_Brook_Havana_tortoise.glb,Optical frame,BM-M02-54,Brook,Havana tortoise,Men’s Collection,Square,Acetate,54-19-145,28,2990,,,,3024,219
+frames/Men/BM-M03_Cove_Gold.glb,Optical frame,BM-M03-49,Cove,Gold,Men’s Collection,Round,Titanium,49-21-145,14,3490,,,,3212,85
+frames/Men/BM-M03_Cove_Gunmetal.glb,Optical frame,BM-M03-49,Cove,Gunmetal,Men’s Collection,Round,Titanium,49-21-145,14,3490,,,,3212,85
+frames/Men/BM-M04_Drift_Gunmetal.glb,Optical frame,BM-M04-55,Drift,Gunmetal,Men’s Collection,Rectangle,Stainless steel,55-17-145,18,2790,,,,3212,85
+frames/Men/BM-M04_Drift_Silver.glb,Optical frame,BM-M04-55,Drift,Silver,Men’s Collection,Rectangle,Stainless steel,55-17-145,18,2790,,,,3212,85
+frames/Men/BM-M04_Drift_Black.glb,Optical frame,BM-M04-55,Drift,Black,Men’s Collection,Rectangle,Stainless steel,55-17-145,18,2790,,,,3212,85
+frames/Men/BM-M05_Elm_Jet_black_Gold.glb,Optical frame,BM-M05-51,Elm,Jet black · Gold,Men’s Collection,Browline,Acetate and metal,51-20-145,22,3290,,,,4292,157
+frames/Men/BM-M05_Elm_Havana_Silver.glb,Optical frame,BM-M05-51,Elm,Havana · Silver,Men’s Collection,Browline,Acetate and metal,51-20-145,22,3290,,,,4292,194
+frames/Men/BM-M06_Flint_Gunmetal.glb,Optical frame,BM-M06-50,Flint,Gunmetal,Men’s Collection,Geometric,Titanium,50-20-145,15,3690,,,,3212,85
+frames/Men/BM-M06_Flint_Gold.glb,Optical frame,BM-M06-50,Flint,Gold,Men’s Collection,Geometric,Titanium,50-20-145,15,3690,,,,3212,85
+frames/Men/BM-M07_Grove_Matte_black.glb,Optical frame,BM-M07-54,Grove,Matte black,Men’s Collection,Rectangle,TR90,54-17-140,16,1790,,,,3024,182
+frames/Men/BM-M07_Grove_Grey_crystal.glb,Optical frame,BM-M07-54,Grove,Grey crystal,Men’s Collection,Rectangle,TR90,54-17-140,16,1790,,,,3024,182
+frames/Men/BM-M08_Haven_Silver.glb,Optical frame,BM-M08-52,Haven,Silver,Men’s Collection,Oval,Stainless steel,52-18-140,17,2190,,,,3212,85
+frames/Men/BM-M08_Haven_Gunmetal.glb,Optical frame,BM-M08-52,Haven,Gunmetal,Men’s Collection,Oval,Stainless steel,52-18-140,17,2190,,,,3212,85
+frames/Men/BM-M09_Indus_Havana_tortoise.glb,Optical frame,BM-M09-49,Indus,Havana tortoise,Men’s Collection,Round,Acetate,49-21-145,23,2690,,,,3024,219
+frames/Men/BM-M09_Indus_Jet_black.glb,Optical frame,BM-M09-49,Indus,Jet black,Men’s Collection,Round,Acetate,49-21-145,23,2690,,,,3024,181
+frames/Men/BM-M10_Jasper_Navy.glb,Optical frame,BM-M10-52,Jasper,Navy,Men’s Collection,Oval,Acetate,52-18-145,22,2390,,,,3024,181
+frames/Men/BM-M10_Jasper_Grey_crystal.glb,Optical frame,BM-M10-52,Jasper,Grey crystal,Men’s Collection,Oval,Acetate,52-18-145,22,2390,,,,3024,182
+frames/Men/BM-M11_Kabir_Black.glb,Optical frame,BM-M11-54,Kabir,Black,Men’s Collection,Rectangle,Titanium,54-18-145,13,3890,,,,3212,85
+frames/Men/BM-M11_Kabir_Gold.glb,Optical frame,BM-M11-54,Kabir,Gold,Men’s Collection,Rectangle,Titanium,54-18-145,13,3890,,,,3212,85
+frames/Men/BM-M12_Loch_Olive.glb,Optical frame,BM-M12-52,Loch,Olive,Men’s Collection,Rectangle,Acetate,52-19-145,21,2290,,,,3024,182
+frames/Men/BM-M12_Loch_Crystal.glb,Optical frame,BM-M12-52,Loch,Crystal,Men’s Collection,Rectangle,Acetate,52-19-145,21,2290,,,,3024,182
+frames/Women/BM-W01_Mira_Havana_tortoise.glb,Optical frame,BM-W01-52,Mira,Havana tortoise,Women’s Collection,Cat-eye,Acetate,52-17-140,22,2890,,,,3024,220
+frames/Women/BM-W01_Mira_Burgundy.glb,Optical frame,BM-W01-52,Mira,Burgundy,Women’s Collection,Cat-eye,Acetate,52-17-140,22,2890,,,,3024,182
+frames/Women/BM-W01_Mira_Jet_black.glb,Optical frame,BM-W01-52,Mira,Jet black,Women’s Collection,Cat-eye,Acetate,52-17-140,22,2890,,,,3024,182
+frames/Women/BM-W02_Nila_Blush_crystal.glb,Optical frame,BM-W02-48,Nila,Blush crystal,Women’s Collection,Round,Acetate,48-20-140,20,2490,,,,3024,181
+frames/Women/BM-W02_Nila_Honey_tortoise.glb,Optical frame,BM-W02-48,Nila,Honey tortoise,Women’s Collection,Round,Acetate,48-20-140,20,2490,,,,3024,219
+frames/Women/BM-W02_Nila_Ivory.glb,Optical frame,BM-W02-48,Nila,Ivory,Women’s Collection,Round,Acetate,48-20-140,20,2490,,,,3024,181
+frames/Women/BM-W03_Opal_Jet_black.glb,Optical frame,BM-W03-55,Opal,Jet black,Women’s Collection,Oversized square,Acetate,55-16-140,27,3190,,,,3024,182
+frames/Women/BM-W03_Opal_Olive.glb,Optical frame,BM-W03-55,Opal,Olive,Women’s Collection,Oversized square,Acetate,55-16-140,27,3190,,,,3024,182
+frames/Women/BM-W03_Opal_Honey_tortoise.glb,Optical frame,BM-W03-55,Opal,Honey tortoise,Women’s Collection,Oversized square,Acetate,55-16-140,27,3190,,,,3024,219
+frames/Women/BM-W04_Pari_Rose_gold.glb,Optical frame,BM-W04-52,Pari,Rose gold,Women’s Collection,Cat-eye,Stainless steel,52-17-140,15,3390,,,,3212,85
+frames/Women/BM-W04_Pari_Gold.glb,Optical frame,BM-W04-52,Pari,Gold,Women’s Collection,Cat-eye,Stainless steel,52-17-140,15,3390,,,,3212,85
+frames/Women/BM-W05_Quill_Rose_gold.glb,Optical frame,BM-W05-51,Quill,Rose gold,Women’s Collection,Geometric,Titanium,51-19-140,14,3590,,,,3212,85
+frames/Women/BM-W05_Quill_Silver.glb,Optical frame,BM-W05-51,Quill,Silver,Women’s Collection,Geometric,Titanium,51-19-140,14,3590,,,,3212,85
+frames/Women/BM-W06_Rhea_Blush_pink.glb,Optical frame,BM-W06-51,Rhea,Blush pink,Women’s Collection,Oval,Acetate,51-18-140,20,2290,,,,3024,182
+frames/Women/BM-W06_Rhea_Bottle_green.glb,Optical frame,BM-W06-51,Rhea,Bottle green,Women’s Collection,Oval,Acetate,51-18-140,20,2290,,,,3024,182
+frames/Women/BM-W06_Rhea_Crystal.glb,Optical frame,BM-W06-51,Rhea,Crystal,Women’s Collection,Oval,Acetate,51-18-140,20,2290,,,,3024,182
+frames/Women/BM-W07_Sana_Navy.glb,Optical frame,BM-W07-51,Sana,Navy,Women’s Collection,Rectangle,Acetate,51-17-140,19,1990,,,,3024,182
+frames/Women/BM-W07_Sana_Blush_crystal.glb,Optical frame,BM-W07-51,Sana,Blush crystal,Women’s Collection,Rectangle,Acetate,51-17-140,19,1990,,,,3024,182
+frames/Women/BM-W08_Tara_Rose_gold.glb,Optical frame,BM-W08-48,Tara,Rose gold,Women’s Collection,Round,Stainless steel,48-20-140,13,2690,,,,3212,85
+frames/Women/BM-W08_Tara_Gold.glb,Optical frame,BM-W08-48,Tara,Gold,Women’s Collection,Round,Stainless steel,48-20-140,13,2690,,,,3212,85
+frames/Women/BM-W09_Uma_Burgundy.glb,Optical frame,BM-W09-52,Uma,Burgundy,Women’s Collection,Rectangle,Acetate,52-17-140,21,2590,,,,3024,182
+frames/Women/BM-W09_Uma_Havana_tortoise.glb,Optical frame,BM-W09-52,Uma,Havana tortoise,Women’s Collection,Rectangle,Acetate,52-17-140,21,2590,,,,3024,219
+frames/Women/BM-W10_Veda_Ivory.glb,Optical frame,BM-W10-54,Veda,Ivory,Women’s Collection,Oversized square,Acetate,54-17-140,25,2990,,,,3024,182
+frames/Women/BM-W10_Veda_Blush_crystal.glb,Optical frame,BM-W10-54,Veda,Blush crystal,Women’s Collection,Oversized square,Acetate,54-17-140,25,2990,,,,3024,182
+frames/Sunglasses/BM-S01_Kite_Gold_G_15_green_lens.glb,Sunglasses,BM-S01-58,Kite,Gold · G-15 green lens,Sunglasses Island,Aviator,Stainless steel,58-14-140,26,3990,,,,3452,91
+frames/Sunglasses/BM-S01_Kite_Silver_Blue_mirror_lens.glb,Sunglasses,BM-S01-58,Kite,Silver · Blue mirror lens,Sunglasses Island,Aviator,Stainless steel,58-14-140,26,3990,,,,3452,91
+frames/Sunglasses/BM-S01_Kite_Gunmetal_Grey_lens.glb,Sunglasses,BM-S01-58,Kite,Gunmetal · Grey lens,Sunglasses Island,Aviator,Stainless steel,58-14-140,26,3990,,,,3452,91
+frames/Sunglasses/BM-S02_Laguna_Jet_black_Grey_lens.glb,Sunglasses,BM-S02-55,Laguna,Jet black · Grey lens,Sunglasses Island,Square,Acetate,55-18-145,30,3490,,,,3024,181
+frames/Sunglasses/BM-S02_Laguna_Havana_tortoise_Brown_lens.glb,Sunglasses,BM-S02-55,Laguna,Havana tortoise · Brown lens,Sunglasses Island,Square,Acetate,55-18-145,30,3490,,,,3024,219
+frames/Sunglasses/BM-S03_Marina_Jet_black_Grey_lens.glb,Sunglasses,BM-S03-56,Marina,Jet black · Grey lens,Sunglasses Island,Cat-eye,Acetate,56-17-140,27,3290,,,,3024,182
+frames/Sunglasses/BM-S03_Marina_Honey_tortoise_Brown_lens.glb,Sunglasses,BM-S03-56,Marina,Honey tortoise · Brown lens,Sunglasses Island,Cat-eye,Acetate,56-17-140,27,3290,,,,3024,220
+frames/Sunglasses/BM-S04_Noor_Gold_Brown_lens.glb,Sunglasses,BM-S04-50,Noor,Gold · Brown lens,Sunglasses Island,Round,Stainless steel,50-22-145,18,2990,,,,3212,85
+frames/Sunglasses/BM-S04_Noor_Silver_Grey_lens.glb,Sunglasses,BM-S04-50,Noor,Silver · Grey lens,Sunglasses Island,Round,Stainless steel,50-22-145,18,2990,,,,3212,85
+frames/Sunglasses/BM-S05_Orbit_Gold_Gold_mirror_lens.glb,Sunglasses,BM-S05-52,Orbit,Gold · Gold mirror lens,Sunglasses Island,Geometric,Stainless steel,52-20-145,20,3790,,,,3212,85
+frames/Sunglasses/BM-S05_Orbit_Gunmetal_Grey_lens.glb,Sunglasses,BM-S05-52,Orbit,Gunmetal · Grey lens,Sunglasses Island,Geometric,Stainless steel,52-20-145,20,3790,,,,3212,85
+frames/Sunglasses/BM-S06_Palm_Matte_black_Blue_mirror_lens.glb,Sunglasses,BM-S06-56,Palm,Matte black · Blue mirror lens,Sunglasses Island,Rectangle,TR90,56-16-140,22,2690,,,,3024,182
+frames/Sunglasses/BM-S06_Palm_Olive_G_15_green_lens.glb,Sunglasses,BM-S06-56,Palm,Olive · G-15 green lens,Sunglasses Island,Rectangle,TR90,56-16-140,22,2690,,,,3024,182
+frames/Sunglasses/BM-S07_Ravi_Havana_Gold_G_15_green_lens.glb,Sunglasses,BM-S07-52,Ravi,Havana · Gold · G-15 green lens,Sunglasses Island,Browline,Acetate and metal,52-20-145,24,3590,,,,4292,194
+frames/Sunglasses/BM-S07_Ravi_Jet_black_Silver_Grey_lens.glb,Sunglasses,BM-S07-52,Ravi,Jet black · Silver · Grey lens,Sunglasses Island,Browline,Acetate and metal,52-20-145,24,3590,,,,4292,157
+frames/Sunglasses/BM-S08_Sol_Gold_Rose_lens.glb,Sunglasses,BM-S08-51,Sol,Gold · Rose lens,Sunglasses Island,Oval,Stainless steel,51-19-140,16,2490,,,,3212,85
+frames/Sunglasses/BM-S08_Sol_Silver_Green_lens.glb,Sunglasses,BM-S08-51,Sol,Silver · Green lens,Sunglasses Island,Oval,Stainless steel,51-19-140,16,2490,,,,3212,85
+frames/Kids/BM-K01_Pip_Sky_blue.glb,Optical frame,BM-K01-44,Pip,Sky blue,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
+frames/Kids/BM-K01_Pip_Coral.glb,Optical frame,BM-K01-44,Pip,Coral,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
+frames/Kids/BM-K01_Pip_Sunflower.glb,Optical frame,BM-K01-44,Pip,Sunflower,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
+frames/Kids/BM-K02_Bolt_Navy.glb,Optical frame,BM-K02-46,Bolt,Navy,Kids Corner,Rectangle,TR90,46-15-125,13,1390,,,,3024,182
+frames/Kids/BM-K02_Bolt_Fire_red.glb,Optical frame,BM-K02-46,Bolt,Fire red,Kids Corner,Rectangle,TR90,46-15-125,13,1390,,,,3024,182
+frames/Kids/BM-K02_Bolt_Lime.glb,Optical frame,BM-K02-46,Bolt,Lime,Kids Corner,Rectangle,TR90,46-15-125,13,1390,,,,3024,182
+frames/Kids/BM-K03_Moon_Lilac.glb,Optical frame,BM-K03-42,Moon,Lilac,Kids Corner,Oval,TR90,42-16-120,11,1190,,,,3024,181
+frames/Kids/BM-K03_Moon_Mint.glb,Optical frame,BM-K03-42,Moon,Mint,Kids Corner,Oval,TR90,42-16-120,11,1190,,,,3024,181
+frames/Kids/BM-K04_Zip_Jet_black.glb,Optical frame,BM-K04-47,Zip,Jet black,Kids Corner,Square,TR90,47-16-130,14,1490,,,,3024,181
+frames/Kids/BM-K04_Zip_Tangerine.glb,Optical frame,BM-K04-47,Zip,Tangerine,Kids Corner,Square,TR90,47-16-130,14,1490,,,,3024,181
+frames/Kids/BM-K05_Sunny_Sunflower_Grey_lens.glb,Sunglasses,BM-K05-44,Sunny,Sunflower · Grey lens,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
+frames/Kids/BM-K05_Sunny_Coral_Brown_lens.glb,Sunglasses,BM-K05-44,Sunny,Coral · Brown lens,Kids Corner,Round,TR90,44-16-125,12,1290,,,,3024,181
+frames/Atelier/BM-P01_Aurum_18K_gold.glb,Optical frame,BM-P01-48,Aurum,18K gold,Atelier Premium Gallery,Round,"Beta titanium, 18K gold plated",48-22-145,12,14900,,,,3212,85
+frames/Atelier/BM-P01_Aurum_Palladium.glb,Optical frame,BM-P01-48,Aurum,Palladium,Atelier Premium Gallery,Round,"Beta titanium, 18K gold plated",48-22-145,12,14900,,,,3212,85
+frames/Atelier/BM-P02_Noir_Jet_black.glb,Optical frame,BM-P02-53,Noir,Jet black,Atelier Premium Gallery,Square,Italian acetate,53-20-145,30,11900,,,,3024,181
+frames/Atelier/BM-P02_Noir_Dark_havana.glb,Optical frame,BM-P02-53,Noir,Dark havana,Atelier Premium Gallery,Square,Italian acetate,53-20-145,30,11900,,,,3024,219
+frames/Atelier/BM-P03_Seraph_Jet_black.glb,Optical frame,BM-P03-53,Seraph,Jet black,Atelier Premium Gallery,Cat-eye,Italian acetate,53-17-140,26,12900,,,,3024,182
+frames/Atelier/BM-P03_Seraph_Burgundy.glb,Optical frame,BM-P03-53,Seraph,Burgundy,Atelier Premium Gallery,Cat-eye,Italian acetate,53-17-140,26,12900,,,,3024,182
+frames/Atelier/BM-P04_Atlas_18K_gold_G_15_green_lens.glb,Sunglasses,BM-P04-58,Atlas,18K gold · G-15 green lens,Atelier Premium Gallery,Aviator,Titanium,58-14-145,22,16900,,,,3452,91
+frames/Atelier/BM-P04_Atlas_Palladium_Grey_lens.glb,Sunglasses,BM-P04-58,Atlas,Palladium · Grey lens,Atelier Premium Gallery,Aviator,Titanium,58-14-145,22,16900,,,,3452,91
+frames/Atelier/BM-P05_Vela_Rose_gold.glb,Optical frame,BM-P05-50,Vela,Rose gold,Atelier Premium Gallery,Geometric,Titanium,50-20-145,13,13900,,,,3212,85
+frames/Atelier/BM-P05_Vela_Gold.glb,Optical frame,BM-P05-50,Vela,Gold,Atelier Premium Gallery,Geometric,Titanium,50-20-145,13,13900,,,,3212,85
+frames/Atelier/BM-P06_Ember_Havana_Gold.glb,Optical frame,BM-P06-51,Ember,Havana · Gold,Atelier Premium Gallery,Browline,Acetate and titanium,51-21-145,21,10900,,,,4292,194
+frames/Atelier/BM-P06_Ember_Jet_black_Gold.glb,Optical frame,BM-P06-51,Ember,Jet black · Gold,Atelier Premium Gallery,Browline,Acetate and titanium,51-21-145,21,10900,,,,4292,157
+frames/Brijman_Frame_Library.glb,Library,,"Every frame in every colour on one grid (rows = styles, columns = colours, 220 mm spacing)",,,,,,,,,,,293032,5234
+products/BM-C01_Brijman_Daily_1_Day.glb,Contact lenses,BM-C01,Brijman Daily 1-Day,,Contact Lenses & Care,,,,,1450,30 lenses ₹1450 | 90 lenses ₹3950,,,12,4
+products/BM-C02_Brijman_Monthly_Comfort.glb,Contact lenses,BM-C02,Brijman Monthly Comfort,,Contact Lenses & Care,,,,,750,6 lenses ₹1350 | 3 lenses ₹750,,,12,4
+products/BM-C03_Brijman_Toric_Daily.glb,Contact lenses,BM-C03,Brijman Toric Daily,,Contact Lenses & Care,,,,,2150,30 lenses ₹2150,,,12,4
+products/BM-C04_Brijman_Colour_Tones.glb,Contact lenses,BM-C04,Brijman Colour Tones,,Contact Lenses & Care,,,,,1200,"2 lenses, hazel ₹1200 | 2 lenses, grey ₹1200 | 2 lenses, blue ₹1200",,,12,4
+products/BM-C05_All_in_One_Solution.glb,Lens care,BM-C05,All-in-One Solution,,Contact Lenses & Care,,,,,240,360 ml ₹550 | 120 ml travel ₹240,,,252,8
+products/BM-C06_Comfort_Drops.glb,Lens care,BM-C06,Comfort Drops,,Contact Lenses & Care,,,,,350,10 ml ₹350,,,252,8
+products/BM-C07_Lens_Case_Kit.glb,Lens care,BM-C07,Lens Case Kit,,Contact Lenses & Care,,,,,250,Kit ₹250,,,12,2
