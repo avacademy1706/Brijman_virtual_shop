@@ -24,3 +24,30 @@ export const ARCH = {
  * @returns {string|null}
  */
 export const shapeOf = (p) => (p.type === 'frame' && ARCH[p.arch] ? ARCH[p.arch].shape : null);
+
+/**
+ * Width the endpieces and rims add beyond 2 × lens + bridge, in mm, per archetype. Measured from the generated
+ * geometry (src/three/frame-model.js); tests/three/frame-model.test.js keeps them within ±0.5 mm.
+ */
+export const ENDPIECE_MM = Object.freeze({
+  rectA: 10.25,
+  squareA: 12.6,
+  roundA: 9.55,
+  ovalA: 9.55,
+  cateyeA: 11.6,
+  oversizeA: 11.2,
+  roundM: 4.2,
+  rectM: 5.0,
+  ovalM: 4.2,
+  cateyeM: 6.25,
+  geoM: 3.3,
+  aviatorM: 4.2,
+  browC: 13.25,
+});
+
+/**
+ * Total outer width of a frame front in mm: 2 × lens + bridge + endpieces.
+ * @param {{arch: string}} p frame
+ * @param {{lens: number, bridge: number}} size
+ */
+export const frontWidthMm = (p, size) => 2 * size.lens + size.bridge + (ENDPIECE_MM[p.arch] || 8);

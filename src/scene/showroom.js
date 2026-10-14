@@ -5,6 +5,13 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import { BM } from '../core/bm.js';
+import {
+  buildArch,
+  frameGeometry,
+  createFrameMaterials,
+  partsFor as framePartsFor,
+  tortTexture,
+} from '../three/frame-model.js';
 start().catch((err) => {
   console.error(err);
   if (BM && BM.fail3D) BM.fail3D(err);
@@ -215,32 +222,6 @@ async function start() {
     g.putImageData(img, 0, 0);
     return ctex(c, { srgb: false });
   }
-  function texTort(light) {
-    const S = 512,
-      c = mk(S, S),
-      g = c.getContext('2d'),
-      R = rng(light ? 21 : 11);
-    g.fillStyle = light ? '#d2a05c' : '#86501f';
-    g.fillRect(0, 0, S, S);
-    const blob = (x, y, r, col, a) =>
-      wrapDraw(S, x, y, r, (ox, oy) => {
-        const gr = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
-        gr.addColorStop(0, rgba(col, a));
-        gr.addColorStop(0.6, rgba(col, a * 0.6));
-        gr.addColorStop(1, rgba(col, 0));
-        g.fillStyle = gr;
-        g.beginPath();
-        g.arc(x + ox, y + oy, r, 0, 6.283);
-        g.fill();
-      });
-    for (let i = 0; i < 70; i++) blob(R() * S, R() * S, 30 + R() * 70, light ? '#e6be7e' : '#a8682c', 0.5);
-    for (let i = 0; i < 150; i++)
-      blob(R() * S, R() * S, 8 + R() * 38, light ? '#7a4a1e' : '#2a1408', 0.55 + R() * 0.35);
-    for (let i = 0; i < 240; i++) blob(R() * S, R() * S, 2 + R() * 6, light ? '#5a3410' : '#1a0c04', 0.6);
-    const t = ctex(c);
-    t.repeat.set(30, 30);
-    return t;
-  }
   function texSoftRect() {
     const S = 128,
       c = mk(S, S),
@@ -436,8 +417,8 @@ async function start() {
     walnut: texWood('#5b3a25', '#2a160b', '#8a5a37', 3),
     oak: texWood('#c19a70', '#7a5533', '#dcb791', 5),
     flute: texFlute(),
-    tort: texTort(false),
-    tortL: texTort(true),
+    tort: tortTexture(false, maxAniso),
+    tortL: tortTexture(true, maxAniso),
     sRect: texSoftRect(),
     sRound: texSoftRound(),
     sEdge: texEdge(),
@@ -1199,255 +1180,11 @@ async function start() {
   /* ------------------------------------------------------------------
      Frames: procedural geometry from each archetype, drawn as instances
      ------------------------------------------------------------------ */
-  function offsetPts(pts, d) {
-    const n = pts.length,
-      out = new Array(n);
-    for (let i = 0; i < n; i++) {
-      const p0 = pts[(i - 1 + n) % n],
-        p1 = pts[i],
-        p2 = pts[(i + 1) % n];
-      let tx = p2.x - p0.x,
-        ty = p2.y - p0.y;
-      const l = Math.hypot(tx, ty) || 1;
-      tx /= l;
-      ty /= l;
-      out[i] = new V2(p1.x + ty * d, p1.y - tx * d);
-    }
-    return out;
-  }
-  function mergeList(list) {
-    if (!list.length) return null;
-    const gs = list.map((g) => {
-      const n = g.index ? g.toNonIndexed() : g;
-      for (const k of Object.keys(n.attributes))
-        if (k !== 'position' && k !== 'normal' && k !== 'uv') n.deleteAttribute(k);
-      return n;
-    });
-    const out = mergeGeometries(gs, false);
-    out.computeBoundingBox();
-    out.computeBoundingSphere();
-    return out;
-  }
-  function buildArch(a) {
-    const base = BM.outline(a.shape, a.A, a.B, 56).map((p) => new V2(p.x, p.y));
-    const style = a.style,
-      th = a.thick || 1;
-    const rimT = style === 'acetate' ? 0.0042 * th : 0.0012;
-    const depth = style === 'acetate' ? 0.0042 * th : 0.002;
-    const cxR = a.dbl / 2 + a.A / 2;
-    const ace = [],
-      met = [],
-      lens = [];
-    let maxX = -1,
-      maxY = -1;
-    for (const p of base) {
-      maxX = Math.max(maxX, p.x);
-      maxY = Math.max(maxY, p.y);
-    }
-    const sides = {};
-    for (const side of [1, -1]) {
-      const pts = side === 1 ? base : base.map((p) => new V2(-p.x, p.y)).reverse();
-      const m = new THREE.Matrix4()
-        .makeTranslation(side * cxR, 0, 0)
-        .multiply(new THREE.Matrix4().makeRotationY(side * 0.06));
-      sides[side] = m;
-      const lg = new THREE.ShapeGeometry(new THREE.Shape(offsetPts(pts, -0.0003)), 1);
-      lg.applyMatrix4(m);
-      lens.push(lg);
-      if (style === 'acetate') {
-        const sh = new THREE.Shape(offsetPts(pts, rimT));
-        sh.holes.push(new THREE.Path(pts));
-        const g = new THREE.ExtrudeGeometry(sh, {
-          depth,
-          bevelEnabled: true,
-          bevelThickness: 0.0007,
-          bevelSize: 0.0005,
-          bevelSegments: 1,
-          steps: 1,
-        });
-        g.translate(0, 0, -depth / 2);
-        g.applyMatrix4(m);
-        ace.push(g);
-      } else {
-        const curve = new THREE.CatmullRomCurve3(
-          pts.map((p) => new V3(p.x, p.y, 0)),
-          true,
-          'centripetal',
-        );
-        const g = new THREE.TubeGeometry(curve, 72, style === 'combo' ? 0.0007 : 0.00085, 6, true);
-        g.applyMatrix4(m);
-        met.push(g);
-        if (style === 'combo') {
-          const idx = BM.topArc(pts, a.B * 0.06);
-          if (idx.length > 2) {
-            const outer = offsetPts(pts, 0.0058);
-            const shape = new THREE.Shape(idx.map((i) => outer[i]).concat(idx.map((i) => pts[i]).reverse()));
-            const bd = 0.0048;
-            const g2 = new THREE.ExtrudeGeometry(shape, {
-              depth: bd,
-              bevelEnabled: true,
-              bevelThickness: 0.0006,
-              bevelSize: 0.0004,
-              bevelSegments: 1,
-              steps: 1,
-            });
-            g2.translate(0, 0, -bd / 2 + 0.0008);
-            g2.applyMatrix4(m);
-            ace.push(g2);
-          }
-        }
-      }
-    }
-    const yB = a.B * 0.12;
-    if (style === 'acetate') {
-      const span = a.dbl / 2 + rimT * 1.2,
-        hb = 0.0052 * th,
-        N = 12;
-      const shp = new THREE.Shape();
-      shp.moveTo(-span, yB + hb);
-      for (let i = 1; i <= N; i++) {
-        const x = -span + (2 * span * i) / N;
-        shp.lineTo(x, yB + hb + 0.0006 * Math.cos((Math.PI * x) / (2 * span)));
-      }
-      for (let i = N; i >= 0; i--) {
-        const x = -span + (2 * span * i) / N;
-        shp.lineTo(x, yB + 0.0028 * Math.cos((Math.PI * x) / (2 * span)));
-      }
-      const g = new THREE.ExtrudeGeometry(shp, {
-        depth,
-        bevelEnabled: true,
-        bevelThickness: 0.0006,
-        bevelSize: 0.0004,
-        bevelSegments: 1,
-        steps: 1,
-      });
-      g.translate(0, 0, -depth / 2 + 0.0012);
-      ace.push(g);
-    } else {
-      const c = new THREE.CatmullRomCurve3([
-        new V3(-a.dbl / 2 - 0.001, yB, 0.0005),
-        new V3(-a.dbl / 4, yB + 0.0028, 0.0018),
-        new V3(0, yB + 0.0035, 0.0022),
-        new V3(a.dbl / 4, yB + 0.0028, 0.0018),
-        new V3(a.dbl / 2 + 0.001, yB, 0.0005),
-      ]);
-      met.push(new THREE.TubeGeometry(c, 20, 0.0009, 6, false));
-      if (a.dbridge) {
-        const ty = maxY * 0.8;
-        const c2 = new THREE.CatmullRomCurve3([
-          new V3(-(cxR - a.A * 0.1), ty, 0.0004),
-          new V3(0, ty + 0.0012, 0.0016),
-          new V3(cxR - a.A * 0.1, ty, 0.0004),
-        ]);
-        met.push(new THREE.TubeGeometry(c2, 20, 0.00085, 6, false));
-      }
-      for (const sd of [1, -1]) {
-        const arm = new THREE.CatmullRomCurve3([
-          new V3(sd * (a.dbl / 2 + 0.0008), yB - 0.001, -0.0005),
-          new V3(sd * (a.dbl / 2 - 0.0005), yB - 0.006, -0.004),
-          new V3(sd * (a.dbl / 2 - 0.0018), -a.B * 0.02, -0.0065),
-        ]);
-        met.push(new THREE.TubeGeometry(arm, 8, 0.0005, 5, false));
-        const pad = new THREE.SphereGeometry(0.0045, 10, 8);
-        pad.scale(0.42, 1, 0.22);
-        pad.rotateZ(sd * 0.25);
-        pad.translate(sd * (a.dbl / 2 - 0.0022), -a.B * 0.05, -0.0075);
-        met.push(pad);
-      }
-    }
-    const hingeY = Math.min(maxY * 0.55, a.B * 0.24);
-    const hingeOff = style === 'acetate' ? rimT * 0.55 : style === 'combo' ? 0.0035 : 0.0007;
-    for (const sd of [1, -1]) {
-      const hp = new V3(sd * (maxX + hingeOff), hingeY, -depth * 0.3).applyMatrix4(sides[sd]);
-      const pts3 = [
-        hp,
-        new V3(hp.x + sd * 0.003, hp.y, hp.z - 0.02),
-        new V3(hp.x + sd * 0.0055, hp.y - 0.0008, hp.z - 0.075),
-        new V3(hp.x + sd * 0.006, hp.y - 0.0035, hp.z - 0.112),
-        new V3(hp.x + sd * 0.0052, hp.y - 0.015, hp.z - 0.131),
-        new V3(hp.x + sd * 0.0042, hp.y - 0.031, hp.z - 0.142),
-      ];
-      const curve = new THREE.CatmullRomCurve3(pts3, false, 'centripetal');
-      const tg = new THREE.TubeGeometry(
-        curve,
-        28,
-        style === 'acetate' ? 0.0015 * th : style === 'combo' ? 0.0013 : 0.0008,
-        style === 'metal' ? 6 : 8,
-        false,
-      );
-      if (style === 'metal') met.push(tg);
-      else ace.push(tg);
-      if (style === 'acetate') {
-        const end = new THREE.BoxGeometry(0.0045, 0.0062, 0.007);
-        end.translate(hp.x - sd * 0.0006, hp.y, hp.z - 0.002);
-        ace.push(end);
-      } else {
-        const hinge = new THREE.BoxGeometry(0.003, 0.004, 0.005);
-        hinge.translate(hp.x, hp.y, hp.z - 0.0015);
-        met.push(hinge);
-      }
-    }
-    const res = { acetate: mergeList(ace), metal: mergeList(met), lens: mergeList(lens) };
-    let my = 1;
-    for (const k of ['acetate', 'metal', 'lens']) if (res[k]) my = Math.min(my, res[k].boundingBox.min.y);
-    res.minY = my;
-    return res;
-  }
   const ARCHGEO = {};
   const archGeo = (id) => ARCHGEO[id] || (ARCHGEO[id] = buildArch(BM.ARCH[id]));
 
-  const phys = (o) => new THREE.MeshPhysicalMaterial(o);
-  const FM = {
-    solid: phys({ color: 0xffffff, roughness: 0.3, clearcoat: 0.8, clearcoatRoughness: 0.12 }),
-    matte: std({ color: 0xffffff, roughness: 0.72 }),
-    tort: phys({ color: 0xffffff, map: tex.tort, roughness: 0.3, clearcoat: 0.9, clearcoatRoughness: 0.1 }),
-    tortL: phys({ color: 0xffffff, map: tex.tortL, roughness: 0.3, clearcoat: 0.9, clearcoatRoughness: 0.1 }),
-    clear: phys({ color: 0xffffff, roughness: 0.12, clearcoat: 0.6, transparent: true, opacity: 0.62 }),
-    metal: std({ color: 0xffffff, roughness: 0.24, metalness: 1 }),
-    lensClear: phys({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.16,
-      roughness: 0.02,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-    }),
-    lensTint: phys({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.84,
-      roughness: 0.06,
-      metalness: 0.15,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-    }),
-    lensMirror: std({
-      color: 0xffffff,
-      roughness: 0.08,
-      metalness: 0.95,
-      transparent: true,
-      opacity: 0.95,
-      side: THREE.DoubleSide,
-    }),
-  };
-  function partsFor(p, col) {
-    const G = archGeo(p.arch),
-      out = [];
-    if (G.acetate)
-      out.push({
-        part: 'acetate',
-        kind:
-          col.k === 'tort' ? (col.tl ? 'tortL' : 'tort') : col.k === 'clear' ? 'clear' : col.matte ? 'matte' : 'solid',
-        color: new THREE.Color(col.a || '#222222'),
-      });
-    if (G.metal) out.push({ part: 'metal', kind: 'metal', color: new THREE.Color(col.m || '#c8c8c8') });
-    out.push({
-      part: 'lens',
-      kind: p.sun ? (col.lk === 'mirror' ? 'lensMirror' : 'lensTint') : 'lensClear',
-      color: new THREE.Color(p.sun ? col.l : '#ffffff'),
-    });
-    return out;
-  }
+  const FM = createFrameMaterials(tex);
+  const partsFor = (p, col) => framePartsFor(p, col, archGeo(p.arch));
 
   const groups = new Map();
   const records = [];
@@ -2336,20 +2073,21 @@ async function start() {
     VW = { r: r2, sc, cam, ctr, group, el: null, active: false, pid: null, mats: [] };
     return VW;
   }
-  function buildViewerModel(pid, ci) {
+  function buildViewerModel(pid, ci, sizeId) {
     const p = BM.byId[pid],
-      G = archGeo(p.arch),
+      G = frameGeometry(p, sizeId),
       col = BM.colorOf(p, ci);
     for (const m of VW.mats) m.dispose();
     VW.mats = [];
     VW.group.clear();
-    for (const pt of partsFor(p, col)) {
+    for (const pt of framePartsFor(p, col, G)) {
       const mat = FM[pt.kind].clone();
       mat.color.copy(pt.color);
       VW.mats.push(mat);
       VW.group.add(new THREE.Mesh(G[pt.part], mat));
     }
-    VW.group.scale.setScalar(p.size[0] / 1000 / BM.ARCH[p.arch].A);
+    VW.ci = ci;
+    VW.sizeId = sizeId;
   }
   function sizeViewer() {
     if (!VW || !VW.el) return;
@@ -2360,7 +2098,7 @@ async function start() {
     VW.cam.aspect = w / h;
     VW.cam.updateProjectionMatrix();
   }
-  function mountViewer(el, pid, ci) {
+  function mountViewer(el, pid, ci, sizeId) {
     try {
       ensureViewer();
     } catch (e) {
@@ -2372,7 +2110,7 @@ async function start() {
     VW.r.domElement.className = 'viewer-canvas';
     VW.r.domElement.setAttribute('aria-label', '3D view of the frame. Drag to turn it.');
     el.prepend(VW.r.domElement);
-    buildViewerModel(pid, ci);
+    buildViewerModel(pid, ci, sizeId);
     VW.cam.position.set(0.15, 0.05, 0.28);
     VW.ctr.target.set(0, -0.004, -0.04);
     VW.ctr.autoRotate = !RM;
@@ -2600,7 +2338,10 @@ async function start() {
     },
     mountViewer,
     setViewerColor(ci) {
-      if (VW && VW.active && VW.pid) buildViewerModel(VW.pid, ci);
+      if (VW && VW.active && VW.pid) buildViewerModel(VW.pid, ci, VW.sizeId);
+    },
+    setViewerSize(sizeId) {
+      if (VW && VW.active && VW.pid) buildViewerModel(VW.pid, VW.ci, sizeId);
     },
     unmountViewer,
     setQuality(m) {

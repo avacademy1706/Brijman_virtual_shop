@@ -83,3 +83,7 @@ The brief suggested using MediaPipe's facial transformation matrix with a perspe
 - It uses the rigid landmarks only (forehead, nose, eye corners, cheekbones, temples), so talking and blinking do not move the frame.
 
 The weak-perspective camera ignores the slight perspective of the temples, which the head occluder hides from 30 mm behind the hinges anyway. `outputFacialTransformationMatrixes` is therefore off.
+
+## 2026-10-14: Frame geometry lives in `src/three/frame-model.js`; shelves keep the archetype build
+
+`buildArch`, the frame materials, `partsFor` and the tortoiseshell texture moved out of the showroom unchanged. The shelves still build one geometry per archetype and scale it, which keeps instancing (56 meshes) and the render pixel-identical: screenshots of six sections before and after differ by 0.000, with 188 products, 56 meshes and 472,504 triangles in both. The product viewer and the try-on use `frameGeometry(p, sizeId)`, which builds the true geometry from `{lens, bridge, temple}` in mm (real bridge, real temple length), with the front, temples and lenses split and both hinge points. `ENDPIECE_MM` in `shared/frame-archetypes.js` gives the outer width without three.js (2 × lens + bridge + endpieces), checked against the geometry to ±0.5 mm.

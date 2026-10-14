@@ -115,7 +115,8 @@ describe('calibration', () => {
     const c = new FaceWidthCalibrator();
     let good = 0;
     for (let i = 0; good < 29; i++) {
-      if (i % 5 === 0) c.add(300, 1 / 30); // outlier: ignored
+      if (i % 5 === 0)
+        c.add(300, 1 / 30); // outlier: ignored
       else {
         c.add(138 + (good % 3), 1 / 30);
         good++;

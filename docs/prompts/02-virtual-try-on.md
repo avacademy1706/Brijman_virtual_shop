@@ -65,6 +65,7 @@ Browsers only allow the camera on `https://` addresses or `localhost`. `npm run 
 - **Production.** After merging, open the live URL.
 
 On the phone, test:
+
 - in bright and dim light;
 - with and without your own glasses;
 - with your head turned left and right;
@@ -82,13 +83,13 @@ The showroom viewer and the try-on then use the artist model for that frame, and
 
 ## 1.7 If something goes wrong
 
-| Problem | Fix |
-| --- | --- |
-| "Camera blocked" on a phone | You are on `http://`. Use the Vercel preview or production URL. |
-| Camera works locally but not on Vercel | Check that `vercel.json` has `camera=(self)` in `Permissions-Policy`. |
-| "Try-on could not start" | Check that the browser console has no CSP errors. Check that `vercel.json` has `'wasm-unsafe-eval'` in `script-src`, and that `/vendor/mediapipe/…` files exist in the build. |
-| Frame jitters | Improve the light. Hold the phone at arm's length. Check that the frames-per-second counter (debug mode, `?tryon-debug`) shows 24 or more. |
-| Slow first start | The tracking files load once (about 15 MB) and are then cached. The loading message shows the size. |
+| Problem                                | Fix                                                                                                                                                                           |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Camera blocked" on a phone            | You are on `http://`. Use the Vercel preview or production URL.                                                                                                               |
+| Camera works locally but not on Vercel | Check that `vercel.json` has `camera=(self)` in `Permissions-Policy`.                                                                                                         |
+| "Try-on could not start"               | Check that the browser console has no CSP errors. Check that `vercel.json` has `'wasm-unsafe-eval'` in `script-src`, and that `/vendor/mediapipe/…` files exist in the build. |
+| Frame jitters                          | Improve the light. Hold the phone at arm's length. Check that the frames-per-second counter (debug mode, `?tryon-debug`) shows 24 or more.                                    |
+| Slow first start                       | The tracking files load once (about 15 MB) and are then cached. The loading message shows the size.                                                                           |
 
 ---
 
@@ -97,6 +98,7 @@ The showroom viewer and the try-on then use the artist model for that frame, and
 You are working in the Brijman Virtual Showroom project. The API layer from `docs/prompts/01-api-layer.md` is in place and working.
 
 **Read first:**
+
 - `CLAUDE.md`, `README.md`, `docs/decisions.md`, `docs/api.md` and `docs/setup-and-deploy.md`.
 - The current versions of:
   - `data/catalogue.json`;
@@ -124,6 +126,7 @@ Add a realistic, real-time virtual try-on for every frame (optical and sunglasse
 When a shopper opens a frame, they can tap **Try on**. That opens a full-screen live mirror using the front camera, with the selected frame placed on their face at its **true physical size**. It must follow head movement smoothly, hide the arms behind the head, and look lit by the room.
 
 In the mirror the shopper can:
+
 - switch colour;
 - switch **frame size (S, M or L, real size variants)**;
 - see a fit guide;
@@ -137,16 +140,16 @@ When the camera is unavailable, the same try-on works on an uploaded photo.
 
 ## Decisions already made (follow these)
 
-| Area | Decision |
-| --- | --- |
-| Face tracking | `@mediapipe/tasks-vision`, pinned to **1.0.1** or the newest version at least two weeks old. Use `FaceLandmarker` with `runningMode: 'VIDEO'` (`'IMAGE'` for uploaded photos), `numFaces: 1`, `outputFacialTransformationMatrixes: true`, `outputFaceBlendshapes: false`, and `delegate: 'GPU'`, falling back to `'CPU'` if GPU set-up fails. Verify every option and method name against `vision.d.ts` in the installed version. |
-| Self-hosting | Never load MediaPipe from a CDN or Google storage at run time. A Node script, `scripts/copy-mediapipe.mjs`, copies `node_modules/@mediapipe/tasks-vision/wasm/*` to `public/vendor/mediapipe/<version>/wasm/` before `dev`, `build` and `preview`. Gitignore the copied wasm. |
-| Face model | Download `face_landmarker.task` once from the official URL `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task` and commit it to `public/vendor/mediapipe/models/` (Apache-2.0; keep the licence note). Record its SHA-256 in `docs/decisions.md`. The copy script checks the hash and fails loudly on a mismatch. |
-| 3D rendering | three.js, the same version as the showroom. **Extract** the frame geometry and materials (`buildArch`, `partsFor`, `FM`, outline maths) from `src/scene/showroom.js` into `src/three/frame-model.js`. The showroom, the product viewer and the try-on all use it, so the showroom must render identically. |
-| Model source | `FrameModelSource`. If the colour entry in the catalogue has a `model` path to a `.glb`, load it with `GLTFLoader` from the same origin. Otherwise build the procedural model. Both return the same interface: a group with front, temples and lenses named consistently, a hinge position, and true size in metres. |
-| Engine boundary | `src/tryon/engine.js` exposes `start(videoOrImage)`, `setFrame(productId, colourIndex, sizeId)`, `snapshot()`, `stop()` and `on(event)`. The UI depends only on this interface, so a commercial SDK (Banuba, Fittingbox, GlamAR) could replace it later behind the same API. Write that decision into `docs/decisions.md`. |
-| Loading | All try-on code, MediaPipe and the model are lazy-loaded only when the shopper taps **Try on**. Show progress: "Loading try-on (about 15 MB, only the first time)". They must not affect the showroom's first load. |
-| Sizes | Real size variants are stored in the catalogue. There is **no free scaling slider**: it would show sizes we do not sell. The shopper may nudge the frame position (up or down on the nose, about ±3 mm) for comfort, but never its size. |
+| Area            | Decision                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Face tracking   | `@mediapipe/tasks-vision`, pinned to **1.0.1** or the newest version at least two weeks old. Use `FaceLandmarker` with `runningMode: 'VIDEO'` (`'IMAGE'` for uploaded photos), `numFaces: 1`, `outputFacialTransformationMatrixes: true`, `outputFaceBlendshapes: false`, and `delegate: 'GPU'`, falling back to `'CPU'` if GPU set-up fails. Verify every option and method name against `vision.d.ts` in the installed version. |
+| Self-hosting    | Never load MediaPipe from a CDN or Google storage at run time. A Node script, `scripts/copy-mediapipe.mjs`, copies `node_modules/@mediapipe/tasks-vision/wasm/*` to `public/vendor/mediapipe/<version>/wasm/` before `dev`, `build` and `preview`. Gitignore the copied wasm.                                                                                                                                                     |
+| Face model      | Download `face_landmarker.task` once from the official URL `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task` and commit it to `public/vendor/mediapipe/models/` (Apache-2.0; keep the licence note). Record its SHA-256 in `docs/decisions.md`. The copy script checks the hash and fails loudly on a mismatch.                                                    |
+| 3D rendering    | three.js, the same version as the showroom. **Extract** the frame geometry and materials (`buildArch`, `partsFor`, `FM`, outline maths) from `src/scene/showroom.js` into `src/three/frame-model.js`. The showroom, the product viewer and the try-on all use it, so the showroom must render identically.                                                                                                                        |
+| Model source    | `FrameModelSource`. If the colour entry in the catalogue has a `model` path to a `.glb`, load it with `GLTFLoader` from the same origin. Otherwise build the procedural model. Both return the same interface: a group with front, temples and lenses named consistently, a hinge position, and true size in metres.                                                                                                              |
+| Engine boundary | `src/tryon/engine.js` exposes `start(videoOrImage)`, `setFrame(productId, colourIndex, sizeId)`, `snapshot()`, `stop()` and `on(event)`. The UI depends only on this interface, so a commercial SDK (Banuba, Fittingbox, GlamAR) could replace it later behind the same API. Write that decision into `docs/decisions.md`.                                                                                                        |
+| Loading         | All try-on code, MediaPipe and the model are lazy-loaded only when the shopper taps **Try on**. Show progress: "Loading try-on (about 15 MB, only the first time)". They must not affect the showroom's first load.                                                                                                                                                                                                               |
+| Sizes           | Real size variants are stored in the catalogue. There is **no free scaling slider**: it would show sizes we do not sell. The shopper may nudge the frame position (up or down on the nose, about ±3 mm) for comfort, but never its size.                                                                                                                                                                                          |
 
 ## Data and API changes (sizes)
 
@@ -163,12 +166,12 @@ Add `sizes` and `defaultSize` to every frame in `data/catalogue.json`:
 
 **Generating the sample sizes** (from each frame's current `size`, which becomes M):
 
-| Frame type | Sizes | Rules |
-| --- | --- | --- |
+| Frame type    | Sizes   | Rules                                                                              |
+| ------------- | ------- | ---------------------------------------------------------------------------------- |
 | Adult optical | S, M, L | S: lens −2, bridge −1, temple 140. L: lens +2, bridge +1, temple +5 (maximum 150). |
-| Sunglasses | M, L | |
-| Atelier | M, L | |
-| Kids | S, M | S: lens −2, bridge −1, temple −5 (minimum 120). |
+| Sunglasses    | M, L    |                                                                                    |
+| Atelier       | M, L    |                                                                                    |
+| Kids          | S, M    | S: lens −2, bridge −1, temple −5 (minimum 120).                                    |
 
 Each size may have an optional whole-rupee `priceDelta`, which defaults to 0. Every size of a frame shares that frame's colour list.
 
@@ -235,7 +238,7 @@ Each size may have an optional whole-rupee `priceDelta`, which defaults to 0. Ev
   - set the hemisphere light colour and intensity;
   - set the environment intensity;
   - aim one directional light from the left-to-right cheek brightness difference.
-  Smooth all changes.
+    Smooth all changes.
 - **Reflections.** Use an environment map (`RoomEnvironment`, PMREM) for lens and metal reflections.
 - **Lenses:**
   - Optical lenses are clear, with a subtle Fresnel edge reflection and a faint anti-reflective coating sheen (green or purple tint at grazing angles).
@@ -258,13 +261,13 @@ Each size may have an optional whole-rupee `priceDelta`, which defaults to 0. Ev
 - **Entry points:**
   - a **Try on** button in the product sheet for every frame, next to "Show in store";
   - a small try-on icon on frame rows in search and browse lists.
-  Contact lenses and care products get neither.
+    Contact lenses and care products get neither.
 - **Privacy notice.** The first time, show one screen with:
   - an icon and the title "Try frames on with your camera";
   - "Your camera runs on this device. Nothing is recorded or sent anywhere.";
   - buttons **Allow camera** and **Use a photo instead**;
   - a link to the privacy note.
-  Remember the choice in `bm-settings`; this is not personal data.
+    Remember the choice in `bm-settings`; this is not personal data.
 - **Live view** (full screen, safe-area aware):
   - **Top:** Close, the frame name and price, and the fit chip ("Good fit", "May feel narrow", "May feel wide") with an info popover explaining it is an estimate.
   - **Bottom:** colour swatches; size chips (S, M, L with mm); a horizontal carousel of other frames in the same section; the capture button; **Add to bag**.
@@ -275,7 +278,7 @@ Each size may have an optional whole-rupee `priceDelta`, which defaults to 0. Ev
   - below −8 mm: narrow;
   - from −8 to +4 mm: good;
   - above +4 mm: wide.
-  Keep these thresholds as named constants, and document them as starting values to tune with real customers. Suggest the best size: "Size L may fit you better".
+    Keep these thresholds as named constants, and document them as starting values to tune with real customers. Suggest the best size: "Size L may fit you better".
 - **Photos:**
   - Capture composites the video and the frame at full resolution.
   - Keep up to 4 photos in memory as `blob:` URLs.
@@ -347,12 +350,12 @@ Commit at the end of each phase on `feature/virtual-try-on`.
   - there are no CSP violations and no console errors;
   - the camera stops on close;
   - the showroom resumes.
-  List any check you could not run.
+    List any check you could not run.
 - **Device checklist.** Write `docs/try-on-testing.md` for the team to run by hand on:
   - a mid-range Android phone in Chrome;
   - an iPhone in Safari;
   - a desktop in Chrome or Edge with a webcam.
-  It covers bright and dim light, with and without glasses, a beard, head turns of ±35°, distances of 30–80 cm, and all three sizes, with expected results and a column for fps.
+    It covers bright and dim light, with and without glasses, a beard, head turns of ±35°, distances of 30–80 cm, and all three sizes, with expected results and a column for fps.
 
 ## Documentation
 
