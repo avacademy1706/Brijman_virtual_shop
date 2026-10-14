@@ -2,18 +2,20 @@
   "name": "brijman-virtual-showroom",
   "private": true,
   "version": "1.0.0",
-  "description": "Walkable 3D eyewear showroom with frame details, lens options and a demo bag. Static site built with Vite and three.js.",
+  "description": "Walkable 3D eyewear showroom with frame details, lens options, a server-priced bag, demo checkout and eye-test booking. Vite, three.js and a Hono API on Vercel.",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:phone": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run format:check && npm test && npm run build",
+    "smoke": "node scripts/smoke.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "assets:check": "node scripts/check-assets.mjs",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "assets:check": "node scripts/check-assets.mjs"
   },
   "dependencies": {
     "hono": "4.13.11",
