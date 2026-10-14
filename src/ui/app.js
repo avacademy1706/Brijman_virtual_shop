@@ -5,15 +5,82 @@ import '../data/frames.js';
 import '../data/catalogue.js';
 import { money, $, h, ic, store, esc } from '../lib/dom.js';
 import { drawYou } from '../lib/drawings.js';
+import { cfgProblem } from '../../shared/pricing.js';
+import { LIMITS, TIMEZONE } from '../../shared/constants.js';
+import { rxProblems, normalizeRx, normalizeMobile, MSG } from '../../shared/rules.js';
+// zod and the schemas load only when a form is used, so the first screen stays light.
+let schemasP = null;
+const loadSchemas = () =>
+  (schemasP ||= import('../../shared/schemas.js').catch((err) => {
+    schemasP = null;
+    throw err;
+  }));
+// Like loadSchemas, but shows a message instead of throwing when the network drops.
+async function schemasOr(showError) {
+  try {
+    return await loadSchemas();
+  } catch (e) {
+    showError('We could not reach the showroom server. Check your connection and try again.');
+    return null;
+  }
+}
+import { DATA_SOURCE, ApiError } from '../services/http.js';
+import { quoteCart } from '../services/cart-service.js';
+import { placeOrder, newIdempotencyKey } from '../services/order-service.js';
+import { getSlots, bookEyeTest } from '../services/eye-test-service.js';
 
 const RM = BM.reduceMotion;
 void esc;
+const ONLINE = DATA_SOURCE === 'api';
 
 /* =====================================================================
    UI STATE
    ===================================================================== */
+// The saved bag holds only product id, colour index, lens configuration and quantity. Prices are recomputed, and
+// lines that no longer match the catalogue are dropped.
+function loadCart() {
+  const saved = store.get('bm-bag-v1', []);
+  const lines = [];
+  let dropped = 0;
+  for (const l of Array.isArray(saved) ? saved : []) {
+    const p = l && BM.byId[l.pid];
+    const colours = p && p.type === 'frame' ? p.colors.length : 1;
+    const valid =
+      p &&
+      l.cfg &&
+      typeof l.cfg === 'object' &&
+      Number.isInteger(l.ci) &&
+      l.ci >= 0 &&
+      l.ci < colours &&
+      !cfgProblem(p, l.cfg, BM.LENS) &&
+      lines.length < LIMITS.maxLines;
+    if (!valid) {
+      dropped++;
+      continue;
+    }
+    const qty = p.type === 'frame' ? 1 : Math.max(1, Math.min(LIMITS.maxItemQty, Math.round(+l.qty) || 1));
+    lines.push({
+      key: String(l.key || lineKey(p, l.ci, l.cfg)),
+      pid: p.id,
+      ci: l.ci,
+      cfg: l.cfg,
+      qty,
+      unit: BM.priceOf(p, l.cfg),
+    });
+  }
+  return { lines, dropped };
+}
+// Frames get a unique key per line, so each pair keeps its own prescription. Packs of the same kind merge.
+function lineKey(p, ci, cfg) {
+  const base = p.id + '|' + ci + '|' + JSON.stringify(cfg);
+  return p.type === 'frame' ? base + '|' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) : base;
+}
+const initialCart = loadCart();
 const S = {
-  cart: (store.get('bm-bag-v1', []) || []).filter((l) => l && BM.byId[l.pid]),
+  cart: initialCart.lines,
+  // Prescriptions typed for bag lines, by line key. Memory only: never saved to localStorage.
+  rx: {},
+  quote: { status: ONLINE ? 'idle' : 'offline', data: null, seq: 0, notes: [], removed: null },
   stack: [],
   zone: 'welcome',
   has3D: false,
@@ -25,11 +92,13 @@ const S = {
 };
 S.settings = Object.assign({ move: RM ? 'jump' : 'walk', quality: 'auto', labels: true }, store.get('bm-settings', {}));
 BM.settings = S.settings;
-const saveCart = () =>
+const saveCart = () => {
   store.set(
     'bm-bag-v1',
-    S.cart.map((l) => ({ key: l.key, pid: l.pid, ci: l.ci, cfg: l.cfg, qty: l.qty, unit: l.unit })),
+    S.cart.map((l) => ({ key: l.key, pid: l.pid, ci: l.ci, cfg: l.cfg, qty: l.qty })),
   );
+  for (const k of Object.keys(S.rx)) if (!S.cart.some((l) => l.key === k)) delete S.rx[k];
+};
 const saveSettings = () => store.set('bm-settings', S.settings);
 
 const app = $('#app'),
@@ -874,7 +943,7 @@ VIEWS.product = function (d) {
         return;
       }
     }
-    addToBag(p, d);
+    if (!addToBag(p, d)) return;
     addBtn.replaceChildren(ic('check'), h('span', null, 'Added'));
     setTimeout(() => {
       if (document.contains(addBtn)) addBtn.replaceChildren(ic('bag'), h('span', null, 'Add to bag'));
@@ -1022,54 +1091,34 @@ function rxForm(d, needAdd) {
     h(
       'p',
       { class: 'field-note' },
-      'Values stay on this device for this order only. Leave CYL empty if your prescription has none.',
+      'Values stay in this browser tab and are sent only with your order. They are never saved on this device. Leave CYL empty if your prescription has none.',
     ),
   );
   return wrap;
 }
+// Prescription rules live in shared/rules.js, so the form and the API check exactly the same limits.
 function validateRx(rx, needAdd) {
-  const errs = [];
-  const q = (v) => Math.abs(v * 4 - Math.round(v * 4)) < 1e-6;
-  for (const eye of ['r', 'l']) {
-    const E = eye === 'r' ? 'Right' : 'Left',
-      v = rx[eye] || {};
-    if (v.sph === undefined || v.sph === '') {
-      errs.push(E + ' eye: enter SPH (use 0.00 if blank on your prescription).');
-      continue;
-    }
-    const sph = parseFloat(v.sph);
-    if (isNaN(sph) || sph < -20 || sph > 12 || !q(sph))
-      errs.push(E + ' eye: SPH runs from -20.00 to +12.00 in 0.25 steps.');
-    const cyl = v.cyl === '' || v.cyl == null ? 0 : parseFloat(v.cyl);
-    if (isNaN(cyl) || cyl < -6 || cyl > 0 || !q(cyl)) errs.push(E + ' eye: CYL runs from -6.00 to 0.00 in 0.25 steps.');
-    else if (cyl !== 0) {
-      const ax = parseFloat(v.axis);
-      if (isNaN(ax) || ax < 1 || ax > 180 || Math.round(ax) !== ax)
-        errs.push(E + ' eye: AXIS is a whole number from 1 to 180 when CYL is set.');
-    }
-    if (needAdd) {
-      const ad = parseFloat(v.add);
-      if (isNaN(ad) || ad < 0.75 || ad > 3.5 || !q(ad))
-        errs.push(E + ' eye: ADD runs from +0.75 to +3.50 for bifocal and progressive lenses.');
-    }
-  }
-  const pd = parseFloat(rx.pd);
-  if (isNaN(pd) || pd < 50 || pd > 76) errs.push('PD: enter a value from 50 to 76 mm.');
-  return errs;
+  return rxProblems(rx, needAdd).map((e) => e.message);
 }
 BM.validateRx = validateRx;
+// Returns false (and says why) when the line could not be added.
 function addToBag(p, d) {
   const cfg = JSON.parse(JSON.stringify(d.cfg));
   if (p.type === 'frame' && !BM.needsRx(p, cfg)) delete cfg.rx;
   const unit = BM.priceOf(p, cfg),
     qty = p.type === 'frame' ? 1 : d.qty;
-  const key = p.id + '|' + d.ci + '|' + JSON.stringify(cfg);
+  const key = lineKey(p, d.ci, cfg);
   const ex = S.cart.find((l) => l.key === key);
-  if (ex) ex.qty = Math.min(12, ex.qty + qty);
-  else S.cart.push({ key, pid: p.id, ci: d.ci, cfg, qty, unit });
+  if (ex) ex.qty = Math.min(LIMITS.maxItemQty, ex.qty + qty);
+  else if (S.cart.length >= LIMITS.maxLines) {
+    toast('Your bag holds up to ' + LIMITS.maxLines + ' items. Check out or remove one first.', 4000);
+    return false;
+  } else S.cart.push({ key, pid: p.id, ci: d.ci, cfg, qty, unit });
+  if (p.type === 'frame' && BM.needsRx(p, cfg) && cfg.rx === 'now') S.rx[key] = normalizeRx(d.rx, BM.needsAdd(p, cfg));
   saveCart();
   updateBadge();
   toast('Added ' + p.name + ' to your bag');
+  return true;
 }
 
 /* ---------- View: browse a section ---------- */
@@ -1285,6 +1334,163 @@ function drawBigMap() {
   bigMap._m = m;
 }
 
+/* ---------- Server prices for the bag ---------- */
+const lineName = (l) => (l && BM.byId[l.pid] ? BM.byId[l.pid].name : 'An item');
+const needsRxNow = (l) => {
+  const p = BM.byId[l.pid];
+  return BM.needsRx(p, l.cfg) && l.cfg.rx === 'now';
+};
+let quoteTimer = null;
+// Asks the API for prices. The bag shows the instant estimate until the answer arrives.
+function requestQuote(delay) {
+  clearTimeout(quoteTimer);
+  S.quote.seq++;
+  if (!ONLINE || !S.cart.length) {
+    S.quote.status = ONLINE ? 'idle' : 'offline';
+    S.quote.data = null;
+    notifyQuote();
+    return;
+  }
+  S.quote.status = 'loading';
+  S.quote.data = null;
+  notifyQuote();
+  quoteTimer = setTimeout(runQuote, delay || 0);
+}
+async function runQuote() {
+  const seq = ++S.quote.seq;
+  const lines = S.cart.slice();
+  try {
+    const data = await quoteCart(lines);
+    if (seq !== S.quote.seq) return;
+    const notes = [];
+    data.lines.forEach((q, i) => {
+      const l = lines[i];
+      if (l && l.unit !== q.unitPrice) {
+        notes.push('The price of ' + q.name + ' is now ' + money(q.unitPrice) + '.');
+        l.unit = q.unitPrice;
+      }
+    });
+    S.quote.status = 'ok';
+    S.quote.data = data;
+    S.quote.notes = (S.quote.removed ? [S.quote.removed] : []).concat(notes);
+  } catch (err) {
+    if (seq !== S.quote.seq) return;
+    const bad = new Set();
+    if (err instanceof ApiError && err.status === 422 && err.fields)
+      for (const k of Object.keys(err.fields)) {
+        const m = /^lines\.(\d+)\./.exec(k);
+        if (m) bad.add(+m[1]);
+      }
+    if (bad.size) {
+      const names = [...bad].map((i) => lineName(lines[i]));
+      S.cart = S.cart.filter((l) => !bad.has(lines.indexOf(l)));
+      saveCart();
+      updateBadge();
+      S.quote.removed =
+        names.join(', ') +
+        (names.length === 1 ? ' is' : ' are') +
+        ' no longer available as chosen, so we removed it from your bag.';
+      S.quote.notes = [S.quote.removed];
+      toast(S.quote.removed, 5000);
+      requestQuote(0);
+      return;
+    }
+    S.quote.status = 'error';
+    S.quote.data = null;
+  }
+  notifyQuote();
+}
+function notifyQuote() {
+  if (current && current.onQuote) current.onQuote();
+}
+// The price shown for a line: the server's when confirmed, otherwise the instant estimate.
+function linePrice(l, i) {
+  const q = S.quote.status === 'ok' && S.quote.data && S.quote.data.lines[i];
+  return q ? q.lineTotal : l.unit * l.qty;
+}
+function cartTotal() {
+  return S.quote.status === 'ok' && S.quote.data ? S.quote.data.total : S.cart.reduce((a, l) => a + l.unit * l.qty, 0);
+}
+function quoteNote() {
+  const st = S.quote.status;
+  const text =
+    st === 'offline'
+      ? 'Estimated prices. Checkout is not available in this preview.'
+      : st === 'ok'
+        ? 'Prices confirmed'
+        : st === 'error'
+          ? 'Prices are confirmed at checkout.'
+          : 'Checking prices…';
+  const p = h('p', { class: 'quote-note' + (st === 'ok' ? ' ok' : ''), role: 'status' });
+  if (st === 'ok') p.append(ic('check'));
+  p.append(h('span', null, text));
+  return p;
+}
+
+const itemCount = (n) => n + (n === 1 ? ' item' : ' items');
+
+/* ---------- Form helpers ---------- */
+function formField(d, errs, k, label, attrs) {
+  const id = 'f-' + k;
+  const inp = h('input', Object.assign({ id, 'aria-describedby': id + '-err' }, attrs));
+  inp.value = d.f[k] || '';
+  const err = h('span', { class: 'field-error', id: id + '-err', hidden: true });
+  inp.addEventListener('input', () => {
+    d.f[k] = inp.value;
+    err.hidden = true;
+    inp.removeAttribute('aria-invalid');
+  });
+  errs[k] = { el: inp, err };
+  return h('label', { class: 'field', for: id }, h('span', null, label), inp, err);
+}
+function consentRow(d, errs, text) {
+  const id = 'f-consent';
+  const inp = h('input', { type: 'checkbox', id, 'aria-describedby': id + '-err' });
+  inp.checked = !!d.consent;
+  const err = h('span', { class: 'field-error', id: id + '-err', hidden: true });
+  inp.addEventListener('change', () => {
+    d.consent = inp.checked;
+    err.hidden = true;
+    inp.removeAttribute('aria-invalid');
+  });
+  errs.consent = { el: inp, err };
+  return h(
+    'div',
+    { class: 'consent' },
+    h(
+      'label',
+      { class: 'opt', for: id },
+      inp,
+      h('span', { class: 'opt-text' }, h('span', { class: 'opt-name' }, text)),
+      h('span'),
+    ),
+    err,
+  );
+}
+// Shows per-field messages. Keys may be API paths such as `contact.mobile`. Returns true if anything was shown.
+function showFieldErrors(errs, fields) {
+  let first = null;
+  for (const [path, message] of Object.entries(fields)) {
+    const k = path.split('.').pop();
+    const f = errs[k];
+    if (!f) continue;
+    f.err.textContent = MSG[k] || message;
+    f.err.hidden = false;
+    f.el.setAttribute('aria-invalid', 'true');
+    if (!first) first = f.el;
+  }
+  if (first) {
+    first.focus({ preventScroll: true });
+    scrollSheetTo(first);
+  }
+  return !!first;
+}
+const prefixed = (obj, pre) => Object.fromEntries(Object.entries(obj).map(([k, v]) => [pre + k, v]));
+function busyBtn(b, busy, label) {
+  b.disabled = busy;
+  b.querySelector('span').textContent = label;
+}
+
 /* ---------- View: bag ---------- */
 VIEWS.bag = function () {
   const body = h('div', { class: 'stack' });
@@ -1306,52 +1512,99 @@ VIEWS.bag = function () {
     );
     return { title: 'Your bag', body };
   }
+  const notes = h('div', { class: 'stack' });
   const list = h('div', { class: 'list' });
   const totals = h('div', { class: 'totals' });
+  const status = h('div');
+  function rxBlock(l, p) {
+    if (!BM.needsRx(p, l.cfg) || l.cfg.rx !== 'now') return null;
+    if (S.rx[l.key])
+      return h(
+        'p',
+        { class: 'line-rx' },
+        ic('check'),
+        h('span', null, 'Prescription added'),
+        h(
+          'button',
+          { class: 'link-btn', type: 'button', onclick: () => openSheet('rx', { key: l.key }, true) },
+          'Edit',
+        ),
+      );
+    return h(
+      'div',
+      { class: 'notice rx-needed' },
+      h('b', null, 'Add your prescription'),
+      h('span', null, 'Prescriptions are never saved on this device, so add it again or pick another option.'),
+      h(
+        'div',
+        { class: 'card-actions' },
+        btn('Enter it now', { cls: 'small', onclick: () => openSheet('rx', { key: l.key }, true) }),
+        btn('Add it later', {
+          cls: 'small',
+          onclick: () => {
+            l.cfg.rx = 'later';
+            changed();
+          },
+        }),
+        btn('Book an eye test', {
+          cls: 'small',
+          onclick: () => {
+            l.cfg.rx = 'test';
+            changed();
+            openSheet('eyetest', {}, true);
+          },
+        }),
+      ),
+    );
+  }
   function draw() {
+    notes.replaceChildren(...S.quote.notes.map((n) => h('p', { class: 'notice' }, n)));
     list.replaceChildren(
       ...S.cart.map((l, idx) => {
         const p = BM.byId[l.pid];
-        const col = p.type === 'frame' ? BM.colorOf(p, l.ci).n : '';
-        const val = h('span', null, String(l.qty));
-        const q = h(
-          'div',
-          { class: 'qty', role: 'group', 'aria-label': 'Quantity for ' + p.name },
-          h(
-            'button',
-            {
-              type: 'button',
-              'aria-label': 'Fewer',
-              onclick: () => {
-                if (l.qty > 1) {
-                  l.qty--;
-                  changed();
-                }
-              },
-            },
-            ic('minus'),
-          ),
-          val,
-          h(
-            'button',
-            {
-              type: 'button',
-              'aria-label': 'More',
-              onclick: () => {
-                if (l.qty < 12) {
-                  l.qty++;
-                  changed();
-                }
-              },
-            },
-            ic('plus'),
-          ),
-        );
+        const frame = p.type === 'frame';
+        const col = frame ? BM.colorOf(p, l.ci).n : '';
+        const q = frame
+          ? h('span', { class: 'line-qty' }, '1 pair')
+          : h(
+              'div',
+              { class: 'qty', role: 'group', 'aria-label': 'Quantity for ' + p.name },
+              h(
+                'button',
+                {
+                  type: 'button',
+                  'aria-label': 'Fewer',
+                  onclick: () => {
+                    if (l.qty > 1) {
+                      l.qty--;
+                      changed();
+                    }
+                  },
+                },
+                ic('minus'),
+              ),
+              h('span', null, String(l.qty)),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  'aria-label': 'More',
+                  onclick: () => {
+                    if (l.qty < LIMITS.maxItemQty) {
+                      l.qty++;
+                      changed();
+                    }
+                  },
+                },
+                ic('plus'),
+              ),
+            );
         const rm = h(
           'button',
           {
             class: 'link-btn',
             type: 'button',
+            'aria-label': 'Remove ' + p.name,
             onclick: () => {
               S.cart.splice(idx, 1);
               changed();
@@ -1370,34 +1623,42 @@ VIEWS.bag = function () {
               'div',
               { class: 'line-top' },
               h('b', null, p.name),
-              h('span', { class: 'price sm' }, money(l.unit * l.qty)),
+              h('span', { class: 'price sm' }, money(linePrice(l, idx))),
             ),
             h('p', { class: 'line-cfg' }, [col, BM.cfgSummary(p, l.cfg)].filter(Boolean).join(' · ')),
             h('div', { class: 'line-acts' }, q, rm),
+            rxBlock(l, p),
           ),
         );
       }),
     );
-    const sub = S.cart.reduce((a, l) => a + l.unit * l.qty, 0);
+    const total = cartTotal();
     totals.replaceChildren(
-      h('div', null, h('span', null, 'Subtotal'), h('span', null, money(sub))),
+      h('div', null, h('span', null, 'Subtotal'), h('span', null, money(total))),
       h('div', null, h('span', null, 'Delivery'), h('span', null, 'Free')),
-      h('div', { class: 'grand' }, h('span', null, 'Total'), h('span', null, money(sub))),
+      h('div', { class: 'grand' }, h('span', null, 'Total'), h('span', null, money(total))),
     );
+    status.replaceChildren(quoteNote());
   }
   function changed() {
+    S.quote.notes = [];
+    S.quote.removed = null;
     saveCart();
     updateBadge();
     if (!S.cart.length) {
+      requestQuote(0);
       renderSheet();
       return;
     }
+    requestQuote(350);
     draw();
   }
   draw();
   body.append(
+    notes,
     list,
     totals,
+    status,
     h(
       'p',
       { class: 'field-note' },
@@ -1410,14 +1671,129 @@ VIEWS.bag = function () {
     btn('Continue shopping', { onclick: closeSheet }),
     btn('Checkout', { primary: true, icon: 'arrow', onclick: () => openSheet('checkout', {}, true) }),
   );
-  return { title: 'Your bag', body, foot };
+  return {
+    title: 'Your bag',
+    body,
+    foot,
+    mount() {
+      requestQuote(0);
+    },
+    onQuote() {
+      if (!S.cart.length) renderSheet();
+      else draw();
+    },
+  };
+};
+
+/* ---------- View: prescription for a bag line ---------- */
+const rxToForm = (rx) => {
+  const s = (v) => (v == null ? '' : String(v));
+  const eye = (e) => ({ sph: s(e.sph), cyl: e.cyl ? s(e.cyl) : '', axis: s(e.axis), add: s(e.add) });
+  return rx ? { r: eye(rx.r), l: eye(rx.l), pd: s(rx.pd) } : { r: {}, l: {}, pd: '' };
+};
+VIEWS.rx = function (d) {
+  const l = S.cart.find((x) => x.key === d.key);
+  const body = h('div', { class: 'stack' });
+  if (!l) {
+    body.append(h('p', { class: 'lede' }, 'This item is no longer in your bag.'));
+    return { title: 'Prescription', body };
+  }
+  const p = BM.byId[l.pid];
+  const needAdd = BM.needsAdd(p, l.cfg);
+  d.rx = d.rx || rxToForm(S.rx[l.key]);
+  body.append(
+    h(
+      'p',
+      { class: 'lede' },
+      'Type the values from your prescription for ' +
+        p.name +
+        ' (' +
+        BM.cfgSummary(p, { ...l.cfg, rx: 'later' }).split(' · ')[0] +
+        ').',
+    ),
+    rxForm(d, needAdd),
+  );
+  const save = btn('Save prescription', {
+    primary: true,
+    icon: 'check',
+    onclick: () => {
+      const errs = validateRx(d.rx, needAdd);
+      const box = $('#rx-err');
+      if (errs.length) {
+        if (box) {
+          box.textContent = errs[0];
+          box.hidden = false;
+          scrollSheetTo(box);
+        }
+        return;
+      }
+      S.rx[l.key] = normalizeRx(d.rx, needAdd);
+      l.cfg.rx = 'now';
+      saveCart();
+      toast('Prescription saved for ' + p.name);
+      backSheet();
+    },
+  });
+  return {
+    title: 'Prescription',
+    body,
+    foot: h('div', { class: 'foot-row' }, btn('Cancel', { onclick: backSheet }), save),
+  };
 };
 
 /* ---------- View: checkout (demo) ---------- */
 VIEWS.checkout = function (d) {
   d.delivery = d.delivery || 'home';
+  d.f = d.f || { name: '', mobile: '', email: '', line1: '', city: '', pin: '' };
+  // One key per checkout attempt: a retried submit after a network error gets the same order reference.
+  d.idem = d.idem || newIdempotencyKey();
+  const errs = {};
   const body = h('div', { class: 'stack' });
-  const sub = S.cart.reduce((a, l) => a + l.unit * l.qty, 0);
+  const missingRx = S.cart.filter((l) => needsRxNow(l) && !S.rx[l.key]);
+  if (!ONLINE)
+    body.append(
+      h(
+        'div',
+        { class: 'notice' },
+        h('b', null, 'Checkout is not available in this preview'),
+        h('span', null, 'This copy of the showroom runs without its server, so orders cannot be placed.'),
+      ),
+    );
+  if (missingRx.length)
+    body.append(
+      h(
+        'div',
+        { class: 'notice rx-needed' },
+        h('b', null, 'Add your prescription first'),
+        h(
+          'span',
+          null,
+          missingRx.map(lineName).join(', ') + ' needs a prescription. Enter it, add it later, or book an eye test.',
+        ),
+        h('div', { class: 'card-actions' }, btn('Back to your bag', { cls: 'small', onclick: backSheet })),
+      ),
+    );
+
+  const addr = section(
+    'Delivery address',
+    h(
+      'div',
+      { class: 'fields' },
+      formField(d, errs, 'line1', 'House and street', {
+        type: 'text',
+        autocomplete: 'address-line1',
+        maxlength: '120',
+      }),
+      formField(d, errs, 'city', 'Town or city', { type: 'text', autocomplete: 'address-level2', maxlength: '60' }),
+      formField(d, errs, 'pin', 'PIN code', {
+        type: 'text',
+        autocomplete: 'postal-code',
+        inputmode: 'numeric',
+        maxlength: '6',
+      }),
+    ),
+  );
+  addr.hidden = d.delivery !== 'home';
   body.append(
     radioGroup(
       'dl',
@@ -1429,24 +1805,51 @@ VIEWS.checkout = function (d) {
       d.delivery,
       (v) => {
         d.delivery = v;
+        addr.hidden = v !== 'home';
       },
     ),
-  );
-  const sum = h('div', { class: 'totals' });
-  S.cart.forEach((l) => {
-    const p = BM.byId[l.pid];
-    sum.append(
+    section(
+      'Contact',
       h(
         'div',
-        null,
-        h('span', null, p.name + (l.qty > 1 ? ' × ' + l.qty : '')),
-        h('span', null, money(l.unit * l.qty)),
+        { class: 'fields' },
+        formField(d, errs, 'name', 'Name', { type: 'text', autocomplete: 'name', maxlength: '60' }),
+        formField(d, errs, 'mobile', 'Mobile', {
+          type: 'tel',
+          autocomplete: 'tel-national',
+          inputmode: 'tel',
+          maxlength: '16',
+          placeholder: '98765 43210',
+        }),
+        formField(d, errs, 'email', 'Email (optional)', { type: 'email', autocomplete: 'email', maxlength: '254' }),
       ),
+    ),
+    addr,
+  );
+
+  const sum = h('div', { class: 'totals' });
+  const status = h('div');
+  const totalEl = h('span', { class: 'price' });
+  function drawSummary() {
+    sum.replaceChildren(
+      ...S.cart.map((l, i) =>
+        h(
+          'div',
+          null,
+          h('span', null, lineName(l) + (l.qty > 1 ? ' × ' + l.qty : '')),
+          h('span', null, money(linePrice(l, i))),
+        ),
+      ),
+      h('div', { class: 'grand' }, h('span', null, 'To pay'), h('span', null, money(cartTotal()))),
     );
-  });
-  sum.append(h('div', { class: 'grand' }, h('span', null, 'To pay'), h('span', null, money(sub))));
-  body.append(section('Order summary', sum));
+    status.replaceChildren(quoteNote());
+    totalEl.textContent = money(cartTotal());
+  }
+  drawSummary();
+  const formErr = h('p', { class: 'field-error', role: 'alert', hidden: true });
   body.append(
+    section('Order summary', sum, status),
+    consentRow(d, errs, 'I agree that ' + BM.STORE.name + ' may use these details to process this order.'),
     h(
       'div',
       { class: 'notice' },
@@ -1454,34 +1857,88 @@ VIEWS.checkout = function (d) {
       h(
         'span',
         null,
-        'No payment is taken and no order is created. In the live store, the payment gateway (for example Razorpay) opens at this step.',
+        'No payment is taken and nothing is shipped. The order is checked by the server and you get a demo reference. In the live store, the payment gateway (for example Razorpay) opens at this step.',
       ),
     ),
+    formErr,
   );
+
+  const placeBtn = btn('Place demo order', { primary: true, icon: 'check', id: 'place-order' });
+  placeBtn.disabled = !ONLINE || missingRx.length > 0;
+  async function place() {
+    formErr.hidden = true;
+    for (const f of Object.values(errs)) {
+      f.err.hidden = true;
+      f.el.removeAttribute('aria-invalid');
+    }
+    const contact = { name: d.f.name.trim(), mobile: normalizeMobile(d.f.mobile) };
+    if (d.f.email.trim()) contact.email = d.f.email.trim();
+    const delivery =
+      d.delivery === 'home'
+        ? { method: 'home', line1: d.f.line1.trim(), city: d.f.city.trim(), pin: d.f.pin.trim() }
+        : { method: 'store' };
+    const sc = await schemasOr((m) => {
+      formErr.textContent = m;
+      formErr.hidden = false;
+    });
+    if (!sc) return;
+    const { ContactSchema, DeliverySchema, fieldErrors } = sc;
+    const fe = {};
+    const c = ContactSchema.safeParse(contact);
+    if (!c.success) Object.assign(fe, prefixed(fieldErrors(c.error), 'contact.'));
+    const dv = DeliverySchema.safeParse(delivery);
+    if (!dv.success) Object.assign(fe, prefixed(fieldErrors(dv.error), 'delivery.'));
+    if (!d.consent) fe.consent = MSG.consent;
+    if (showFieldErrors(errs, fe)) return;
+    const lines = S.cart.map((l) => {
+      const o = { productId: l.pid, colourIndex: l.ci, config: l.cfg, qty: l.qty };
+      if (needsRxNow(l)) o.prescription = S.rx[l.key];
+      return o;
+    });
+    busyBtn(placeBtn, true, 'Placing order…');
+    try {
+      const res = await placeOrder({ lines, contact, delivery, consent: true }, d.idem);
+      const n = S.cart.reduce((a, l) => a + l.qty, 0);
+      S.cart = [];
+      S.rx = {};
+      saveCart();
+      updateBadge();
+      requestQuote(0);
+      openSheet('done', { ref: res.orderRef, n, total: res.total, delivery: d.delivery });
+    } catch (err) {
+      busyBtn(placeBtn, false, 'Place demo order');
+      if (err instanceof ApiError && err.status === 422 && err.fields) {
+        if (showFieldErrors(errs, err.fields)) return;
+        if (Object.keys(err.fields).some((k) => k.startsWith('lines.'))) {
+          formErr.textContent = 'Some items in your bag changed. Go back to your bag to check them.';
+          formErr.hidden = false;
+          scrollSheetTo(formErr);
+          requestQuote(0);
+          return;
+        }
+      }
+      formErr.textContent = err.message || 'The order could not be placed. Try again.';
+      formErr.hidden = false;
+      scrollSheetTo(formErr);
+    }
+  }
+  placeBtn.addEventListener('click', place);
   const foot = h(
     'div',
     { class: 'foot-row' },
-    h(
-      'div',
-      { class: 'foot-total' },
-      h('span', { class: 'price' }, money(sub)),
-      h('small', null, S.cart.reduce((a, l) => a + l.qty, 0) + ' items'),
-    ),
-    btn('Place demo order', {
-      primary: true,
-      icon: 'check',
-      onclick: () => {
-        const ref = 'BM-DEMO-' + String(Math.floor(1000 + Math.random() * 9000));
-        const n = S.cart.reduce((a, l) => a + l.qty, 0);
-        S.cart = [];
-        saveCart();
-        updateBadge();
-        S.stack = [];
-        openSheet('done', { ref, n, total: sub, delivery: d.delivery });
-      },
-    }),
+    h('div', { class: 'foot-total' }, totalEl, h('small', null, itemCount(S.cart.reduce((a, l) => a + l.qty, 0)))),
+    placeBtn,
   );
-  return { title: 'Checkout', body, foot };
+  return {
+    title: 'Checkout',
+    body,
+    foot,
+    mount() {
+      loadSchemas().catch(() => {});
+      if (S.quote.status !== 'ok') requestQuote(0);
+    },
+    onQuote: drawSummary,
+  };
 };
 VIEWS.done = function (d) {
   const body = h(
@@ -1512,6 +1969,8 @@ VIEWS.done = function (d) {
 };
 
 /* ---------- View: eye test booking (demo) ---------- */
+const istDay = (date, opts) =>
+  new Date(date + 'T12:00:00+05:30').toLocaleDateString('en-IN', Object.assign({ timeZone: TIMEZONE }, opts));
 VIEWS.eyetest = function (d) {
   const body = h('div', { class: 'stack' });
   body.append(
@@ -1521,101 +1980,212 @@ VIEWS.eyetest = function (d) {
       'A 20-minute test with an optometrist: vision on the Snellen chart, refraction, and a check of your current glasses. Free, with no obligation to buy.',
     ),
   );
-  const days = [];
-  const now = new Date();
-  for (let i = 1; i <= 6; i++) {
-    const t = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-    days.push(t);
+  if (!ONLINE) {
+    body.append(
+      h(
+        'div',
+        { class: 'notice' },
+        h('b', null, 'Online booking is not available in this preview'),
+        h('span', null, 'Visit the showroom to book a free eye test. ' + BM.STORE.hours + '.'),
+      ),
+    );
+    return { title: 'Book a free eye test', body };
   }
-  d.day = d.day == null ? 0 : d.day;
-  d.slot = d.slot || '12:00';
-  const dayChips = h('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Day' });
-  days.forEach((t, i) => {
-    const label = t.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-    const c = h(
-      'button',
-      {
-        class: 'chip',
-        type: 'button',
-        role: 'radio',
-        id: 'et-day-' + i,
-        'aria-checked': i === d.day ? 'true' : 'false',
-      },
-      label,
+  d.f = d.f || { name: '', mobile: '' };
+  const box = h('div', { class: 'stack' });
+  body.append(box);
+  let alive = false;
+  let slots = null;
+  async function load() {
+    box.replaceChildren(
+      h(
+        'p',
+        { class: 'status', role: 'status' },
+        h('span', { class: 'spinner', 'aria-hidden': 'true' }),
+        h('span', null, 'Loading free slots…'),
+      ),
     );
-    c.addEventListener('click', () => {
-      d.day = i;
-      dayChips.querySelectorAll('.chip').forEach((x, k) => x.setAttribute('aria-checked', k === i ? 'true' : 'false'));
-      msg.hidden = true;
+    try {
+      slots = await getSlots(7);
+      if (alive) render();
+    } catch (err) {
+      if (!alive) return;
+      box.replaceChildren(
+        h('div', { class: 'notice' }, h('b', null, 'Slots could not load'), h('span', null, err.message)),
+        btn('Try again', { onclick: load }),
+      );
+    }
+  }
+  function render() {
+    const days = slots.days;
+    if (!days.length) {
+      box.replaceChildren(
+        h(
+          'div',
+          { class: 'notice' },
+          h('b', null, 'No free slots this week'),
+          h('span', null, 'Visit the showroom or try again tomorrow. ' + BM.STORE.hours + '.'),
+        ),
+      );
+      return;
+    }
+    d.day = Math.min(d.day || 0, days.length - 1);
+    const pickSlot = () => {
+      const list = days[d.day].slots;
+      if (!list.some((s) => s.start === d.slot)) d.slot = (list.find((s) => s.time === '12:00') || list[0]).start;
+    };
+    pickSlot();
+    const errs = {};
+    const msg = h('p', { class: 'notice ok', role: 'status', hidden: true });
+    const slotChips = h('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Time' });
+    const drawSlots = () => {
+      slotChips.replaceChildren(
+        ...days[d.day].slots.map((s) => {
+          const c = h(
+            'button',
+            {
+              class: 'chip',
+              type: 'button',
+              role: 'radio',
+              id: 'et-slot-' + s.time.replace(':', ''),
+              'aria-checked': s.start === d.slot ? 'true' : 'false',
+            },
+            s.time,
+          );
+          c.addEventListener('click', () => {
+            d.slot = s.start;
+            slotChips
+              .querySelectorAll('.chip')
+              .forEach((x) => x.setAttribute('aria-checked', x === c ? 'true' : 'false'));
+            msg.hidden = true;
+          });
+          return c;
+        }),
+      );
+    };
+    const dayChips = h('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Day' });
+    days.forEach((day, i) => {
+      const c = h(
+        'button',
+        {
+          class: 'chip',
+          type: 'button',
+          role: 'radio',
+          id: 'et-day-' + i,
+          'aria-checked': i === d.day ? 'true' : 'false',
+        },
+        istDay(day.date, { weekday: 'short', day: 'numeric', month: 'short' }),
+      );
+      c.addEventListener('click', () => {
+        d.day = i;
+        pickSlot();
+        dayChips
+          .querySelectorAll('.chip')
+          .forEach((x, k) => x.setAttribute('aria-checked', k === i ? 'true' : 'false'));
+        drawSlots();
+        msg.hidden = true;
+      });
+      dayChips.append(c);
     });
-    dayChips.append(c);
-  });
-  const slots = ['10:30', '12:00', '14:30', '16:00', '18:30'];
-  const slotChips = h('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Time' });
-  slots.forEach((s) => {
-    const c = h(
-      'button',
-      {
-        class: 'chip',
-        type: 'button',
-        role: 'radio',
-        id: 'et-slot-' + s.replace(':', ''),
-        'aria-checked': s === d.slot ? 'true' : 'false',
-      },
-      s,
+    drawSlots();
+    const submit = btn('Request this slot', { primary: true, cls: 'block', id: 'et-submit' });
+    submit.type = 'submit';
+    const form = h(
+      'form',
+      { class: 'stack', novalidate: true },
+      section('Day', dayChips),
+      section('Time', slotChips),
+      h(
+        'div',
+        { class: 'fields' },
+        formField(d, errs, 'name', 'Name', {
+          type: 'text',
+          autocomplete: 'name',
+          maxlength: '60',
+          placeholder: 'Your name',
+        }),
+        formField(d, errs, 'mobile', 'Mobile', {
+          type: 'tel',
+          autocomplete: 'tel-national',
+          inputmode: 'tel',
+          maxlength: '16',
+          placeholder: 'Mobile number',
+        }),
+      ),
+      consentRow(d, errs, 'I agree that ' + BM.STORE.name + ' may use these details to book my eye test.'),
+      submit,
+      msg,
     );
-    c.addEventListener('click', () => {
-      d.slot = s;
-      slotChips.querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-checked', x === c ? 'true' : 'false'));
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submit.disabled) return;
       msg.hidden = true;
+      for (const f of Object.values(errs)) {
+        f.err.hidden = true;
+        f.el.removeAttribute('aria-invalid');
+      }
+      const booking = { slotStart: d.slot, name: d.f.name.trim(), mobile: normalizeMobile(d.f.mobile), consent: true };
+      const sc = await schemasOr((m) => {
+        msg.className = 'notice';
+        msg.textContent = m;
+        msg.hidden = false;
+      });
+      if (!sc) return;
+      const { BookingSchema, fieldErrors } = sc;
+      const fe = {};
+      const r = BookingSchema.safeParse(booking);
+      if (!r.success) Object.assign(fe, fieldErrors(r.error));
+      if (!d.consent) fe.consent = MSG.consent;
+      if (showFieldErrors(errs, fe)) return;
+      busyBtn(submit, true, 'Requesting…');
+      try {
+        const res = await bookEyeTest(booking);
+        msg.className = 'notice ok';
+        msg.textContent =
+          'Slot noted for ' +
+          istDay(d.slot.slice(0, 10), { weekday: 'long', day: 'numeric', month: 'long' }) +
+          ' at ' +
+          d.slot.slice(11, 16) +
+          '. Reference ' +
+          res.bookingRef +
+          '. This is a demo, so no booking was made.';
+      } catch (err) {
+        msg.className = 'notice';
+        if (err instanceof ApiError && err.fields && err.fields.slotStart) {
+          d.flash = 'That time is no longer free. Pick another slot.';
+          slots = await getSlots(7).catch(() => slots);
+          if (alive) render();
+          return;
+        }
+        if (err instanceof ApiError && err.fields && showFieldErrors(errs, err.fields)) {
+          busyBtn(submit, false, 'Request this slot');
+          return;
+        }
+        msg.textContent = err.message || 'The slot could not be requested. Try again.';
+      }
+      busyBtn(submit, false, 'Request this slot');
+      msg.hidden = false;
     });
-    slotChips.append(c);
-  });
-  const name = h('input', { type: 'text', id: 'et-name', autocomplete: 'name', placeholder: 'Your name' });
-  const phone = h('input', {
-    type: 'tel',
-    id: 'et-phone',
-    autocomplete: 'tel',
-    inputmode: 'tel',
-    placeholder: 'Mobile number',
-  });
-  name.value = d.name || '';
-  phone.value = d.phone || '';
-  name.addEventListener('input', () => {
-    d.name = name.value;
-  });
-  phone.addEventListener('input', () => {
-    d.phone = phone.value;
-  });
-  const msg = h('p', { class: 'notice ok', role: 'status', hidden: true });
-  const form = h(
-    'form',
-    { class: 'stack', novalidate: true },
-    section('Day', dayChips),
-    section('Time', slotChips),
-    h(
-      'div',
-      { class: 'fields' },
-      h('label', { class: 'field', for: 'et-name' }, h('span', null, 'Name'), name),
-      h('label', { class: 'field', for: 'et-phone' }, h('span', null, 'Mobile'), phone),
-    ),
-    btn('Request this slot', { primary: true, cls: 'block', id: 'et-submit' }),
-    msg,
-  );
-  form.querySelector('#et-submit').type = 'submit';
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const t = days[d.day];
-    msg.textContent =
-      'Slot noted for ' +
-      t.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }) +
-      ' at ' +
-      d.slot +
-      '. This is a demo, so no booking was made.';
-    msg.hidden = false;
-  });
-  body.append(form);
-  return { title: 'Book a free eye test', body };
+    box.replaceChildren(form);
+    if (d.flash) {
+      msg.className = 'notice';
+      msg.textContent = d.flash;
+      msg.hidden = false;
+      d.flash = null;
+    }
+  }
+  return {
+    title: 'Book a free eye test',
+    body,
+    mount() {
+      alive = true;
+      loadSchemas().catch(() => {});
+      load();
+    },
+    unmount() {
+      alive = false;
+    },
+  };
 };
 
 /* ---------- View: lens guide ---------- */

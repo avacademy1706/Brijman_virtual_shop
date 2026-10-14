@@ -1475,6 +1475,52 @@ fieldset.section > legend {
   color: var(--ink);
   background: color-mix(in srgb, var(--accent-soft) 50%, var(--surface));
 }
+/* Bag and checkout: server price status, prescriptions, consent */
+.quote-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.quote-note.ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+.quote-note .i,
+.line-rx .i {
+  width: 16px;
+  height: 16px;
+}
+.line-qty {
+  font-size: 13px;
+  color: var(--muted);
+}
+.line-rx {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ok);
+}
+.line-rx .link-btn {
+  margin-left: auto;
+}
+.rx-needed {
+  border-style: solid;
+  border-color: var(--danger);
+}
+.consent {
+  display: grid;
+  gap: 6px;
+}
+.consent .opt-name {
+  font-weight: 500;
+}
+.field input[aria-invalid='true'],
+.rx input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
 .done {
   justify-items: start;
 }
