@@ -22,6 +22,7 @@ async function boot() {
   if (statusText) statusText.textContent = 'Building the showroom…';
   await import('./ui/app.js');
   if (result.fallback) BM.toast('Showing the saved catalogue. Prices are confirmed at checkout.', 5000);
+  if (statusText) statusText.textContent = 'Downloading the 3D store (about 170 kB)…';
   import('./scene/showroom.js').catch((err) => {
     if (BM.fail3D) BM.fail3D(err);
   });

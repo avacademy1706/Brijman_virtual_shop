@@ -53,3 +53,15 @@ describe('frame model at real sizes', () => {
     expect(G.acetate.attributes.position.count).toBeGreaterThan(1000);
   });
 });
+
+describe('low-detail shelf geometry', () => {
+  it('uses about 40 % of the triangles of the full build, for every archetype', () => {
+    const tris = (G) =>
+      ['acetate', 'metal', 'lens'].reduce((n, k) => n + (G[k] ? G[k].attributes.position.count / 3 : 0), 0);
+    for (const id of Object.keys(BM.ARCH)) {
+      const ratio = tris(buildArch(BM.ARCH[id], { detail: 'low' })) / tris(buildArch(BM.ARCH[id]));
+      expect(ratio, id).toBeGreaterThan(0.25);
+      expect(ratio, id).toBeLessThan(0.55);
+    }
+  });
+});

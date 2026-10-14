@@ -537,6 +537,41 @@ test('mobile audit', async ({ page, browserName }, info) => {
       await page.click('#w-explore').catch(() => {});
     }
 
+    /* 9b. Graphics context loss and recovery (Chromium can simulate it) */
+    if (browserName === 'chromium' && (await run(() => !!(window.BM && window.BM.api)).catch(() => false))) {
+      await run(() => {
+        const t = document.querySelector('.tryon');
+        if (t) document.querySelector('.tryon-top .tryon-icon')?.click();
+        const sh = document.querySelector('#sheet');
+        if (sh && sh.classList.contains('open')) document.querySelector('#sheet-close').click();
+      });
+      const lost = await run(async () => {
+        const gl = document.querySelector('#scene').getContext('webgl2');
+        const ext = gl && gl.getExtension('WEBGL_lose_context');
+        if (!ext) return { ok: false, why: 'no WEBGL_lose_context' };
+        ext.loseContext();
+        await new Promise((r) => setTimeout(r, 400));
+        const shown = !document.querySelector('#restore').hidden;
+        ext.restoreContext();
+        await new Promise((r) => setTimeout(r, 1500));
+        window.dispatchEvent(new Event('resize'));
+        await new Promise((r) => setTimeout(r, 600));
+        return {
+          ok: true,
+          shown,
+          hidden: document.querySelector('#restore').hidden,
+          draws: window.BM.api.stats().draws,
+          lostNow: gl.isContextLost(),
+        };
+      });
+      check(
+        '3D',
+        'Recovers after a lost graphics context, without a reload',
+        lost.ok && lost.shown && lost.hidden && !lost.lostNow && lost.draws > 0,
+        JSON.stringify(lost),
+      );
+    }
+
     /* 10. Performance (low-end profile) */
     if (lowEnd && (await run(() => !!(window.BM && window.BM.api)).catch(() => false))) {
       await run(() => document.querySelector('.tryon') && document.querySelector('.tryon-top .tryon-icon')?.click());

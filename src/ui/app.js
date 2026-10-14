@@ -2501,9 +2501,10 @@ VIEWS.info = function () {
     'ql',
     'Picture quality',
     [
-      { id: 'auto', n: 'Automatic', d: 'Adjusts to keep movement smooth.' },
-      { id: 'high', n: 'High', d: 'Sharper with soft shadows. Uses more battery.' },
-      { id: 'low', n: 'Battery saver', d: 'Lower resolution, no shadows.' },
+      { id: 'auto', n: 'Automatic', d: 'Chosen for this device, and lowered if movement gets slow.' },
+      { id: 'high', n: 'High', d: 'Sharpest, with soft shadows on computers. Uses more battery.' },
+      { id: 'medium', n: 'Balanced', d: 'Sharp enough, no shadows, simpler distant frames.' },
+      { id: 'low', n: 'Battery saver', d: 'Lower resolution, smaller textures, simplest frames.' },
     ],
     S.settings.quality,
     (v) => {
@@ -2654,7 +2655,52 @@ $('#plan-fallback').addEventListener('click', (e) => {
   const z = BM.zoneAt(w.x, w.z);
   if (z) openSheet(zoneSheet(z.id), { zone: z.id });
 });
-BM.fail3D = function (err) {
+// Build progress from the 3D scene, shown on the welcome card until the store is ready.
+BM.loadStatus = (text) => {
+  if (S.has3D || S.failed) return;
+  const t = $('#status-text');
+  if (t) t.textContent = text;
+};
+// Graphics context loss: tell the visitor, recover without a reload, or offer a reload and the floor plan.
+BM.onGraphics = (state) => {
+  const box = $('#restore');
+  if (state === 'restored') {
+    box.hidden = true;
+    return;
+  }
+  if (state === 'lost') {
+    box.replaceChildren(
+      h(
+        'p',
+        { class: 'status' },
+        h('span', { class: 'spinner', 'aria-hidden': 'true' }),
+        h('span', null, 'Restoring the 3D view…'),
+      ),
+    );
+    box.hidden = false;
+    return;
+  }
+  box.replaceChildren(
+    h('p', null, h('b', null, 'The 3D view could not be restored.')),
+    h(
+      'div',
+      { class: 'card-actions' },
+      btn('Reload', { primary: true, onclick: () => location.reload() }),
+      btn('Use the floor plan', {
+        onclick: () => {
+          box.hidden = true;
+          BM.fail3D(new Error('graphics context lost'), true);
+        },
+      }),
+    ),
+  );
+  box.hidden = false;
+};
+BM.fail3D = function (err, force) {
+  if (force && S.has3D) {
+    S.has3D = false;
+    app.classList.remove('has3d');
+  }
   if (S.has3D || S.failed) return;
   S.failed = true;
   if (err) console.warn('3D view unavailable:', err);

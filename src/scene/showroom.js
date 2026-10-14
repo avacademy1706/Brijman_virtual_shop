@@ -42,6 +42,34 @@ async function start() {
   renderer.shadowMap.autoUpdate = false;
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
+  /* Quality tiers. Chosen from the device at start-up, can drop at run time, can be set in Info → Picture quality.
+     low: budget phones · medium: mid-range phones and older iPhones · high: recent phones, tablets, laptops. */
+  const TIERS = {
+    low: { dpr: 1, shadows: false, tex: 512, lod: 'always', fps: 30 },
+    medium: { dpr: 1.5, shadows: false, tex: 1024, lod: 'far', fps: 45 },
+    high: { dpr: 2, shadows: !coarse, tex: 4096, lod: 'never', fps: 50 },
+  };
+  const ORDER = ['low', 'medium', 'high'];
+  function detectTier() {
+    const mem = navigator.deviceMemory || 0,
+      cores = navigator.hardwareConcurrency || 0;
+    const maxTex = renderer.capabilities.maxTextureSize;
+    const ios =
+      /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let t = coarse ? 'medium' : 'high';
+    if (!ios && ((mem && mem <= 4) || (cores && cores <= 4) || maxTex < 4096)) t = coarse ? 'low' : 'medium';
+    if (mem && mem <= 2) t = 'low';
+    return t;
+  }
+  const chosen = BM.settings && ['low', 'medium', 'high'].includes(BM.settings.quality) ? BM.settings.quality : null;
+  let tierName = chosen || detectTier();
+  // Textures are drawn once, at the start-up tier's size.
+  const TEX_CAP = TIERS[tierName].tex;
+  const loadStatus = async (text) => {
+    if (BM.loadStatus) BM.loadStatus(text);
+    await new Promise((r) => setTimeout(r, 0));
+  };
+
   // Signage is drawn with the page fonts; wait briefly for them.
   try {
     await Promise.race([
@@ -56,6 +84,7 @@ async function start() {
     /* fonts optional */
   }
 
+  await loadStatus('Building the store… 10%');
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#dde4e0');
   const camera = new THREE.PerspectiveCamera(60, 1, 0.03, 60);
@@ -85,6 +114,13 @@ async function start() {
   };
   function ctex(c, o) {
     o = o || {};
+    // Smaller textures on low and medium tiers: draw at full size, upload a scaled copy.
+    if (c.width > TEX_CAP || c.height > TEX_CAP) {
+      const k = TEX_CAP / Math.max(c.width, c.height);
+      const small = mk(Math.max(1, Math.round(c.width * k)), Math.max(1, Math.round(c.height * k)));
+      small.getContext('2d').drawImage(c, 0, 0, small.width, small.height);
+      c = small;
+    }
     const t = new THREE.CanvasTexture(c);
     if (o.srgb !== false) t.colorSpace = THREE.SRGBColorSpace;
     if (o.repeat !== false) {
@@ -695,6 +731,7 @@ async function start() {
     sign(text, o, x, y, z - 0.022, Math.PI);
   }
 
+  await loadStatus('Building the store… 35%');
   /* ------------------------------------------------------------------
      Shell: floor, walls, ceiling, storefront
      ------------------------------------------------------------------ */
@@ -793,6 +830,7 @@ async function start() {
     addG('brass', rim);
   }
 
+  await loadStatus('Building the store… 55%');
   /* ------------------------------------------------------------------
      Fixtures
      ------------------------------------------------------------------ */
@@ -1180,8 +1218,12 @@ async function start() {
   /* ------------------------------------------------------------------
      Frames: procedural geometry from each archetype, drawn as instances
      ------------------------------------------------------------------ */
+  await loadStatus('Placing the frames… 75%');
   const ARCHGEO = {};
   const archGeo = (id) => ARCHGEO[id] || (ARCHGEO[id] = buildArch(BM.ARCH[id]));
+  // Simplified shelf frames (about 40 % of the triangles) for distant shelves on phones.
+  const ARCHLO = {};
+  const archGeoLo = (id) => ARCHLO[id] || (ARCHLO[id] = buildArch(BM.ARCH[id], { detail: 'low' }));
 
   const FM = createFrameMaterials(tex);
   const partsFor = (p, col) => framePartsFor(p, col, archGeo(p.arch));
@@ -1203,10 +1245,11 @@ async function start() {
     const base = new THREE.Matrix4().compose(center, quat, new V3(scale, scale, scale));
     const rec = { pid, ci: ci % p.colors.length, center, ry, refs: [], zone: slot.zone, kind: 'frame' };
     for (const pt of partsFor(p, col)) {
-      const key = p.arch + '|' + pt.part + '|' + pt.kind;
+      // One instanced mesh per section, archetype, part and material, so whole sections behind the camera are culled.
+      const key = slot.zone + '|' + p.arch + '|' + pt.part + '|' + pt.kind;
       let g = groups.get(key);
       if (!g) {
-        g = { geo: G[pt.part], mat: FM[pt.kind], items: [] };
+        g = { geo: G[pt.part], mat: FM[pt.kind], items: [], arch: p.arch, part: pt.part };
         groups.set(key, g);
       }
       g.items.push({ rec, color: pt.color, base });
@@ -1232,9 +1275,13 @@ async function start() {
   premiumNiche.forEach((s, i) => addDisplay(MR.premiumNiche[i][0], MR.premiumNiche[i][1], s));
 
   const productMeshes = [];
+  const frameMeshes = [];
   for (const g of groups.values()) {
     const im = new THREE.InstancedMesh(g.geo, g.mat, g.items.length);
     im.userData.recs = [];
+    im.userData.geoHi = g.geo;
+    im.userData.lod = () => archGeoLo(g.arch)[g.part] || g.geo;
+    frameMeshes.push(im);
     g.items.forEach((it, i) => {
       im.setMatrixAt(i, it.base);
       im.setColorAt(i, it.color);
@@ -1342,12 +1389,18 @@ async function start() {
     }
   }
 
+  await loadStatus('Lighting the store… 90%');
   /* ------------------------------------------------------------------
      Lighting
      ------------------------------------------------------------------ */
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  pmrem.dispose();
+  // Rebuilt after a lost graphics context too (the environment map lives only on the GPU).
+  function buildEnvironment() {
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    if (scene.environment) scene.environment.dispose();
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+  }
+  buildEnvironment();
   scene.environmentIntensity = 0.55;
   scene.add(new THREE.HemisphereLight(0xfff6ea, 0x8f8576, 0.7));
   const key = new THREE.DirectionalLight(0xfff1de, 1.25);
@@ -2238,20 +2291,17 @@ async function start() {
     needs = true;
     sizeViewer();
   }
+  // Applies a quality setting: 'auto' uses the detected tier (which may drop at run time), or a fixed tier.
   function applyQuality(mode) {
+    if (mode === 'high' || mode === 'medium' || mode === 'low') tierName = mode;
+    else if (mode === 'auto' && chosen) tierName = detectTier();
+    const T = TIERS[tierName];
     const dpr = window.devicePixelRatio || 1;
-    let max, sh;
-    if (mode === 'high') {
-      max = 2;
-      sh = true;
-    } else if (mode === 'low') {
-      max = 1;
-      sh = false;
-    } else {
-      max = coarse ? 1.5 : 1.75;
-      sh = !coarse;
-    }
+    const max = T.dpr,
+      sh = T.shadows;
     QUAL.dpr = Math.min(dpr, max);
+    lodMode = T.lod;
+    applyLod(true);
     renderer.setPixelRatio(QUAL.dpr);
     if (renderer.shadowMap.enabled !== sh) {
       renderer.shadowMap.enabled = sh;
@@ -2266,9 +2316,30 @@ async function start() {
     renderer.shadowMap.needsUpdate = true;
     resize();
   }
-  let slow = 0;
+  // Level of detail for shelf frames: far sections use the simplified geometry (medium), or all do (low).
+  let lodMode = 'never',
+    lodAt = 0;
+  function applyLod(force) {
+    const now = performance.now();
+    if (!force && now - lodAt < 250) return;
+    lodAt = now;
+    for (const im of frameMeshes) {
+      let lo = lodMode === 'always';
+      if (lodMode === 'far') {
+        if (!im.boundingSphere) im.computeBoundingSphere();
+        const sph = im.boundingSphere;
+        lo = Math.hypot(sph.center.x - nav.x, sph.center.z - nav.z) - sph.radius > 4;
+      }
+      const geo = lo ? im.userData.lod() : im.userData.geoHi;
+      if (im.geometry !== geo) im.geometry = geo;
+    }
+  }
+  // Automatic quality: lower the pixel ratio first, then drop a tier if fps stays under target for 3 s.
+  let slow = 0,
+    slowFor = 0;
   function adapt(dt) {
-    if (!BM.settings || BM.settings.quality !== 'auto') return;
+    if (!BM.settings || (BM.settings.quality || 'auto') !== 'auto') return;
+    const target = TIERS[tierName].fps;
     if (dt > 1 / 36) slow++;
     else slow = Math.max(0, slow - 1);
     if (slow > 40 && QUAL.dpr > 1) {
@@ -2276,6 +2347,15 @@ async function start() {
       renderer.setPixelRatio(QUAL.dpr);
       resize();
       slow = 0;
+    }
+    slowFor = dt > 1 / target ? slowFor + dt : Math.max(0, slowFor - dt * 2);
+    if (slowFor > 3) {
+      slowFor = 0;
+      const i = ORDER.indexOf(tierName);
+      if (i > 0) {
+        tierName = ORDER[i - 1];
+        applyQuality('tier');
+      }
     }
   }
   function pose() {
@@ -2375,6 +2455,7 @@ async function start() {
   }
   let frameN = 0;
   function render() {
+    if (lodMode === 'far') applyLod(false);
     camera.position.set(nav.x, EYE, nav.z);
     camera.rotation.set(nav.pitch, nav.yaw, 0, 'YXZ');
     camera.fov = baseFov * zoom;
@@ -2391,7 +2472,7 @@ async function start() {
     const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
     last = now;
     const act = update(dt) || (drag.active && drag.moved) || !!pinch;
-    if (!paused && (act || needs || now < keepAlive)) {
+    if (!paused && !hiddenPause && !ctxLost && (act || needs || now < keepAlive)) {
       render();
       if (act) adapt(dt);
     }
@@ -2401,12 +2482,49 @@ async function start() {
     }
   }
 
+  /* Graphics context loss (common on iOS after the app returns from the background): pause, tell the visitor,
+     rebuild what lives only on the GPU when the browser restores the context, without reloading the page. */
+  let ctxLost = false,
+    lostCount = 0,
+    restoreTimer = 0;
   canvas.addEventListener('webglcontextlost', (e) => {
     e.preventDefault();
-    if (BM.toast) BM.toast('The 3D view paused. It resumes when the browser restores it.');
+    ctxLost = true;
+    lostCount++;
+    if (BM.onGraphics) BM.onGraphics('lost');
+    clearTimeout(restoreTimer);
+    // If the browser does not restore it in time, or it keeps failing, offer a reload and the floor plan.
+    restoreTimer = setTimeout(() => ctxLost && BM.onGraphics && BM.onGraphics('failed'), 8000);
+    if (lostCount > 2 && BM.onGraphics) BM.onGraphics('failed');
   });
   canvas.addEventListener('webglcontextrestored', () => {
-    renderer.shadowMap.needsUpdate = true;
+    clearTimeout(restoreTimer);
+    ctxLost = false;
+    try {
+      buildEnvironment();
+      renderer.shadowMap.needsUpdate = true;
+      if (VW) VW.needsEnv = true;
+      needs = true;
+      kick();
+      if (BM.onGraphics) BM.onGraphics('restored');
+    } catch (err) {
+      if (BM.onGraphics) BM.onGraphics('failed');
+    }
+  });
+  // Page lifecycle: stop rendering while the page is hidden or put in the back-forward cache.
+  let hiddenPause = document.visibilityState === 'hidden';
+  document.addEventListener('visibilitychange', () => {
+    hiddenPause = document.visibilityState === 'hidden';
+    if (!hiddenPause) {
+      needs = true;
+      kick();
+    }
+  });
+  window.addEventListener('pagehide', () => {
+    hiddenPause = true;
+  });
+  window.addEventListener('pageshow', () => {
+    hiddenPause = document.visibilityState === 'hidden';
     needs = true;
     kick();
   });
@@ -2423,6 +2541,26 @@ async function start() {
   applyQuality((BM.settings && BM.settings.quality) || 'auto');
   if (camera.aspect < 0.75) nav.pitch = -0.13;
   render();
+  if (!chosen) {
+    let frames = 0;
+    const t0 = performance.now();
+    await new Promise((done) => {
+      const step = () => {
+        render();
+        frames++;
+        if (performance.now() - t0 < 1000) requestAnimationFrame(step);
+        else done();
+      };
+      requestAnimationFrame(step);
+    });
+    const fps = (frames * 1000) / (performance.now() - t0);
+    const i = ORDER.indexOf(tierName);
+    if (fps < TIERS[tierName].fps * 0.6 && i > 0) {
+      tierName = ORDER[i - 1];
+      applyQuality('tier');
+    }
+    BM.benchmarkFps = Math.round(fps);
+  }
 
   BM.attach3D({
     goZone(id, tag) {
@@ -2477,6 +2615,11 @@ async function start() {
         z: nav.z,
         yaw: nav.yaw,
         zoom,
+        tier: tierName,
+        dpr: QUAL.dpr,
+        benchmarkFps: BM.benchmarkFps || null,
+        textures: renderer.info.memory.textures,
+        geometries: renderer.info.memory.geometries,
       };
     },
   });

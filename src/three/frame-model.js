@@ -62,11 +62,17 @@ const TEMPLE_NOMINAL = pathLength(TEMPLE_PATH);
  * Builds a frame from an archetype (shared/frame-archetypes.js, metres).
  * Optional `a.templeLen` (metres) sets the real temple length along its path; without it the shelf drawing is used.
  * With `split`, also returns the front, temples and lenses separately, the hinge points and the outer width.
+ * With `detail: 'low'`, uses fewer outline, tube and temple segments (about 40 % of the triangles) for distant
+ * shelf frames on phones; the product viewer and the try-on always use full detail.
  * @param {object} a archetype
- * @param {{split?: boolean}} [opt]
+ * @param {{split?: boolean, detail?: 'low'|'full'}} [opt]
  */
 export function buildArch(a, opt = {}) {
-  const base = BM.outline(a.shape, a.A, a.B, 56).map((p) => new V2(p.x, p.y));
+  const low = opt.detail === 'low';
+  const N = low
+    ? { outline: 28, rim: 30, radial: 4, bridge: 10, arm: 5, pad: [6, 4], temple: 12, tRadial: 4 }
+    : { outline: 56, rim: 72, radial: 6, bridge: 20, arm: 8, pad: [10, 8], temple: 28, tRadial: 8 };
+  const base = BM.outline(a.shape, a.A, a.B, N.outline).map((p) => new V2(p.x, p.y));
   const style = a.style,
     th = a.thick || 1;
   const rimT = style === 'acetate' ? 0.0042 * th : 0.0012;
@@ -113,7 +119,7 @@ export function buildArch(a, opt = {}) {
         true,
         'centripetal',
       );
-      const g = new THREE.TubeGeometry(curve, 72, style === 'combo' ? 0.0007 : 0.00085, 6, true);
+      const g = new THREE.TubeGeometry(curve, N.rim, style === 'combo' ? 0.0007 : 0.00085, N.radial, true);
       g.applyMatrix4(m);
       met.push(g);
       if (style === 'combo') {
@@ -170,7 +176,7 @@ export function buildArch(a, opt = {}) {
       new V3(a.dbl / 4, yB + 0.0028, 0.0018),
       new V3(a.dbl / 2 + 0.001, yB, 0.0005),
     ]);
-    met.push(new THREE.TubeGeometry(c, 20, 0.0009, 6, false));
+    met.push(new THREE.TubeGeometry(c, N.bridge, 0.0009, N.radial, false));
     if (a.dbridge) {
       const ty = maxY * 0.8;
       const c2 = new THREE.CatmullRomCurve3([
@@ -178,7 +184,7 @@ export function buildArch(a, opt = {}) {
         new V3(0, ty + 0.0012, 0.0016),
         new V3(cxR - a.A * 0.1, ty, 0.0004),
       ]);
-      met.push(new THREE.TubeGeometry(c2, 20, 0.00085, 6, false));
+      met.push(new THREE.TubeGeometry(c2, N.bridge, 0.00085, N.radial, false));
     }
     for (const sd of [1, -1]) {
       const arm = new THREE.CatmullRomCurve3([
@@ -186,8 +192,8 @@ export function buildArch(a, opt = {}) {
         new V3(sd * (a.dbl / 2 - 0.0005), yB - 0.006, -0.004),
         new V3(sd * (a.dbl / 2 - 0.0018), -a.B * 0.02, -0.0065),
       ]);
-      met.push(new THREE.TubeGeometry(arm, 8, 0.0005, 5, false));
-      const pad = new THREE.SphereGeometry(0.0045, 10, 8);
+      met.push(new THREE.TubeGeometry(arm, N.arm, 0.0005, low ? 3 : 5, false));
+      const pad = new THREE.SphereGeometry(0.0045, N.pad[0], N.pad[1]);
       pad.scale(0.42, 1, 0.22);
       pad.rotateZ(sd * 0.25);
       pad.translate(sd * (a.dbl / 2 - 0.0022), -a.B * 0.05, -0.0075);
@@ -206,9 +212,9 @@ export function buildArch(a, opt = {}) {
     const curve = new THREE.CatmullRomCurve3(pts3, false, 'centripetal');
     const tg = new THREE.TubeGeometry(
       curve,
-      28,
+      N.temple,
       style === 'acetate' ? 0.0015 * th : style === 'combo' ? 0.0013 : 0.0008,
-      style === 'metal' ? 6 : 8,
+      low ? N.tRadial : style === 'metal' ? 6 : 8,
       false,
     );
     if (style === 'metal') {
