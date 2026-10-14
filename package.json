@@ -15,11 +15,12 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run format:check && npm test && npm run build",
+    "check": "npm run format:check && npm test && npm run build && node scripts/check-bundle.mjs",
     "smoke": "node scripts/smoke.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "assets:check": "node scripts/check-assets.mjs"
+    "assets:check": "node scripts/check-assets.mjs",
+    "bundle:check": "node scripts/check-bundle.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.0.1",

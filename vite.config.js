@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
 
 import { apiPlugin } from './server/vite-api-plugin.js';
+import { bundleReport } from './server/bundle-report-plugin.js';
 
 // `npm run preview` serves the production build with the same security headers as Vercel,
 // so a Content-Security-Policy problem shows up locally before you deploy.
@@ -11,7 +12,7 @@ const previewHeaders = Object.fromEntries((siteRule ? siteRule.headers : []).map
 delete previewHeaders['Strict-Transport-Security']; // preview runs on plain http
 
 export default defineConfig({
-  plugins: [apiPlugin()],
+  plugins: [apiPlugin(), bundleReport()],
   build: {
     target: 'es2020',
     sourcemap: false,

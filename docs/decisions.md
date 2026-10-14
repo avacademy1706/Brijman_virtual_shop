@@ -97,3 +97,12 @@ This is an intentional catalogue change. The snapshot test compares products wit
 Cart lines carry `sizeId`: required for frames, refused for contacts and care, validated by the quote service. An optional whole-rupee `priceDelta` per size is added by `priceOf`. Quote and order lines return `sizeId` and `sizeLabel` ("M · 52□18-145").
 
 The bag moved to localStorage key `bm-bag-v2` (id, colour, size, configuration, quantity). Version 1 lines are migrated once to the default size and the old key is deleted. A saved line whose size no longer exists is dropped with a notice rather than silently changed to another size.
+
+## 2026-10-14: Try-on security and delivery
+
+- `vercel.json`: `script-src` gains `'wasm-unsafe-eval'` (WebAssembly needs it) and `Permissions-Policy` changes `camera=()` to `camera=(self)`. Nothing else changed: the browser tests show no CSP violations with these two alone, and MediaPipe runs on the main thread, so no `worker-src` is needed.
+- `/vendor/mediapipe/(.*)` is cached for a year as immutable. Every file there has a version in its path (`1.0.1/wasm/…`, `models/float16-1/…`); the face model moved into `models/float16-1/` for that reason.
+- All try-on code, MediaPipe, three.js and the model load only when a shopper taps Try on. `scripts/check-bundle.mjs` (part of `npm run check`) fails if the first load grows more than 10 KB gzipped over the pre-try-on release (32,552 bytes): it is now +1.8 KB.
+- The camera is requested only after the shopper taps Allow camera (or Use the camera), is stopped on close, on `pagehide` and when the page is hidden, and restarts only on the shopper's action. A newer camera request cancels an older one, so a double tap cannot leave a second camera running.
+- MediaPipe's wasm prints an informational line ("INFO: Created TensorFlow Lite XNNPACK delegate for CPU.") through `console.error`. The engine filters exactly the lines that start with "INFO: ", so real errors still show.
+- `track(event, props)` in `src/tryon/analytics.js` is a no-op with an allow-list: six events and `productId`, `sizeId`, `colourIndex`, `source` and `result` (good, narrow or wide). No measurements can pass.
