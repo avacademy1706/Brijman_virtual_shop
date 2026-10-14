@@ -44,3 +44,9 @@ desktop.ini
 # Personal Claude Code settings
 CLAUDE.local.md
 .claude/settings.local.json
+
+# MediaPipe runtime files, copied from node_modules by scripts/copy-mediapipe.mjs
+public/vendor/mediapipe/*/wasm/
+
+# Local-only test material (for example a photo for manual try-on checks)
+tests/local/

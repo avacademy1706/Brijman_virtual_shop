@@ -67,3 +67,19 @@ With `VITE_DATA_SOURCE=static` the browser never calls `/api`. The bag shows "Es
 ## 2026-10-14: Not verified with `vercel dev`
 
 `vercel dev` needs a logged-in Vercel CLI, which this machine does not have. The rewrite is covered by a test that calls the function's `fetch` export with the original `/api/v1/...` URL, and by `npm run smoke` against `npm run preview`. After the first deployment, run `npm run smoke -- https://<your-project>.vercel.app`.
+
+## 2026-10-14: Virtual try-on is built in-house on MediaPipe, behind an engine interface
+
+The try-on uses `@mediapipe/tasks-vision` 1.0.1 (`FaceLandmarker`, on the device) with three.js. Everything sits behind `src/tryon/engine.js` (`start`, `setFrame`, `snapshot`, `stop`, `on`), and the interface talks only to that. A commercial SDK (Banuba, Fittingbox, GlamAR) could replace the engine later without touching the UI. Reasons: no per-use fee, no face data leaves the phone, and full control of true sizing.
+
+The face model `public/vendor/mediapipe/models/face_landmarker.task` (Apache-2.0) is committed. SHA-256: `64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff`. The wasm runtime is copied from `node_modules` at build time and is never loaded from a CDN.
+
+## 2026-10-14: Try-on pose comes from our own Procrustes fit, rendered in pixel space
+
+The brief suggested using MediaPipe's facial transformation matrix with a perspective camera matched to its assumed field of view, plus a correction snap. Instead the engine fits MediaPipe's canonical face (`shared/canonical-face.js`, from the official `canonical_face_model.obj`) to the tracked landmarks with a similarity Procrustes fit (Horn's method). That is the same kind of fit MediaPipe uses to compute its matrix. The result is rendered with an orthographic camera in video-pixel space. Reasons:
+
+- It needs no assumption about the camera's field of view, so there is no drift to correct; the nose bridge lands on its tracked landmark by construction (tested to within 0.5 px).
+- Every step is unit-tested with synthetic faces: pose within 0.5°, true size within 1 %.
+- It uses the rigid landmarks only (forehead, nose, eye corners, cheekbones, temples), so talking and blinking do not move the frame.
+
+The weak-perspective camera ignores the slight perspective of the temples, which the head occluder hides from 30 mm behind the hinges anyway. `outputFacialTransformationMatrixes` is therefore off.
