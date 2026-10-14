@@ -37,6 +37,19 @@ describe('vercel.json', () => {
       .headers.find((h) => h.key === 'Content-Security-Policy');
     expect(csp.value).toMatch(/connect-src 'self'/);
   });
+  it("allows only what the try-on needs: 'wasm-unsafe-eval' and camera=(self)", () => {
+    const site = vercel.headers.find((h) => h.source === '/(.*)').headers;
+    const csp = site.find((h) => h.key === 'Content-Security-Policy').value;
+    expect(csp).toContain("script-src 'self' 'wasm-unsafe-eval';");
+    expect(csp).not.toMatch(/unsafe-eval'(?<!wasm-unsafe-eval')|https?:/);
+    expect(csp).not.toContain('worker-src');
+    const pp = site.find((h) => h.key === 'Permissions-Policy').value;
+    expect(pp).toBe('camera=(self), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()');
+  });
+  it('caches the versioned MediaPipe files for a year', () => {
+    const rule = vercel.headers.find((h) => h.source === '/vendor/mediapipe/(.*)');
+    expect(rule.headers).toEqual([{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }]);
+  });
   it('.vercelignore excludes only assets-3d/', () => {
     expect(vercelignore.split(/\r?\n/).filter((l) => l.trim() && !l.startsWith('#'))).toEqual(['assets-3d/']);
   });

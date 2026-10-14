@@ -29,6 +29,11 @@ await check('GET / returns 200 with a Content-Security-Policy', async () => {
   if (r.status !== 200) return 'status ' + r.status;
   return r.headers.get('content-security-policy') ? true : 'no CSP header';
 });
+await check('The site allows the camera for itself only (try-on)', async () => {
+  const r = await get('/');
+  const pp = r.headers.get('permissions-policy') || '';
+  return /camera=(self)/.test(pp) ? true : 'Permissions-Policy: ' + pp;
+});
 await check('GET /api/v1/health is ok', async () => {
   const r = await get('/api/v1/health');
   const j = await r.json();
