@@ -1,0 +1,1180 @@
+openapi: 3.1.0
+info:
+  title: Brijman Virtual Showroom API
+  version: 1.0.0
+  summary: Catalogue, server-side prices, demo checkout and eye-test booking for the Brijman Eyewear virtual showroom.
+  description: |
+    The API behind the Brijman Eyewear virtual showroom. The browser calls it on the same origin; it sends no CORS
+    headers.
+
+    - Every success body is `{ data, meta }`. Every error body is `{ error: { code, message, fields? } }`.
+    - Every response carries `X-Request-Id` (a UUID, also in `meta.requestId`) and `X-Content-Type-Options: nosniff`.
+    - Prices are whole rupees (INR), GST included. Delivery is always 0.
+    - Times are India Standard Time (Asia/Kolkata, UTC+05:30).
+    - POST bodies must be `Content-Type: application/json`, at most 16 KB, and match the schema exactly
+      (unknown keys are rejected).
+    - Demo mode (`DATA_SOURCE=static`, the default): orders and bookings are checked and priced, but nothing is
+      stored, charged or booked.
+    - Every GET route also answers HEAD.
+
+    The top-level `x-backend-contract` extension describes what a future backend must expose for `HttpRepository`
+    (`DATA_SOURCE=http`). This API does not serve those paths.
+servers:
+  - url: http://localhost:5173/api/v1
+    description: Local development (`npm run dev`)
+  - url: http://localhost:4173/api/v1
+    description: Local production preview (`npm run preview`)
+  - url: /api/v1
+    description: Same origin as the site (Vercel)
+tags:
+  - name: System
+  - name: Catalogue
+  - name: Commerce
+  - name: Eye test
+
+paths:
+  /health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      summary: Health check
+      description: Reports status, the active data source and the API version. Never cached.
+      responses:
+        '200':
+          description: The API is up.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/Health' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+              example:
+                data: { status: ok, dataSource: static, version: 1.0.0, time: '2026-10-14T09:22:20.458Z' }
+                meta: { requestId: 523f4a1b-c3c9-4c8b-9eb1-65e963666d7e }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+
+  /bootstrap:
+    get:
+      tags: [Catalogue]
+      operationId: getBootstrap
+      summary: Everything the first screen needs
+      description: Store details, zones, tour, all products, merchandising (shelf layout) and lens options.
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: The bootstrap payload.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CachePublic' }
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/Bootstrap' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '304': { $ref: '#/components/responses/NotModified' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /store:
+    get:
+      tags: [Catalogue]
+      operationId: getStore
+      summary: Store details, zones and tour
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: Store details.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CachePublic' }
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/StoreInfo' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '304': { $ref: '#/components/responses/NotModified' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /products:
+    get:
+      tags: [Catalogue]
+      operationId: listProducts
+      summary: Search the catalogue
+      description: |
+        Every filter is optional and filters combine with AND. Unknown query parameters are ignored.
+        `meta.count` holds the number of results.
+      parameters:
+        - name: zone
+          in: query
+          description: Exact zone id, for example `men`, `women`, `sun`, `kids`, `premium`, `contacts`.
+          schema: { type: string, maxLength: 20 }
+        - name: q
+          in: query
+          description: |
+            Free text. Split on spaces; every word must appear (case-insensitive) in the name, description,
+            material, tags or colour names.
+          schema: { type: string, maxLength: 80 }
+        - name: shape
+          in: query
+          description: Frame shape family. Contacts and care never match.
+          schema:
+            type: string
+            maxLength: 20
+            examples: [rect, square, round, oval, cateye, oversize, geo, aviator, brow]
+        - name: material
+          in: query
+          description: Case-insensitive substring of the material, for example `titanium`.
+          schema: { type: string, maxLength: 40 }
+        - name: polarised
+          in: query
+          description: '`true` returns polarised products only; `false` returns everything not polarised.'
+          schema: { type: string, enum: ['true', 'false'] }
+        - name: maxPrice
+          in: query
+          description: Highest price in rupees. Frames use the frame price; contacts and care use their cheapest pack.
+          schema: { type: integer, minimum: 0, maximum: 1000000 }
+        - name: type
+          in: query
+          schema: { type: string, enum: [frame, contacts, care] }
+      responses:
+        '200':
+          description: Matching products, in catalogue order. May be empty.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CachePublic' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+                  meta:
+                    allOf:
+                      - $ref: '#/components/schemas/Meta'
+                      - type: object
+                        required: [count]
+                        properties:
+                          count: { type: integer, minimum: 0 }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '422':
+          description: A filter is invalid. Message is "Check the search filters."
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                error:
+                  code: validation_failed
+                  message: Check the search filters.
+                  fields: { maxPrice: 'Invalid input: expected number, received NaN' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /products/{id}:
+    get:
+      tags: [Catalogue]
+      operationId: getProduct
+      summary: One product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product id, for example `m01`.
+          schema: { type: string }
+      responses:
+        '200':
+          description: The product.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CachePublic' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/Product' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '404':
+          description: No product has this id.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                error: { code: not_found, message: 'No product with id "zz99".' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /lenses:
+    get:
+      tags: [Catalogue]
+      operationId: getLenses
+      summary: Lens options and prices
+      description: Lens types, index, coatings, sun lens options and prescription options, from `data/lenses.json`.
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: The lens table.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CachePublic' }
+            ETag: { $ref: '#/components/headers/ETag' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/LensTable' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '304': { $ref: '#/components/responses/NotModified' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /cart/quote:
+    post:
+      tags: [Commerce]
+      operationId: quoteCart
+      summary: Price a bag on the server
+      description: |
+        Checks every line against the catalogue and lens rules, then returns server prices. Client prices are never
+        accepted. The same bag always gets the same `quoteId`. A line that breaks a business rule fails with 422 and
+        a message keyed by its path, for example `lines.1.colourIndex`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuoteRequest' }
+            example:
+              lines:
+                - productId: m01
+                  colourIndex: 0
+                  config: { type: sv, index: '160', coats: [bc], rx: now }
+                  qty: 1
+                - productId: c01
+                  colourIndex: 0
+                  config: { pack: 1 }
+                  qty: 3
+      responses:
+        '200':
+          description: The priced bag.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/Quote' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '400': { $ref: '#/components/responses/MalformedJson' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /orders:
+    post:
+      tags: [Commerce]
+      operationId: placeOrder
+      summary: Place a demo order
+      description: |
+        Validates the body, re-prices every line on the server, checks prescriptions and returns an order reference.
+        In demo mode nothing is stored or charged and the status is `demo_not_charged`. The response never echoes
+        contact or delivery details.
+
+        A prescription is required on a line whose lenses are made to a prescription and whose `config.rx` is `now`,
+        and refused on every other line. Bifocal and progressive lines need `add` on both eyes; `axis` is required
+        when `cyl` is not 0.
+
+        With an `Idempotency-Key`, the same key always gives the same `orderRef`, and the key is echoed back.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          description: A UUID. Retrying with the same key returns the same `orderRef`. A key that is not a UUID gives 422.
+          schema:
+            type: string
+            format: uuid
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderRequest' }
+            example:
+              lines:
+                - productId: m01
+                  colourIndex: 0
+                  config: { type: sv, index: '160', coats: [bc], rx: now }
+                  qty: 1
+                  prescription:
+                    r: { sph: -1.25, cyl: 0, axis: null }
+                    l: { sph: -1, cyl: -0.5, axis: 90 }
+                    pd: 63
+              contact: { name: Asha Rao, mobile: '9876543210' }
+              delivery: { method: home, line1: 12 MG Road, city: Bengaluru, pin: '560001' }
+              consent: true
+      responses:
+        '201':
+          description: Demo order accepted.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+            Idempotency-Key:
+              description: The request's Idempotency-Key, echoed back. Present only when the request sent one.
+              schema: { type: string, format: uuid }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/OrderResult' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '400': { $ref: '#/components/responses/MalformedJson' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /eye-test/slots:
+    get:
+      tags: [Eye test]
+      operationId: listEyeTestSlots
+      summary: Free eye-test slots
+      description: |
+        Future slots grouped by IST date, from `data/eye-test.json`. Slots that start within the lead time
+        (30 minutes) are left out, and so are days with no free slot, closed dates and closed weekdays. Days past
+        the booking window (14 days counting today) are never returned. A `from` before today starts at today.
+      parameters:
+        - name: from
+          in: query
+          description: First date, YYYY-MM-DD, in IST. Defaults to today. Must be a real calendar date.
+          schema: { type: string, format: date, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        - name: days
+          in: query
+          description: How many days to cover, from `from`.
+          schema: { type: integer, minimum: 1, maximum: 14, default: 7 }
+      responses:
+        '200':
+          description: Free slots.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/Slots' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+  /eye-test/bookings:
+    post:
+      tags: [Eye test]
+      operationId: bookEyeTest
+      summary: Book a demo eye test
+      description: |
+        Checks that `slotStart` is a slot `GET /eye-test/slots` would offer right now, then returns a booking
+        reference. In demo mode nothing is stored and the status is `demo_not_booked`. Each call gets a new random
+        reference.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookingRequest' }
+            example:
+              slotStart: '2026-10-15T12:00:00+05:30'
+              name: Asha Rao
+              mobile: '9876543210'
+              consent: true
+      responses:
+        '201':
+          description: Demo booking accepted.
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data: { $ref: '#/components/schemas/BookingResult' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '400': { $ref: '#/components/responses/MalformedJson' }
+        '405': { $ref: '#/components/responses/MethodNotAllowed' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '500': { $ref: '#/components/responses/InternalError' }
+        '503': { $ref: '#/components/responses/BackendUnavailable' }
+
+components:
+  parameters:
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: An ETag from an earlier response. Weak (`W/"..."`) and comma-separated lists are accepted. A match gives 304.
+      schema: { type: string }
+
+  headers:
+    X-Request-Id:
+      description: A UUID for this request. Sent on every response, including errors and 304. Quote it in support requests.
+      schema: { type: string, format: uuid }
+    ETag:
+      description: Strong ETag of the payload (first 32 hex characters of its SHA-256, in quotes).
+      schema: { type: string, examples: ['"1440f4e1cbbb3a1b07c34070abb07d3c"'] }
+    CachePublic:
+      description: CDN-cacheable for 5 minutes, then served stale for up to a day while it revalidates.
+      schema: { type: string, const: 'public, s-maxage=300, stale-while-revalidate=86400' }
+    CacheNoStore:
+      description: Never cached. Used on every error and every commerce and eye-test response.
+      schema: { type: string, const: no-store }
+    Allow:
+      description: The methods this path accepts, for example `GET, HEAD` or `POST`.
+      schema: { type: string }
+
+  responses:
+    NotModified:
+      description: The client's copy (If-None-Match) is current. No body.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        ETag: { $ref: '#/components/headers/ETag' }
+        Cache-Control: { $ref: '#/components/headers/CachePublic' }
+    MalformedJson:
+      description: The body is not valid JSON.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: malformed_json, message: The request body is not valid JSON. } }
+    MethodNotAllowed:
+      description: The path exists but not for this method.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+        Allow: { $ref: '#/components/headers/Allow' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: method_not_allowed, message: 'This address accepts GET, HEAD only.' } }
+    PayloadTooLarge:
+      description: The body is over 16 KB (16,384 bytes), by Content-Length or by bytes actually read.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: payload_too_large, message: The request body is larger than 16 KB. } }
+    UnsupportedMediaType:
+      description: Content-Type is not `application/json` (parameters such as `; charset=utf-8` are allowed).
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error:
+              code: unsupported_media_type
+              message: 'Send the body as JSON with the header Content-Type: application/json.'
+    ValidationFailed:
+      description: |
+        The input breaks a schema or business rule. `fields` maps each path to the first message for it. The key `_`
+        means the top-level object, for example an unknown top-level key.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error:
+              code: validation_failed
+              message: Some items in your bag need attention.
+              fields:
+                lines.0.productId: This product is no longer available.
+                lines.1.colourIndex: This colour is not available for Arlo.
+                lines.2.config: This lens type is not available for this frame.
+                lines.3.qty: Frames are added one pair per line.
+    InternalError:
+      description: Something failed on the server. The message is generic and never includes a stack trace.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error: { code: internal_error, message: Something went wrong on our side. Try again in a moment. }
+    BackendUnavailable:
+      description: Only with `DATA_SOURCE=http`. The backend failed, timed out (5 s) or sent a non-JSON body.
+      headers:
+        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        Cache-Control: { $ref: '#/components/headers/CacheNoStore' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error:
+              code: backend_unavailable
+              message: The store system is not available right now. Try again soon.
+
+  schemas:
+    # ---------- Envelopes ----------
+    Meta:
+      type: object
+      required: [requestId]
+      properties:
+        requestId: { type: string, format: uuid, description: Same value as the X-Request-Id header. }
+        count: { type: integer, minimum: 0, description: 'GET /products only: number of results.' }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - malformed_json
+                - not_found
+                - method_not_allowed
+                - payload_too_large
+                - unsupported_media_type
+                - validation_failed
+                - internal_error
+                - backend_unavailable
+            message: { type: string, description: Plain English, safe to show to visitors. }
+            fields:
+              type: object
+              description: Per-field messages keyed by path, for example `lines.0.config`. Present only on 422.
+              additionalProperties: { type: string }
+
+    Health:
+      type: object
+      required: [status, dataSource, version, time]
+      properties:
+        status: { type: string, const: ok }
+        dataSource: { type: string, enum: [static, http] }
+        version: { type: string, examples: [1.0.0] }
+        time: { type: string, format: date-time, description: Server time in UTC. }
+
+    # ---------- Catalogue ----------
+    Store:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, examples: [Brijman Eyewear] }
+        tagline: { type: string }
+        hours: { type: string }
+        address: { type: string }
+        services: { type: array, items: { type: string } }
+    Zone:
+      type: object
+      description: A showroom section. Geometry is in metres, used by the 3D scene.
+      required: [id, name]
+      properties:
+        id: { type: string, examples: [kids] }
+        name: { type: string }
+        short: { type: string }
+        rect:
+          { type: array, items: { type: number }, minItems: 4, maxItems: 4, description: Floor area x1, z1, x2, z2. }
+        view:
+          type: object
+          properties:
+            p: { type: array, items: { type: number }, description: Camera position (x, z). }
+            t: { type: array, items: { type: number }, description: Camera target (x, y, z). }
+        anchor: { type: array, items: { type: number }, minItems: 3, maxItems: 3 }
+        blurb: { type: string }
+    StoreInfo:
+      type: object
+      required: [store, zones, tour, tourText]
+      properties:
+        store: { $ref: '#/components/schemas/Store' }
+        zones: { type: array, items: { $ref: '#/components/schemas/Zone' } }
+        tour: { type: array, items: { type: string }, description: Zone ids in tour order. }
+        tourText: { type: object, additionalProperties: { type: string }, description: Narration per zone id. }
+    Colour:
+      type: object
+      description: A frame colour. Only `n` and `sw` are needed outside the 3D scene.
+      required: [n, sw]
+      properties:
+        n: { type: string, description: Colour name shown to visitors. }
+        sw: { type: string, description: Swatch colour (hex). }
+        sw2: { type: string, description: Second swatch colour for two-tone frames (hex). }
+        a: { type: string, description: Acetate colour (hex). }
+        m: { type: string, description: Metal colour (hex). }
+        k: { type: string, description: 'Acetate pattern, for example `tort` or `clear`.' }
+        tl: { type: boolean, description: Light tortoise variant. }
+        matte: { type: boolean }
+        l: { type: string, description: Sun lens tint (hex). }
+        lk: { type: string, description: 'Sun lens kind, for example `mirror`.' }
+    Pack:
+      type: object
+      required: [n, p]
+      properties:
+        n: { type: string, examples: [30 lenses] }
+        p: { type: integer, description: Price in rupees, GST included. }
+    FrameProduct:
+      type: object
+      required: [id, name, zone, type, arch, mat, price, colors, desc, tags]
+      properties:
+        id: { type: string, pattern: '^[a-z]\d{2}$', examples: [m01] }
+        name: { type: string }
+        zone: { type: string }
+        type: { type: string, const: frame }
+        arch: { type: string, description: Frame archetype; sets the shape family used by the `shape` filter. }
+        mat: { type: string, description: Material. }
+        price: { type: integer, description: Frame price in rupees, GST included, before lenses. }
+        size:
+          type: array
+          items: { type: integer }
+          minItems: 3
+          maxItems: 3
+          description: Lens width, bridge and temple length, in mm.
+        weight: { type: integer, description: Grams. }
+        colors: { type: array, items: { $ref: '#/components/schemas/Colour' }, minItems: 1 }
+        desc: { type: string }
+        tags: { type: array, items: { type: string } }
+        sun: { type: boolean, description: Sunglasses. Takes sun lens options only. }
+        polar: { type: boolean, description: Polarised lenses. }
+        kids: { type: boolean }
+    PackProduct:
+      type: object
+      description: Contact lenses or a care product, sold in packs. Always colour index 0.
+      required: [id, name, zone, type, packs, desc, tags]
+      properties:
+        id: { type: string, pattern: '^[a-z]\d{2}$', examples: [c01] }
+        name: { type: string }
+        zone: { type: string }
+        type: { type: string, enum: [contacts, care] }
+        color: { type: string, description: Box colour (hex). }
+        packs: { type: array, items: { $ref: '#/components/schemas/Pack' }, minItems: 1 }
+        desc: { type: string }
+        tags: { type: array, items: { type: string } }
+    Product:
+      oneOf:
+        - $ref: '#/components/schemas/FrameProduct'
+        - $ref: '#/components/schemas/PackProduct'
+      example:
+        id: m01
+        name: Arlo
+        zone: men
+        arch: rectA
+        mat: Acetate
+        price: 2490
+        size: [53, 18, 145]
+        weight: 24
+        colors:
+          - { n: Jet black, a: '#141414', sw: '#141414' }
+        desc: A slim everyday rectangle in polished acetate with five-barrel hinges.
+        type: frame
+        tags: [Bestseller]
+    LensOption:
+      type: object
+      required: [id, n]
+      properties:
+        id: { type: string }
+        n: { type: string, description: Name. }
+        d: { type: string, description: Description. }
+        p: { type: integer, description: Price in rupees added to the frame. }
+        fixed: { type: boolean, description: Always included; cannot be chosen or sent. }
+    LensTable:
+      type: object
+      required: [types, index, coats, sun, rx]
+      properties:
+        types: { type: array, items: { $ref: '#/components/schemas/LensOption' } }
+        index: { type: array, items: { $ref: '#/components/schemas/LensOption' } }
+        coats: { type: array, items: { $ref: '#/components/schemas/LensOption' } }
+        sun: { type: array, items: { $ref: '#/components/schemas/LensOption' } }
+        rx: { type: array, items: { $ref: '#/components/schemas/LensOption' } }
+      example:
+        types:
+          - { id: zero, n: Zero power, p: 0 }
+          - { id: sv, n: Single vision, p: 1200 }
+          - { id: bf, n: Bifocal, p: 2400 }
+          - { id: pg, n: Progressive, p: 4900 }
+        index:
+          - { id: '156', n: 1.56 Standard, p: 0 }
+          - { id: '160', n: 1.60 Thin, p: 900 }
+          - { id: '167', n: 1.67 Extra thin, p: 2200 }
+          - { id: '174', n: 1.74 Ultra thin, p: 4500 }
+        coats:
+          - { id: ag, n: Anti-glare and scratch guard, p: 0, fixed: true }
+          - { id: bc, n: Blue-cut filter, p: 900 }
+          - { id: ph, n: Photochromic, p: 1900 }
+        sun:
+          - { id: plano, n: Non-prescription UV400, p: 0 }
+          - { id: rxsun, n: Prescription sun lenses, p: 2900 }
+        rx:
+          - { id: later, n: Add it after ordering }
+          - { id: now, n: Enter it now }
+          - { id: test, n: Book a free eye test first }
+    Merchandising:
+      type: object
+      description: Which product ids sit on which shelf in the 3D scene. Keys and nesting vary by fixture.
+      additionalProperties: { type: array }
+    Bootstrap:
+      type: object
+      required: [store, zones, tour, tourText, products, merchandising, lenses]
+      properties:
+        store: { $ref: '#/components/schemas/Store' }
+        zones: { type: array, items: { $ref: '#/components/schemas/Zone' } }
+        tour: { type: array, items: { type: string } }
+        tourText: { type: object, additionalProperties: { type: string } }
+        products: { type: array, items: { $ref: '#/components/schemas/Product' } }
+        merchandising: { $ref: '#/components/schemas/Merchandising' }
+        lenses: { $ref: '#/components/schemas/LensTable' }
+
+    # ---------- Bag and orders (request bodies are strict) ----------
+    OpticalLensConfig:
+      type: object
+      description: |
+        Lenses for an optical frame. Kids' frames allow `zero` and `sv` only, at `156` or `160`. Zero power must use
+        `156`. `coats` may hold `bc` and `ph` (no duplicates); `ag` is always included and is rejected if sent.
+      additionalProperties: false
+      required: [type, index]
+      properties:
+        type: { type: string, enum: [zero, sv, bf, pg] }
+        index: { type: string, enum: ['156', '160', '167', '174'] }
+        coats: { type: array, maxItems: 4, items: { type: string, maxLength: 8 } }
+        rx: { type: string, enum: [later, now, test], description: How the prescription will be shared. }
+    SunLensConfig:
+      type: object
+      description: Lenses for sunglasses. `rxsun` adds ₹2,900 and is made to a prescription.
+      additionalProperties: false
+      required: [sunlens]
+      properties:
+        sunlens: { type: string, enum: [plano, rxsun] }
+        rx: { type: string, enum: [later, now, test] }
+    PackConfig:
+      type: object
+      description: Pack choice for contacts and care. `pack` is an index into the product's `packs`.
+      additionalProperties: false
+      required: [pack]
+      properties:
+        pack: { type: integer, minimum: 0, maximum: 20 }
+    LensConfig:
+      oneOf:
+        - $ref: '#/components/schemas/OpticalLensConfig'
+        - $ref: '#/components/schemas/SunLensConfig'
+        - $ref: '#/components/schemas/PackConfig'
+    CartLine:
+      type: object
+      description: |
+        One bag line. Frames: `qty` must be 1 and `colourIndex` below the number of colours. Contacts and care:
+        `qty` 1 to 12 and `colourIndex` 0.
+      additionalProperties: false
+      required: [productId, colourIndex, config, qty]
+      properties:
+        productId: { type: string, pattern: '^[a-z]\d{2}$' }
+        colourIndex: { type: integer, minimum: 0, maximum: 20 }
+        config: { $ref: '#/components/schemas/LensConfig' }
+        qty: { type: integer, minimum: 1, maximum: 12 }
+    QuoteRequest:
+      type: object
+      additionalProperties: false
+      required: [lines]
+      properties:
+        lines: { type: array, minItems: 1, maxItems: 20, items: { $ref: '#/components/schemas/CartLine' } }
+    QuoteLine:
+      type: object
+      required: [productId, name, colourIndex, colour, config, summary, qty, unitPrice, lineTotal]
+      properties:
+        productId: { type: string }
+        name: { type: string }
+        colourIndex: { type: integer }
+        colour: { type: [string, 'null'], description: Colour name; null for contacts and care. }
+        config: { $ref: '#/components/schemas/LensConfig' }
+        summary: { type: string, examples: ['Single vision · 1.60 Thin · Blue-cut filter · Prescription entered'] }
+        qty: { type: integer }
+        unitPrice: { type: integer, description: Rupees, GST included. }
+        lineTotal: { type: integer, description: unitPrice × qty. }
+    Quote:
+      type: object
+      required: [quoteId, currency, taxIncluded, lines, subtotal, delivery, total]
+      properties:
+        quoteId:
+          type: string
+          pattern: '^q_[0-9a-f]{24}$'
+          description: Hash of the priced lines and total. The same bag gives the same id.
+        currency: { type: string, const: INR }
+        taxIncluded: { type: boolean, const: true }
+        lines: { type: array, items: { $ref: '#/components/schemas/QuoteLine' } }
+        subtotal: { type: integer }
+        delivery: { type: integer, const: 0, description: Delivery fee. Always 0. }
+        total: { type: integer }
+      example:
+        quoteId: q_3e6e32d63e0f19228b08f913
+        currency: INR
+        taxIncluded: true
+        lines:
+          - productId: m01
+            name: Arlo
+            colourIndex: 0
+            colour: Jet black
+            config: { type: sv, index: '160', coats: [bc], rx: now }
+            summary: Single vision · 1.60 Thin · Blue-cut filter · Prescription entered
+            qty: 1
+            unitPrice: 5490
+            lineTotal: 5490
+          - productId: c01
+            name: Brijman Daily 1-Day
+            colourIndex: 0
+            colour: null
+            config: { pack: 1 }
+            summary: 90 lenses
+            qty: 3
+            unitPrice: 3950
+            lineTotal: 11850
+        subtotal: 17340
+        delivery: 0
+        total: 17340
+    Eye:
+      type: object
+      additionalProperties: false
+      required: [sph, cyl, axis]
+      properties:
+        sph: { type: number, minimum: -20, maximum: 12, multipleOf: 0.25 }
+        cyl: { type: number, minimum: -6, maximum: 0, multipleOf: 0.25 }
+        axis:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 180
+          description: Required (1 to 180) when cyl is not 0; may be null when cyl is 0.
+        add:
+          type: number
+          minimum: 0.75
+          maximum: 3.5
+          multipleOf: 0.25
+          description: Required for bifocal and progressive lenses.
+    Prescription:
+      type: object
+      additionalProperties: false
+      required: [r, l, pd]
+      properties:
+        r: { $ref: '#/components/schemas/Eye' }
+        l: { $ref: '#/components/schemas/Eye' }
+        pd: { type: number, minimum: 50, maximum: 76, description: Pupillary distance in mm. }
+    OrderLine:
+      type: object
+      description: A CartLine plus an optional prescription.
+      additionalProperties: false
+      required: [productId, colourIndex, config, qty]
+      properties:
+        productId: { type: string, pattern: '^[a-z]\d{2}$' }
+        colourIndex: { type: integer, minimum: 0, maximum: 20 }
+        config: { $ref: '#/components/schemas/LensConfig' }
+        qty: { type: integer, minimum: 1, maximum: 12 }
+        prescription: { $ref: '#/components/schemas/Prescription' }
+    Contact:
+      type: object
+      additionalProperties: false
+      required: [name, mobile]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 60
+          pattern: '^[^<>{}]*$'
+          description: No leading or trailing spaces, no < > { }.
+        mobile: { type: string, pattern: '^[6-9]\d{9}$', description: 10-digit Indian mobile, no prefix. }
+        email: { type: string, format: email, maxLength: 254 }
+    HomeDelivery:
+      type: object
+      additionalProperties: false
+      required: [method, line1, city, pin]
+      properties:
+        method: { type: string, const: home }
+        line1: { type: string, minLength: 3, maxLength: 120, description: House number and street. }
+        city: { type: string, minLength: 2, maxLength: 60 }
+        pin: { type: string, pattern: '^[1-9]\d{5}$', description: 6-digit PIN code. }
+    StoreDelivery:
+      type: object
+      description: Pick up at the showroom.
+      additionalProperties: false
+      required: [method]
+      properties:
+        method: { type: string, const: store }
+    Delivery:
+      oneOf:
+        - $ref: '#/components/schemas/HomeDelivery'
+        - $ref: '#/components/schemas/StoreDelivery'
+      discriminator:
+        propertyName: method
+        mapping:
+          home: '#/components/schemas/HomeDelivery'
+          store: '#/components/schemas/StoreDelivery'
+    OrderRequest:
+      type: object
+      additionalProperties: false
+      required: [lines, contact, delivery, consent]
+      properties:
+        lines: { type: array, minItems: 1, maxItems: 20, items: { $ref: '#/components/schemas/OrderLine' } }
+        contact: { $ref: '#/components/schemas/Contact' }
+        delivery: { $ref: '#/components/schemas/Delivery' }
+        consent: { type: boolean, const: true }
+    OrderResult:
+      type: object
+      required: [orderRef, status, quoteId, currency, taxIncluded, delivery, lines, subtotal, total]
+      properties:
+        orderRef: { type: string, pattern: '^BM-DEMO-[2-9A-HJ-NP-Z]{6}$', examples: [BM-DEMO-7LYFBQ] }
+        status: { type: string, const: demo_not_charged }
+        quoteId: { type: string, pattern: '^q_[0-9a-f]{24}$' }
+        currency: { type: string, const: INR }
+        taxIncluded: { type: boolean, const: true }
+        delivery:
+          type: object
+          required: [method, fee]
+          properties:
+            method: { type: string, enum: [home, store] }
+            fee: { type: integer, const: 0 }
+        lines: { type: array, items: { $ref: '#/components/schemas/QuoteLine' } }
+        subtotal: { type: integer }
+        total: { type: integer }
+
+    # ---------- Eye test ----------
+    Slot:
+      type: object
+      required: [time, start]
+      properties:
+        time: { type: string, pattern: '^\d{2}:\d{2}$', examples: ['10:30'] }
+        start: { type: string, format: date-time, examples: ['2026-10-14T10:30:00+05:30'] }
+    Slots:
+      type: object
+      required: [timezone, durationMinutes, days]
+      properties:
+        timezone: { type: string, const: Asia/Kolkata }
+        durationMinutes: { type: integer, examples: [20] }
+        days:
+          type: array
+          items:
+            type: object
+            required: [date, slots]
+            properties:
+              date: { type: string, format: date }
+              slots: { type: array, minItems: 1, items: { $ref: '#/components/schemas/Slot' } }
+    BookingRequest:
+      type: object
+      additionalProperties: false
+      required: [slotStart, name, mobile, consent]
+      properties:
+        slotStart:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+05:30$'
+          description: A `start` value from GET /eye-test/slots.
+        name: { $ref: '#/components/schemas/Contact/properties/name' }
+        mobile: { $ref: '#/components/schemas/Contact/properties/mobile' }
+        consent: { type: boolean, const: true }
+    BookingResult:
+      type: object
+      required: [bookingRef, status, slotStart, durationMinutes]
+      properties:
+        bookingRef: { type: string, pattern: '^BM-ET-DEMO-[2-9A-HJ-NP-Z]{4}$', examples: [BM-ET-DEMO-J57X] }
+        status: { type: string, const: demo_not_booked }
+        slotStart: { type: string, format: date-time }
+        durationMinutes: { type: integer }
+
+    # ---------- Backend contract shapes (used by x-backend-contract only) ----------
+    BackendCatalogue:
+      type: object
+      required: [products]
+      properties:
+        products: { type: array, items: { $ref: '#/components/schemas/Product' } }
+    EyeTestConfig:
+      type: object
+      required:
+        [
+          timezone,
+          durationMinutes,
+          openingHours,
+          slotTimes,
+          bookingWindowDays,
+          leadTimeMinutes,
+          closedDates,
+          closedWeekdays,
+        ]
+      properties:
+        timezone: { type: string, const: Asia/Kolkata }
+        durationMinutes: { type: integer, examples: [20] }
+        openingHours:
+          type: object
+          required: [open, close]
+          properties:
+            open: { type: string, pattern: '^\d{2}:\d{2}$', examples: ['10:30'] }
+            close: { type: string, pattern: '^\d{2}:\d{2}$', examples: ['21:00'] }
+        slotTimes: { type: array, items: { type: string, pattern: '^\d{2}:\d{2}$' } }
+        bookingWindowDays: { type: integer, description: Days ahead, counting today. }
+        leadTimeMinutes: { type: integer, description: Slots starting sooner than this are not offered. }
+        closedDates: { type: array, items: { type: string, format: date } }
+        closedWeekdays: { type: array, items: { type: integer, minimum: 0, maximum: 6 }, description: 0 is Sunday. }
+    BackendOrder:
+      type: object
+      description: The priced order the API sends to the backend. Contains personal data.
+      required: [orderRef, createdAt, quoteId, lines, subtotal, deliveryFee, total, currency, contact, delivery]
+      properties:
+        orderRef: { type: string }
+        createdAt: { type: string, format: date-time }
+        quoteId: { type: string }
+        lines:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/QuoteLine'
+              - type: object
+                required: [prescription]
+                properties:
+                  prescription:
+                    oneOf:
+                      - $ref: '#/components/schemas/Prescription'
+                      - type: 'null'
+        subtotal: { type: integer }
+        deliveryFee: { type: integer }
+        total: { type: integer }
+        currency: { type: string, const: INR }
+        contact: { $ref: '#/components/schemas/Contact' }
+        delivery: { $ref: '#/components/schemas/Delivery' }
+    BackendBooking:
+      type: object
+      description: The booking the API sends to the backend. Contains personal data.
+      required: [bookingRef, slotStart, durationMinutes, name, mobile]
+      properties:
+        bookingRef: { type: string }
+        slotStart: { type: string, format: date-time }
+        durationMinutes: { type: integer }
+        name: { type: string }
+        mobile: { type: string }
+
+x-backend-contract:
+  title: Backend contract (NOT served by this API)
+  tag: Backend contract
+  description: |
+    What a future backend must expose so `server/repositories/http-repository.js` can replace the static JSON files.
+    This API calls these paths server to server; browsers never see them.
+
+    - Turn it on with `DATA_SOURCE=http`.
+    - Base URL: `BACKEND_API_URL` (server env only). It must use https; http is accepted only for `localhost` or
+      `127.0.0.1`. Trailing slashes are removed.
+    - Auth: every request sends `X-Api-Key: <BACKEND_API_KEY>` and `Accept: application/json`. POSTs also send
+      `Content-Type: application/json`. The key never goes in a URL.
+    - Timeout: 5 seconds per call.
+    - Any non-2xx status, timeout, network error or body that is not valid JSON makes the API answer
+      `503 backend_unavailable` to the visitor. POST responses must still return a JSON body (for example `{}`);
+      the API ignores its content.
+    - The API does not cache backend reads; it calls the backend on every request that needs the data.
+  baseUrl: '${BACKEND_API_URL}'
+  security:
+    header: X-Api-Key
+    value: '${BACKEND_API_KEY}'
+    transport: https only (http allowed for localhost and 127.0.0.1)
+  paths:
+    /store:
+      get:
+        summary: Store details, zones and tour (same shape as data/store.json).
+        responses:
+          '200':
+            content:
+              application/json:
+                schema: { $ref: '#/components/schemas/StoreInfo' }
+    /catalogue:
+      get:
+        summary: All products (same shape as data/catalogue.json).
+        responses:
+          '200':
+            content:
+              application/json:
+                schema: { $ref: '#/components/schemas/BackendCatalogue' }
+    /merchandising:
+      get:
+        summary: Shelf layout (same shape as data/merchandising.json).
+        responses:
+          '200':
+            content:
+              application/json:
+                schema: { $ref: '#/components/schemas/Merchandising' }
+    /lenses:
+      get:
+        summary: Lens table with prices (same shape as data/lenses.json). These prices are the ones the API charges.
+        responses:
+          '200':
+            content:
+              application/json:
+                schema: { $ref: '#/components/schemas/LensTable' }
+    /eye-test/config:
+      get:
+        summary: Eye-test opening hours and slot rules (same shape as data/eye-test.json).
+        responses:
+          '200':
+            content:
+              application/json:
+                schema: { $ref: '#/components/schemas/EyeTestConfig' }
+    /orders:
+      post:
+        summary: Save a priced order. Called after validation and pricing, before the payment and notification hooks.
+        requestBody:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BackendOrder' }
+        responses:
+          '2XX':
+            description: Any JSON body. Content is ignored.
+    /bookings:
+      post:
+        summary: Save an eye-test booking. Called after the slot is checked.
+        requestBody:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BackendBooking' }
+        responses:
+          '2XX':
+            description: Any JSON body. Content is ignored.

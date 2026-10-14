@@ -14,7 +14,8 @@ const minutes = (hhmm) => +hhmm.slice(0, 2) * 60 + +hhmm.slice(3, 5);
  * @param {number} [now] epoch ms, for tests
  */
 export async function listSlots(repo, q, now = Date.now()) {
-  if (q.from && !isDate(q.from)) throw invalid({ from: 'Use a real date in the format YYYY-MM-DD.' });
+  if (q.from && !isDate(q.from))
+    throw invalid({ from: 'Use a real date in the format YYYY-MM-DD.' }, 'Check the date range.');
   const cfg = await repo.getEyeTestConfig();
   const today = todayIST(now);
   const lastDay = addDays(today, cfg.bookingWindowDays - 1);

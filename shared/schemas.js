@@ -104,6 +104,13 @@ export const IdempotencyKeySchema = z
 export function fieldErrors(error) {
   const out = {};
   for (const issue of error.issues) {
+    if (issue.code === 'unrecognized_keys') {
+      for (const k of issue.keys) {
+        const key = issue.path.concat(k).join('.');
+        if (!(key in out)) out[key] = 'This field is not allowed.';
+      }
+      continue;
+    }
     const key = issue.path.join('.') || '_';
     if (!(key in out)) out[key] = issue.message;
   }

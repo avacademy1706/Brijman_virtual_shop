@@ -1,13 +1,16 @@
 # Brijman Virtual Showroom
 
-Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eyewear" and the whole catalogue are sample data. Static Vite + three.js site deployed on Vercel. Plain JavaScript (ES modules), no UI framework, no TypeScript.
+Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eyewear" and the whole catalogue are sample data. Vite + three.js site with a Hono API (one Vercel Function), deployed on Vercel. Plain JavaScript (ES modules), no UI framework, no TypeScript.
 
 ## Commands
 
 - `npm ci`: install exact versions from package-lock.json
-- `npm run dev`: dev server at http://localhost:5173
+- `npm run dev`: site and API at http://localhost:5173 (the API is mounted by `server/vite-api-plugin.js`)
 - `npm run build`: production build to `dist/`
-- `npm run preview`: serves `dist/` with the production security headers read from `vercel.json`
+- `npm run preview`: serves `dist/` and the API with the production security headers read from `vercel.json`
+- `npm test` / `npm run test:watch`: Vitest (tests in `tests/`, no network)
+- `npm run check`: format check, tests, build; stops at the first failure
+- `npm run smoke -- <baseUrl>`: post-deploy check of the site, API and headers
 - `npm run format` / `npm run format:check`: Prettier (printWidth 120, single quotes, trailing commas)
 - `npm run assets:check`: confirms every file listed in `assets-3d/catalogue.json` exists
 - The developer machine runs Windows. npm scripts must be cross-platform: use Node scripts, not bash, `rm -rf` or `export`.
@@ -15,24 +18,27 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 ## Architecture
 
 - `index.html` holds the page shell: top bar, floor-plan card, section and tour cards, detail sheet, welcome card.
-- `src/main.js` loads fonts and CSS, imports `src/ui/app.js`, then lazy-loads `src/scene/showroom.js` (three.js) as a separate chunk.
-- Shared namespace `BM` in `src/core/bm.js`, also exposed as `window.BM`. Data modules attach to it at import time:
-  - `src/data/store-layout.js`: `BM.STORE`, `BM.L` (floor plan in metres), `BM.ZONES` (10 sections), `BM.TOUR`, `BM.TOUR_TEXT`, `BM.OBS` (fixture footprints)
-  - `src/data/frames.js`: `BM.ARCH` (frame archetypes, sizes in metres), `BM.SHAPES`, `BM.outline()`
-  - `src/data/catalogue.js`: colours, `BM.PRODUCTS` (41 frames and 7 contact lens or care items), `BM.byId`, `BM.MERCH` (which product sits on which shelf), `BM.LENS`, and the pricing helpers `priceOf`, `needsRx`, `needsAdd`, `lensRules`, `defaultCfg`, `cfgSummary`
+- Boot order in `src/main.js`: fonts and CSS → `await loadInitialData()` (`src/services/data-loader.js`: one `GET /api/v1/bootstrap`, or the bundled `data/*.json` in static mode or when the API fails) → import `src/ui/app.js` → lazy-load `src/scene/showroom.js` (three.js chunk).
+- Business data lives in `data/*.json`: `store.json` (store, zones, tour, tourText), `catalogue.json`, `merchandising.json`, `lenses.json`, `eye-test.json`.
+- Shared namespace `BM` in `src/core/bm.js`, also exposed as `window.BM`:
+  - `src/data/catalogue.js`: `installData()` fills `BM.STORE`, `BM.ZONES`, `BM.TOUR`, `BM.TOUR_TEXT`, `BM.PRODUCTS` (41 frames, 7 contact lens or care items), `BM.byId`, `BM.MERCH`, `BM.LENS`, and wraps the pricing helpers (`priceOf`, `cfgSummary`, `needsRx`, `needsAdd`, `lensRules`, `defaultCfg`, `colorOf`)
+  - `src/data/store-layout.js`: `BM.L` (floor plan in metres), `BM.OBS` (fixture footprints), `zoneById`, `zoneAt`
+  - `src/data/frames.js`: `BM.ARCH` (from `shared/frame-archetypes.js`), `BM.SHAPES`, `BM.outline()`
+- `shared/` runs in the browser and Node: `pricing.js` (prices and `cfgProblem`), `rules.js` (prescription, contact and address rules), `schemas.js` (zod, strict objects), `constants.js`, `bootstrap.js`, `frame-archetypes.js`. The browser loads `schemas.js` (zod) lazily.
+- `src/services/`: `http.js` (same-origin `/api/v1`, 8 s timeout, `ApiError`, one GET retry; `DATA_SOURCE` from `VITE_DATA_SOURCE`), `cart-service.js`, `order-service.js`, `eye-test-service.js`.
 - `src/ui/app.js` holds all interface code:
-  - the views: product, browse, search, directory, bag, checkout, done, eye test, lens guide, info
+  - the views: product, browse, search, directory, bag (server quote), rx (prescription for a bag line), checkout, done, eye test, lens guide, info
   - the guided tour and the minimap
-  - `validateRx`
-  - the bag, stored in localStorage key `bm-bag-v1`, and settings in `bm-settings`
-- `src/scene/showroom.js` builds the store procedurally, places products from `BM.MERCH`, and runs the walk planner (A\*), floating labels and the 3D product viewer. It talks to the UI only through `BM` callbacks: `attach3D`, `onProductTap`, `onFeatureTap`, `onArrive`, `onZoneChange`, `onPose`, `onUserNav`, `fail3D`.
+  - the bag in localStorage `bm-bag-v1` (pid, ci, cfg, qty only) and settings in `bm-settings`; prescriptions in memory only (`S.rx`)
+- `src/scene/showroom.js` builds the store procedurally, places products from `BM.MERCH`, and runs the walk planner (A*), floating labels and the 3D product viewer. It talks to the UI only through `BM` callbacks: `attach3D`, `onProductTap`, `onFeatureTap`, `onArrive`, `onZoneChange`, `onPose`, `onUserNav`, `fail3D`.
+- API: `api/index.js` (Vercel entry) → `server/app.js` (Hono, `basePath('/api')`, routes under `/v1`). `server/routes/` → `server/services/` → `server/repositories/` (`DATA_SOURCE=static|http`) and `server/integrations/` (payments, notifications, crm: no-ops until configured). See `docs/api.md` and `docs/openapi.yaml`.
 - `src/lib/dom.js` has the DOM helpers `h`, `$`, `ic` and `money` (en-IN, ₹). `src/lib/drawings.js` has the SVG frame drawings, the size diagram and the canvas floor plan.
 - `src/styles/main.css` holds the design tokens for light and dark themes and all styles. `src/styles/fonts.css` and `src/assets/fonts/` hold the self-hosted fonts.
 - `assets-3d/` holds exported GLB models and PNG textures for 3D artists. The site does not load them, `.vercelignore` excludes them from deploys, and they must not be edited by hand.
 
 ## Invariants
 
-- The 3D scene reads `BM.PRODUCTS`, `BM.MERCH`, `BM.L` and `BM.OBS` synchronously when it loads. Any data loaded asynchronously must be in `BM`, in the same shape, before `ui/app.js` and the scene are imported.
+- The 3D scene reads `BM.PRODUCTS`, `BM.MERCH`, `BM.L` and `BM.OBS` synchronously when it loads. `loadInitialData()` must fill `BM`, in the same shape, before `ui/app.js` and the scene are imported. `tests/unit/snapshot.test.js` guards the shape.
 - Units:
   - 3D is in metres.
   - Frame sizes are `[lens, bridge, temple]` in mm.

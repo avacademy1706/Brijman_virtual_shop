@@ -2540,3 +2540,14 @@ setZoneName('welcome');
 updateBadge();
 drawMinimap();
 requestAnimationFrame(drawMinimap);
+if (initialCart.dropped) {
+  saveCart();
+  const n = initialCart.dropped;
+  toast(
+    n +
+      (n === 1 ? ' item in your bag is' : ' items in your bag are') +
+      ' no longer available, so we removed ' +
+      (n === 1 ? 'it.' : 'them.'),
+    5000,
+  );
+}

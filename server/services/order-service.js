@@ -40,6 +40,8 @@ export async function placeOrder(repo, body, idempotencyKey) {
   const orderRef = 'BM-DEMO-' + refCode(6, idempotencyKey ? 'order:' + idempotencyKey : undefined);
   const order = {
     orderRef,
+    // A real backend should treat a repeated key as the same order (no second save, charge or message).
+    idempotencyKey: idempotencyKey || null,
     createdAt: new Date().toISOString(),
     quoteId: priced.quoteId,
     lines: priced.lines.map((l, i) => Object.assign({}, l, { prescription: body.lines[i].prescription || null })),
