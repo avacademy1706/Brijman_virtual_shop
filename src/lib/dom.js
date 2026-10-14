@@ -37,6 +37,15 @@ const ICONS = {
   minus: '<path d="M6 12h12"/>',
   plus: '<path d="M12 6v12M6 12h12"/>',
   lens: '<circle cx="12" cy="12" r="8"/><path d="M8 9.5a5 5 0 0 1 4-2.5"/>',
+  face: '<circle cx="7.5" cy="12" r="3.5"/><circle cx="16.5" cy="12" r="3.5"/><path d="M11 11.6c.6-.5 1.4-.5 2 0M4 12 2.5 9.5M20 12l1.5-2.5"/>',
+  camera: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  up: '<path d="m6 15 6-6 6 6"/>',
+  down: '<path d="m6 9 6 6 6-6"/>',
+  next: '<path d="m9 5 7 7-7 7"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 16v4h14v-4"/>',
+  share: '<path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 12v8h14v-8"/>',
+  reset: '<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/>',
+  compare: '<path d="M4 5h7v14H4zM13 5h7v14h-7z"/>',
 };
 function ic(name) {
   const t = document.createElement('template');

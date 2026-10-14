@@ -29,5 +29,5 @@ BM.lensRules = pricing.lensRules;
 BM.defaultCfg = pricing.defaultCfg;
 BM.needsRx = pricing.needsRx;
 BM.needsAdd = pricing.needsAdd;
-BM.priceOf = (p, cfg) => pricing.priceOf(p, cfg, BM.LENS);
+BM.priceOf = (p, cfg, sizeId) => pricing.priceOf(p, cfg, BM.LENS, sizeId);
 BM.cfgSummary = (p, cfg) => pricing.cfgSummary(p, cfg, BM.LENS);

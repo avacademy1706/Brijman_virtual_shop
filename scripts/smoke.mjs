@@ -22,7 +22,7 @@ async function check(name, fn) {
 const get = (path, init) => fetch(base + path, Object.assign({ redirect: 'manual' }, init));
 const postJSON = (path, body) =>
   get(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-const quoteLine = (config) => ({ lines: [{ productId: 'm01', colourIndex: 0, config, qty: 1 }] });
+const quoteLine = (config, sizeId = 'M') => ({ lines: [{ productId: 'm01', colourIndex: 0, sizeId, config, qty: 1 }] });
 
 await check('GET / returns 200 with a Content-Security-Policy', async () => {
   const r = await get('/');
@@ -59,6 +59,17 @@ await check('POST /api/v1/cart/quote: m01 single vision, 1.60, blue-cut totals 5
   const r = await postJSON('/api/v1/cart/quote', quoteLine({ type: 'sv', index: '160', coats: ['bc'], rx: 'later' }));
   const j = await r.json();
   return r.status === 200 && j.data.total === 5490 ? true : 'got ' + (j.data ? j.data.total : r.status);
+});
+await check('POST /api/v1/cart/quote: m01 size L is priced and labelled', async () => {
+  const r = await postJSON('/api/v1/cart/quote', quoteLine({ type: 'zero', index: '156', coats: [] }, 'L'));
+  const j = await r.json();
+  if (r.status !== 200) return 'status ' + r.status;
+  return j.data.lines[0].sizeLabel === 'L · 55□19-150' ? true : 'label ' + j.data.lines[0].sizeLabel;
+});
+await check('POST /api/v1/cart/quote with an unknown size returns 422', async () => {
+  const r = await postJSON('/api/v1/cart/quote', quoteLine({ type: 'zero', index: '156', coats: [] }, 'XL'));
+  const j = await r.json();
+  return r.status === 422 && j.error.fields['lines.0.sizeId'] ? true : 'status ' + r.status;
 });
 await check('A text/plain POST returns 415', async () => {
   const r = await get('/api/v1/cart/quote', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: 'x' });

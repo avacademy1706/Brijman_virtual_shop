@@ -1,6 +1,7 @@
 // Prices a bag on the server with shared/pricing.js. Client prices are never trusted.
 import { CURRENCY, LIMITS } from '../../shared/constants.js';
 import { priceOf, cfgSummary, cfgProblem, colorOf } from '../../shared/pricing.js';
+import { sizeOf, sizeLabel } from '../../shared/fit.js';
 import { sha256 } from '../lib/hash.js';
 import { invalid } from '../lib/errors.js';
 
@@ -25,13 +26,20 @@ export async function quote(repo, lines) {
     const problem = cfgProblem(p, l.config, lens);
     if (problem) fields[at + 'config'] = problem;
     if (p.type === 'frame' && l.qty !== LIMITS.frameQty) fields[at + 'qty'] = 'Frames are added one pair per line.';
+    if (p.type === 'frame' && !l.sizeId) fields[at + 'sizeId'] = 'Choose a size for ' + p.name + '.';
+    else if (p.type === 'frame' && !sizeOf(p, l.sizeId))
+      fields[at + 'sizeId'] = 'Size ' + l.sizeId + ' is not available for ' + p.name + '.';
+    else if (p.type !== 'frame' && l.sizeId) fields[at + 'sizeId'] = p.name + ' has no frame sizes.';
     if (Object.keys(fields).some((k) => k.startsWith(at))) return null;
-    const unitPrice = priceOf(p, l.config, lens);
+    const unitPrice = priceOf(p, l.config, lens, l.sizeId);
+    const size = p.type === 'frame' ? sizeOf(p, l.sizeId) : null;
     return {
       productId: p.id,
       name: p.name,
       colourIndex: l.colourIndex,
       colour: p.type === 'frame' ? colorOf(p, l.colourIndex).n : null,
+      sizeId: size ? size.id : null,
+      sizeLabel: size ? sizeLabel(size) : null,
       config: l.config,
       summary: cfgSummary(p, l.config, lens),
       qty: l.qty,
@@ -47,7 +55,7 @@ export async function quote(repo, lines) {
     'q_' +
     sha256(
       JSON.stringify({
-        lines: priced.map((l) => [l.productId, l.colourIndex, l.config, l.qty, l.unitPrice]),
+        lines: priced.map((l) => [l.productId, l.colourIndex, l.sizeId, l.config, l.qty, l.unitPrice]),
         total,
       }),
     ).slice(0, 24);

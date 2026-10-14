@@ -18,7 +18,9 @@ const json = async (res) => res.json();
 
 const zero = { type: 'zero', index: '156', coats: [] };
 const sv = { type: 'sv', index: '160', coats: ['bc'], rx: 'now' };
-const line = (o) => Object.assign({ productId: 'm01', colourIndex: 0, config: zero, qty: 1 }, o);
+const line = (o) => Object.assign({ productId: 'm01', colourIndex: 0, sizeId: 'M', config: zero, qty: 1 }, o);
+// Contact lenses and care have no frame size.
+const pack = (o) => Object.assign({ colourIndex: 0, qty: 1 }, o);
 const rx = { r: { sph: -1.25, cyl: 0, axis: null }, l: { sph: -1, cyl: -0.5, axis: 90 }, pd: 63 };
 const contact = { name: 'Asha Rao', mobile: '9876543210' };
 const order = (o) => Object.assign({ lines: [line()], contact, delivery: { method: 'store' }, consent: true }, o);
@@ -150,7 +152,7 @@ describe('POST /api/v1/cart/quote', () => {
   it('single vision, 1.60 and blue-cut is ₹5,490; contacts multiply by quantity', async () => {
     const { data } = await json(
       await post('/api/v1/cart/quote', {
-        lines: [line({ config: sv }), line({ productId: 'c01', config: { pack: 1 }, qty: 3 })],
+        lines: [line({ config: sv }), pack({ productId: 'c01', config: { pack: 1 }, qty: 3 })],
       }),
     );
     expect(data.lines.map((l) => l.lineTotal)).toEqual([5490, 3 * 3950]);
@@ -168,7 +170,7 @@ describe('POST /api/v1/cart/quote', () => {
         line({ colourIndex: 7 }),
         line({ productId: 'k01', config: { type: 'pg', index: '156', coats: [] } }),
         line({ qty: 2 }),
-        line({ productId: 'c06', config: { pack: 0 }, colourIndex: 1 }),
+        pack({ productId: 'c06', config: { pack: 0 }, colourIndex: 1 }),
       ],
     });
     expect(res.status).toBe(422);
@@ -180,9 +182,29 @@ describe('POST /api/v1/cart/quote', () => {
       'lines.4.colourIndex': 'This colour is not available for Comfort Drops.',
     });
   });
+  it('prices each frame size, and returns the size with its marking', async () => {
+    const { data } = await json(await post('/api/v1/cart/quote', { lines: [line({ sizeId: 'L' })] }));
+    expect(data.lines[0]).toMatchObject({ sizeId: 'L', sizeLabel: 'L · 55□19-150', unitPrice: 2490 });
+  });
+  it('requires a real size for frames and refuses one for contacts', async () => {
+    const res = await post('/api/v1/cart/quote', {
+      lines: [
+        line({ sizeId: 'XL' }),
+        line({ sizeId: undefined }),
+        pack({ productId: 'c01', config: { pack: 0 }, sizeId: 'M' }),
+      ],
+    });
+    expect(res.status).toBe(422);
+    expect((await json(res)).error.fields).toEqual({
+      'lines.0.sizeId': 'Size XL is not available for Arlo.',
+      'lines.1.sizeId': 'Choose a size for Arlo.',
+      'lines.2.sizeId': 'Brijman Daily 1-Day has no frame sizes.',
+    });
+    expect((await post('/api/v1/cart/quote', { lines: [line({ sizeId: 'm' })] })).status).toBe(422);
+  });
   it('rejects more than 12 packs, more than 20 lines, empty bags and unknown keys', async () => {
-    const pack = line({ productId: 'c06', config: { pack: 0 }, qty: 13 });
-    expect((await post('/api/v1/cart/quote', { lines: [pack] })).status).toBe(422);
+    const tooMany = pack({ productId: 'c06', config: { pack: 0 }, qty: 13 });
+    expect((await post('/api/v1/cart/quote', { lines: [tooMany] })).status).toBe(422);
     expect((await post('/api/v1/cart/quote', { lines: Array(21).fill(line()) })).status).toBe(422);
     expect((await post('/api/v1/cart/quote', { lines: [] })).status).toBe(422);
     expect((await post('/api/v1/cart/quote', { lines: [line({ unitPrice: 1 })] })).status).toBe(422);

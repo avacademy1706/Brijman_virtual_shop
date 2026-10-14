@@ -24,6 +24,11 @@ export const LensConfigSchema = z.union([
 export const CartLineSchema = z.strictObject({
   productId: id,
   colourIndex: z.number().int().min(0).max(20),
+  // Frame size id (for example "M"). Required for frames, refused for contacts and care; checked by the quote service.
+  sizeId: z
+    .string()
+    .regex(/^[A-Z]{1,3}$/, 'Choose a frame size.')
+    .optional(),
   config: LensConfigSchema,
   qty: z.number().int().min(1).max(LIMITS.maxItemQty),
 });

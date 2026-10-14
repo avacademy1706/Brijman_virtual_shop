@@ -47,16 +47,24 @@ export const needsRx = (p, cfg) => p.type === 'frame' && (p.sun ? cfg.sunlens ==
 /** True when the prescription needs an ADD value (bifocal and progressive). */
 export const needsAdd = (p, cfg) => p.type === 'frame' && !p.sun && (cfg.type === 'bf' || cfg.type === 'pg');
 
+/** Extra price of a frame size in whole rupees (optional `priceDelta`, default 0). */
+export const sizeDelta = (p, sizeId) => {
+  if (!p.sizes) return 0;
+  const s = p.sizes.find((x) => x.id === (sizeId || p.defaultSize));
+  return (s && s.priceDelta) || 0;
+};
+
 /**
  * Unit price in whole rupees, GST included.
  * @param {object} p product
  * @param {object} cfg lens or pack configuration
  * @param {LensTable} lens
+ * @param {string} [sizeId] frame size; defaults to the product's default size
  * @returns {number}
  */
-export const priceOf = (p, cfg, lens) => {
+export const priceOf = (p, cfg, lens, sizeId) => {
   if (p.type !== 'frame') return p.packs[cfg.pack || 0].p;
-  let t = p.price;
+  let t = p.price + sizeDelta(p, sizeId);
   if (p.sun) {
     const rxsun = lens.sun.find((x) => x.id === 'rxsun');
     return t + (cfg.sunlens === 'rxsun' && rxsun ? rxsun.p : 0);

@@ -8,6 +8,27 @@
       "mat": "Acetate",
       "price": 2490,
       "size": [53, 18, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 51,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 53,
+          "bridge": 18,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 55,
+          "bridge": 19,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 24,
       "colors": [
         {
@@ -39,6 +60,27 @@
       "mat": "Acetate",
       "price": 2990,
       "size": [54, 19, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 52,
+          "bridge": 18,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 54,
+          "bridge": 19,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 56,
+          "bridge": 20,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 28,
       "colors": [
         {
@@ -71,6 +113,27 @@
       "mat": "Titanium",
       "price": 3490,
       "size": [49, 21, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 47,
+          "bridge": 20,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 49,
+          "bridge": 21,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 51,
+          "bridge": 22,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 14,
       "colors": [
         {
@@ -96,6 +159,27 @@
       "mat": "Stainless steel",
       "price": 2790,
       "size": [55, 17, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 53,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 55,
+          "bridge": 17,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 57,
+          "bridge": 18,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 18,
       "colors": [
         {
@@ -126,6 +210,27 @@
       "mat": "Acetate and metal",
       "price": 3290,
       "size": [51, 20, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 49,
+          "bridge": 19,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 51,
+          "bridge": 20,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 53,
+          "bridge": 21,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 22,
       "colors": [
         {
@@ -156,6 +261,27 @@
       "mat": "Titanium",
       "price": 3690,
       "size": [50, 20, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 48,
+          "bridge": 19,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 50,
+          "bridge": 20,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 52,
+          "bridge": 21,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 15,
       "colors": [
         {
@@ -181,6 +307,27 @@
       "mat": "TR90",
       "price": 1790,
       "size": [54, 17, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 52,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 54,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 56,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 16,
       "colors": [
         {
@@ -208,6 +355,27 @@
       "mat": "Stainless steel",
       "price": 2190,
       "size": [52, 18, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 50,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 18,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 19,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 17,
       "colors": [
         {
@@ -233,6 +401,27 @@
       "mat": "Acetate",
       "price": 2690,
       "size": [49, 21, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 47,
+          "bridge": 20,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 49,
+          "bridge": 21,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 51,
+          "bridge": 22,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 23,
       "colors": [
         {
@@ -259,6 +448,27 @@
       "mat": "Acetate",
       "price": 2390,
       "size": [52, 18, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 50,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 18,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 19,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 22,
       "colors": [
         {
@@ -285,6 +495,27 @@
       "mat": "Titanium",
       "price": 3890,
       "size": [54, 18, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 52,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 54,
+          "bridge": 18,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 56,
+          "bridge": 19,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 13,
       "colors": [
         {
@@ -310,6 +541,27 @@
       "mat": "Acetate",
       "price": 2290,
       "size": [52, 19, 145],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 50,
+          "bridge": 18,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 19,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 20,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 21,
       "colors": [
         {
@@ -336,6 +588,27 @@
       "mat": "Acetate",
       "price": 2890,
       "size": [52, 17, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 50,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 22,
       "colors": [
         {
@@ -367,6 +640,27 @@
       "mat": "Acetate",
       "price": 2490,
       "size": [48, 20, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 46,
+          "bridge": 19,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 48,
+          "bridge": 20,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 50,
+          "bridge": 21,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 20,
       "colors": [
         {
@@ -400,6 +694,27 @@
       "mat": "Acetate",
       "price": 3190,
       "size": [55, 16, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 53,
+          "bridge": 15,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 55,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 57,
+          "bridge": 17,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 27,
       "colors": [
         {
@@ -432,6 +747,27 @@
       "mat": "Stainless steel",
       "price": 3390,
       "size": [52, 17, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 50,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 15,
       "colors": [
         {
@@ -457,6 +793,27 @@
       "mat": "Titanium",
       "price": 3590,
       "size": [51, 19, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 49,
+          "bridge": 18,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 51,
+          "bridge": 19,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 53,
+          "bridge": 20,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 14,
       "colors": [
         {
@@ -482,6 +839,27 @@
       "mat": "Acetate",
       "price": 2290,
       "size": [51, 18, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 49,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 51,
+          "bridge": 18,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 53,
+          "bridge": 19,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 20,
       "colors": [
         {
@@ -513,6 +891,27 @@
       "mat": "Acetate",
       "price": 1990,
       "size": [51, 17, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 49,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 51,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 53,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 19,
       "colors": [
         {
@@ -539,6 +938,27 @@
       "mat": "Stainless steel",
       "price": 2690,
       "size": [48, 20, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 46,
+          "bridge": 19,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 48,
+          "bridge": 20,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 50,
+          "bridge": 21,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 13,
       "colors": [
         {
@@ -564,6 +984,27 @@
       "mat": "Acetate",
       "price": 2590,
       "size": [52, 17, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 50,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 21,
       "colors": [
         {
@@ -590,6 +1031,27 @@
       "mat": "Acetate",
       "price": 2990,
       "size": [54, 17, 140],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 52,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "M",
+          "lens": 54,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 56,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 25,
       "colors": [
         {
@@ -616,6 +1078,21 @@
       "mat": "Stainless steel",
       "price": 3990,
       "size": [58, 14, 140],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 58,
+          "bridge": 14,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 60,
+          "bridge": 15,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 26,
       "colors": [
         {
@@ -652,6 +1129,21 @@
       "mat": "Acetate",
       "price": 3490,
       "size": [55, 18, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 55,
+          "bridge": 18,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 57,
+          "bridge": 19,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 30,
       "colors": [
         {
@@ -682,6 +1174,21 @@
       "mat": "Acetate",
       "price": 3290,
       "size": [56, 17, 140],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 56,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 58,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 27,
       "colors": [
         {
@@ -712,6 +1219,21 @@
       "mat": "Stainless steel",
       "price": 2990,
       "size": [50, 22, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 50,
+          "bridge": 22,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 52,
+          "bridge": 23,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 18,
       "colors": [
         {
@@ -740,6 +1262,21 @@
       "mat": "Stainless steel",
       "price": 3790,
       "size": [52, 20, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 20,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 21,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 20,
       "colors": [
         {
@@ -770,6 +1307,21 @@
       "mat": "TR90",
       "price": 2690,
       "size": [56, 16, 140],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 56,
+          "bridge": 16,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 58,
+          "bridge": 17,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 22,
       "colors": [
         {
@@ -801,6 +1353,21 @@
       "mat": "Acetate and metal",
       "price": 3590,
       "size": [52, 20, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 52,
+          "bridge": 20,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 54,
+          "bridge": 21,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 24,
       "colors": [
         {
@@ -835,6 +1402,21 @@
       "mat": "Stainless steel",
       "price": 2490,
       "size": [51, 19, 140],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 51,
+          "bridge": 19,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 53,
+          "bridge": 20,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 16,
       "colors": [
         {
@@ -863,6 +1445,21 @@
       "mat": "TR90",
       "price": 1290,
       "size": [44, 16, 125],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 42,
+          "bridge": 15,
+          "temple": 120
+        },
+        {
+          "id": "M",
+          "lens": 44,
+          "bridge": 16,
+          "temple": 125
+        }
+      ],
+      "defaultSize": "M",
       "weight": 12,
       "colors": [
         {
@@ -894,6 +1491,21 @@
       "mat": "TR90",
       "price": 1390,
       "size": [46, 15, 125],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 44,
+          "bridge": 14,
+          "temple": 120
+        },
+        {
+          "id": "M",
+          "lens": 46,
+          "bridge": 15,
+          "temple": 125
+        }
+      ],
+      "defaultSize": "M",
       "weight": 13,
       "colors": [
         {
@@ -925,6 +1537,21 @@
       "mat": "TR90",
       "price": 1190,
       "size": [42, 16, 120],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 40,
+          "bridge": 15,
+          "temple": 120
+        },
+        {
+          "id": "M",
+          "lens": 42,
+          "bridge": 16,
+          "temple": 120
+        }
+      ],
+      "defaultSize": "M",
       "weight": 11,
       "colors": [
         {
@@ -951,6 +1578,21 @@
       "mat": "TR90",
       "price": 1490,
       "size": [47, 16, 130],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 45,
+          "bridge": 15,
+          "temple": 125
+        },
+        {
+          "id": "M",
+          "lens": 47,
+          "bridge": 16,
+          "temple": 130
+        }
+      ],
+      "defaultSize": "M",
       "weight": 14,
       "colors": [
         {
@@ -977,6 +1619,21 @@
       "mat": "TR90",
       "price": 1290,
       "size": [44, 16, 125],
+      "sizes": [
+        {
+          "id": "S",
+          "lens": 42,
+          "bridge": 15,
+          "temple": 120
+        },
+        {
+          "id": "M",
+          "lens": 44,
+          "bridge": 16,
+          "temple": 125
+        }
+      ],
+      "defaultSize": "M",
       "weight": 12,
       "colors": [
         {
@@ -1007,6 +1664,21 @@
       "mat": "Beta titanium, 18K gold plated",
       "price": 14900,
       "size": [48, 22, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 48,
+          "bridge": 22,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 50,
+          "bridge": 23,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 12,
       "colors": [
         {
@@ -1032,6 +1704,21 @@
       "mat": "Italian acetate",
       "price": 11900,
       "size": [53, 20, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 53,
+          "bridge": 20,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 55,
+          "bridge": 21,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 30,
       "colors": [
         {
@@ -1058,6 +1745,21 @@
       "mat": "Italian acetate",
       "price": 12900,
       "size": [53, 17, 140],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 53,
+          "bridge": 17,
+          "temple": 140
+        },
+        {
+          "id": "L",
+          "lens": 55,
+          "bridge": 18,
+          "temple": 145
+        }
+      ],
+      "defaultSize": "M",
       "weight": 26,
       "colors": [
         {
@@ -1083,6 +1785,21 @@
       "mat": "Titanium",
       "price": 16900,
       "size": [58, 14, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 58,
+          "bridge": 14,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 60,
+          "bridge": 15,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 22,
       "colors": [
         {
@@ -1112,6 +1829,21 @@
       "mat": "Titanium",
       "price": 13900,
       "size": [50, 20, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 50,
+          "bridge": 20,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 52,
+          "bridge": 21,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 13,
       "colors": [
         {
@@ -1137,6 +1869,21 @@
       "mat": "Acetate and titanium",
       "price": 10900,
       "size": [51, 21, 145],
+      "sizes": [
+        {
+          "id": "M",
+          "lens": 51,
+          "bridge": 21,
+          "temple": 145
+        },
+        {
+          "id": "L",
+          "lens": 53,
+          "bridge": 22,
+          "temple": 150
+        }
+      ],
+      "defaultSize": "M",
       "weight": 21,
       "colors": [
         {

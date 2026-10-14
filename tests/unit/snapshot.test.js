@@ -18,9 +18,11 @@ describe('data migration', () => {
       lenses: read('data/lenses.json'),
     }),
   );
+  // Sizes (task 02) were added on purpose; everything that existed before must be unchanged.
+  const withoutSizes = BM.PRODUCTS.map(({ sizes, defaultSize, ...rest }) => (void sizes, void defaultSize, rest));
   const now = JSON.parse(
     JSON.stringify({
-      PRODUCTS: BM.PRODUCTS,
+      PRODUCTS: withoutSizes,
       MERCH: BM.MERCH,
       LENS: BM.LENS,
       STORE: BM.STORE,

@@ -5,7 +5,9 @@ import '../data/frames.js';
 import '../data/catalogue.js';
 import { money, $, h, ic, store, esc } from '../lib/dom.js';
 import { drawYou } from '../lib/drawings.js';
-import { cfgProblem } from '../../shared/pricing.js';
+import { readBag, writeBag, lineKey } from '../lib/bag-storage.js';
+import { sizeOf, sizeMarking, sizeLabel } from '../../shared/fit.js';
+import { frontWidthMm } from '../../shared/frame-archetypes.js';
 import { LIMITS, TIMEZONE } from '../../shared/constants.js';
 import { rxProblems, normalizeRx, normalizeMobile, MSG } from '../../shared/rules.js';
 // zod and the schemas load only when a form is used, so the first screen stays light.
@@ -36,44 +38,26 @@ const ONLINE = DATA_SOURCE === 'api';
 /* =====================================================================
    UI STATE
    ===================================================================== */
-// The saved bag holds only product id, colour index, lens configuration and quantity. Prices are recomputed, and
-// lines that no longer match the catalogue are dropped.
-function loadCart() {
-  const saved = store.get('bm-bag-v1', []);
-  const lines = [];
-  let dropped = 0;
-  for (const l of Array.isArray(saved) ? saved : []) {
-    const p = l && BM.byId[l.pid];
-    const colours = p && p.type === 'frame' ? p.colors.length : 1;
-    const valid =
-      p &&
-      l.cfg &&
-      typeof l.cfg === 'object' &&
-      Number.isInteger(l.ci) &&
-      l.ci >= 0 &&
-      l.ci < colours &&
-      !cfgProblem(p, l.cfg, BM.LENS) &&
-      lines.length < LIMITS.maxLines;
-    if (!valid) {
-      dropped++;
-      continue;
-    }
-    const qty = p.type === 'frame' ? 1 : Math.max(1, Math.min(LIMITS.maxItemQty, Math.round(+l.qty) || 1));
-    lines.push({
-      key: String(l.key || lineKey(p, l.ci, l.cfg)),
-      pid: p.id,
-      ci: l.ci,
-      cfg: l.cfg,
-      qty,
-      unit: BM.priceOf(p, l.cfg),
-    });
+// The saved bag (src/lib/bag-storage.js) holds only product id, colour, size, lens configuration and quantity.
+// Prices are recomputed, and lines that no longer match the catalogue are dropped.
+const bagStorage = (() => {
+  try {
+    const ls = window.localStorage;
+    ls.getItem('bm-settings');
+    return ls;
+  } catch (e) {
+    const mem = {};
+    return {
+      getItem: (k) => mem[k] ?? null,
+      setItem: (k, v) => (mem[k] = String(v)),
+      removeItem: (k) => delete mem[k],
+    };
   }
-  return { lines, dropped };
-}
-// Frames get a unique key per line, so each pair keeps its own prescription. Packs of the same kind merge.
-function lineKey(p, ci, cfg) {
-  const base = p.id + '|' + ci + '|' + JSON.stringify(cfg);
-  return p.type === 'frame' ? base + '|' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) : base;
+})();
+function loadCart() {
+  const out = readBag(bagStorage, BM.byId, BM.LENS);
+  out.lines.forEach((l) => (l.unit = BM.priceOf(BM.byId[l.pid], l.cfg, l.size)));
+  return out;
 }
 const initialCart = loadCart();
 const S = {
@@ -93,10 +77,7 @@ const S = {
 S.settings = Object.assign({ move: RM ? 'jump' : 'walk', quality: 'auto', labels: true }, store.get('bm-settings', {}));
 BM.settings = S.settings;
 const saveCart = () => {
-  store.set(
-    'bm-bag-v1',
-    S.cart.map((l) => ({ key: l.key, pid: l.pid, ci: l.ci, cfg: l.cfg, qty: l.qty })),
-  );
+  writeBag(bagStorage, S.cart);
   for (const k of Object.keys(S.rx)) if (!S.cart.some((l) => l.key === k)) delete S.rx[k];
 };
 const saveSettings = () => store.set('bm-settings', S.settings);
@@ -610,6 +591,18 @@ function productRow(p, opts) {
   );
   const side = h('div', { class: 'row-side' }, h('span', { class: 'row-price' }, priceTag(p)), dots(p));
   row.append(hit, side);
+  const btns = h('div', { class: 'row-btns' });
+  if (p.type === 'frame') {
+    const tb = h('button', {
+      class: 'locate',
+      type: 'button',
+      title: 'Try on',
+      'aria-label': 'Try on ' + p.name,
+      onclick: () => openTryOn(p.id, 0),
+    });
+    tb.append(ic('face'));
+    btns.append(tb);
+  }
   if (S.has3D && opts.locate !== false) {
     const lb = h('button', {
       class: 'locate',
@@ -619,8 +612,10 @@ function productRow(p, opts) {
       onclick: () => locate(p.id, 0),
     });
     lb.append(ic('locate'));
-    row.append(lb);
-  } else row.classList.add('no-locate');
+    btns.append(lb);
+  }
+  if (btns.children.length) row.append(btns);
+  else row.classList.add('no-locate');
   return row;
 }
 
@@ -632,6 +627,7 @@ VIEWS.product = function (d) {
     ((d.ci % (p.colors ? p.colors.length : 1)) + (p.colors ? p.colors.length : 1)) % (p.colors ? p.colors.length : 1);
   d.cfg = d.cfg || BM.defaultCfg(p);
   d.qty = d.qty || 1;
+  if (p.type === 'frame' && !sizeOf(p, d.size)) d.size = p.defaultSize;
   d.rx = d.rx || { r: {}, l: {}, pd: '' };
   const frame = p.type === 'frame';
   const body = h('div', { class: 'pd' });
@@ -700,6 +696,36 @@ VIEWS.product = function (d) {
       group.append(b);
     });
     body.append(section('Colour', group, name));
+
+    // Sizes: real variants, each with its own lens, bridge and temple
+    const sizeGroup = h('div', { class: 'chips', role: 'radiogroup', 'aria-label': 'Frame size' });
+    p.sizes.forEach((sz) => {
+      const c = h(
+        'button',
+        {
+          class: 'chip size-chip',
+          type: 'button',
+          role: 'radio',
+          id: 'size-' + p.id + '-' + sz.id,
+          'aria-checked': sz.id === d.size ? 'true' : 'false',
+          'aria-label': 'Size ' + sz.id + ', ' + sizeMarking(sz),
+        },
+        h('b', null, sz.id),
+        h('span', { class: 'mono' }, sizeMarking(sz)),
+      );
+      c.addEventListener('click', () => {
+        d.size = sz.id;
+        sizeGroup.querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-checked', x === c ? 'true' : 'false'));
+        onSize();
+      });
+      sizeGroup.append(c);
+    });
+    const tryLink = h(
+      'button',
+      { class: 'link-btn try-link', type: 'button', onclick: () => openTryOn(p.id, d.ci, d.size) },
+      'Not sure? Try on to see the fit',
+    );
+    body.append(section('Size', sizeGroup, tryLink));
   }
 
   // Configurator
@@ -707,9 +733,26 @@ VIEWS.product = function (d) {
   body.append(cfgBox);
 
   // Details
+  let sizeText = null,
+    codeText = null,
+    guideBox = null;
+  // Updates everything that depends on the chosen size: specs, size guide, 3D viewer and price.
+  function onSize() {
+    const sz = sizeOf(p, d.size);
+    if (sizeText)
+      sizeText.textContent =
+        sizeMarking(sz) + ' (size ' + sz.id + ', about ' + Math.round(frontWidthMm(p, sz)) + ' mm wide)';
+    if (codeText) codeText.textContent = 'BM-' + p.id.toUpperCase() + '-' + sz.lens;
+    if (guideBox) guideBox.innerHTML = BM.sizeSVG(p, sz);
+    if (api() && api().setViewerSize) api().setViewerSize(d.size);
+    if (typeof refreshTotal === 'function') refreshTotal();
+  }
   if (frame) {
     const a = BM.ARCH[p.arch];
     const hash = [...p.id].reduce((x, ch) => x + ch.charCodeAt(0), 0);
+    sizeText = h('span', { class: 'mono' });
+    codeText = h('span', { class: 'mono' });
+    guideBox = h('div', { class: 'sizeguide' });
     const specs = h(
       'dl',
       { class: 'specs' },
@@ -718,7 +761,7 @@ VIEWS.product = function (d) {
       h('dt', null, 'Material'),
       h('dd', null, p.mat),
       h('dt', null, 'Size'),
-      h('dd', null, h('span', { class: 'mono' }, p.size[0] + '□' + p.size[1] + '-' + p.size[2])),
+      h('dd', null, sizeText),
       h('dt', null, 'Weight'),
       h('dd', null, p.weight + ' g'),
       h('dt', null, 'Suits faces'),
@@ -728,13 +771,13 @@ VIEWS.product = function (d) {
       h('dt', null, 'Stock'),
       h('dd', null, hash % 4 === 0 ? 'Only 2 left in this colour' : 'In stock at this showroom'),
       h('dt', null, 'Code'),
-      h('dd', null, h('span', { class: 'mono' }, 'BM-' + p.id.toUpperCase() + '-' + p.size[0])),
+      h('dd', null, codeText),
     );
     body.append(section('Details', h('p', { class: 'pd-desc' }, p.desc), specs));
     body.append(
       section(
         'Size guide',
-        h('div', { class: 'sizeguide', html: BM.sizeSVG(p) }),
+        guideBox,
         h(
           'p',
           { class: 'field-note' },
@@ -760,6 +803,10 @@ VIEWS.product = function (d) {
 
   // Secondary actions
   const acts = h('div', { class: 'pd-actions' });
+  if (frame)
+    acts.append(
+      btn('Try on', { icon: 'face', id: 'try-on', primary: false, onclick: () => openTryOn(p.id, d.ci, d.size) }),
+    );
   if (S.has3D) acts.append(btn('Show in store', { icon: 'locate', onclick: () => locate(p.id, d.ci) }));
   if (frame) acts.append(btn('Book a free eye test', { icon: 'eye', onclick: () => openSheet('eyetest', {}, true) }));
   body.append(acts);
@@ -771,7 +818,7 @@ VIEWS.product = function (d) {
   const foot = h('div', { class: 'foot-row' }, h('div', { class: 'foot-total' }, totalEl, noteEl), addBtn);
 
   function refreshTotal() {
-    const unit = BM.priceOf(p, d.cfg);
+    const unit = BM.priceOf(p, d.cfg, d.size);
     totalEl.textContent = money(unit * (frame ? 1 : d.qty));
     noteEl.textContent = frame
       ? unit > p.price
@@ -929,6 +976,7 @@ VIEWS.product = function (d) {
     refreshTotal();
   }
   renderCfg();
+  if (frame) onSize();
 
   addBtn.addEventListener('click', () => {
     if (frame && BM.needsRx(p, d.cfg) && d.cfg.rx === 'now') {
@@ -957,7 +1005,7 @@ VIEWS.product = function (d) {
     foot,
     mount() {
       if (frame && api()) {
-        const ok = api().mountViewer(viewer, p.id, d.ci);
+        const ok = api().mountViewer(viewer, p.id, d.ci, d.size);
         if (ok) art.hidden = true;
       }
     },
@@ -1105,21 +1153,53 @@ BM.validateRx = validateRx;
 function addToBag(p, d) {
   const cfg = JSON.parse(JSON.stringify(d.cfg));
   if (p.type === 'frame' && !BM.needsRx(p, cfg)) delete cfg.rx;
-  const unit = BM.priceOf(p, cfg),
+  const size = p.type === 'frame' ? d.size || p.defaultSize : null;
+  const unit = BM.priceOf(p, cfg, size),
     qty = p.type === 'frame' ? 1 : d.qty;
-  const key = lineKey(p, d.ci, cfg);
+  const key = lineKey(p, d.ci, size, cfg);
   const ex = S.cart.find((l) => l.key === key);
   if (ex) ex.qty = Math.min(LIMITS.maxItemQty, ex.qty + qty);
   else if (S.cart.length >= LIMITS.maxLines) {
     toast('Your bag holds up to ' + LIMITS.maxLines + ' items. Check out or remove one first.', 4000);
     return false;
-  } else S.cart.push({ key, pid: p.id, ci: d.ci, cfg, qty, unit });
+  } else S.cart.push({ key, pid: p.id, ci: d.ci, size, cfg, qty, unit });
   if (p.type === 'frame' && BM.needsRx(p, cfg) && cfg.rx === 'now') S.rx[key] = normalizeRx(d.rx, BM.needsAdd(p, cfg));
   saveCart();
   updateBadge();
   toast('Added ' + p.name + ' to your bag');
   return true;
 }
+
+/* ---------- Virtual try-on (loaded only when used) ---------- */
+let tryOnModule = null;
+async function openTryOn(pid, ci, sizeId) {
+  const p = BM.byId[pid];
+  if (!p || p.type !== 'frame') return;
+  hideWelcome(false);
+  pauseTour();
+  if (api()) api().setPaused(true);
+  const resume = () => {
+    if (api()) api().setPaused(isNarrow() && sheet.classList.contains('open'));
+  };
+  try {
+    tryOnModule = tryOnModule || (await import('../tryon/ui.js'));
+  } catch (err) {
+    console.warn('Try-on failed to load:', err && err.message);
+    toast('Try-on couldn’t load. Check your connection and try again.', 4000);
+    resume();
+    return;
+  }
+  tryOnModule.openTryOn({
+    pid,
+    ci: ci || 0,
+    sizeId: sizeId || p.defaultSize,
+    settings: S.settings,
+    saveSettings,
+    onClose: resume,
+    onAddToBag: (id, colour, size) => openSheet('product', { pid: id, ci: colour, size }),
+  });
+}
+BM.openTryOn = openTryOn;
 
 /* ---------- View: browse a section ---------- */
 VIEWS.browse = function (d) {
@@ -1427,6 +1507,11 @@ function quoteNote() {
   return p;
 }
 
+// "Size M · 52□18-145" for frame lines, nothing for contacts and care.
+const lineSize = (l) => {
+  const sz = l.size && sizeOf(BM.byId[l.pid], l.size);
+  return sz ? 'Size ' + sizeLabel(sz) : '';
+};
 const itemCount = (n) => n + (n === 1 ? ' item' : ' items');
 
 /* ---------- Form helpers ---------- */
@@ -1625,7 +1710,7 @@ VIEWS.bag = function () {
               h('b', null, p.name),
               h('span', { class: 'price sm' }, money(linePrice(l, idx))),
             ),
-            h('p', { class: 'line-cfg' }, [col, BM.cfgSummary(p, l.cfg)].filter(Boolean).join(' · ')),
+            h('p', { class: 'line-cfg' }, [col, lineSize(l), BM.cfgSummary(p, l.cfg)].filter(Boolean).join(' · ')),
             h('div', { class: 'line-acts' }, q, rm),
             rxBlock(l, p),
           ),
@@ -1836,7 +1921,7 @@ VIEWS.checkout = function (d) {
         h(
           'div',
           null,
-          h('span', null, lineName(l) + (l.qty > 1 ? ' × ' + l.qty : '')),
+          h('span', null, lineName(l) + (l.size ? ' (' + l.size + ')' : '') + (l.qty > 1 ? ' × ' + l.qty : '')),
           h('span', null, money(linePrice(l, i))),
         ),
       ),
@@ -1892,6 +1977,7 @@ VIEWS.checkout = function (d) {
     if (showFieldErrors(errs, fe)) return;
     const lines = S.cart.map((l) => {
       const o = { productId: l.pid, colourIndex: l.ci, config: l.cfg, qty: l.qty };
+      if (l.size) o.sizeId = l.size;
       if (needsRxNow(l)) o.prescription = S.rx[l.key];
       return o;
     });

@@ -6,7 +6,12 @@ import { postJSON } from './http.js';
  * @param {Array<{pid: string, ci: number, cfg: object, qty: number}>} cart
  */
 export const toApiLines = (cart) =>
-  cart.map((l) => ({ productId: l.pid, colourIndex: l.ci, config: l.cfg, qty: l.qty }));
+  cart.map((l) =>
+    Object.assign({ productId: l.pid, colourIndex: l.ci }, l.size ? { sizeId: l.size } : {}, {
+      config: l.cfg,
+      qty: l.qty,
+    }),
+  );
 
 /**
  * POST /api/v1/cart/quote. Resolves with the server's prices; rejects with an ApiError.

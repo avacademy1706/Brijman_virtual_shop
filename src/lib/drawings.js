@@ -141,11 +141,12 @@ BM.boxSVG = function (p, w, hh) {
     '" stroke-width="2"/></svg>'
   );
 };
-BM.sizeSVG = function (p) {
+// Size diagram for a frame. `size` is a size entry ({lens, bridge, temple}); defaults to the listed size.
+BM.sizeSVG = function (p, size) {
   const a = BM.ARCH[p.arch],
-    lw = p.size[0],
-    br = p.size[1],
-    tl = p.size[2];
+    lw = size ? size.lens : p.size[0],
+    br = size ? size.bridge : p.size[1],
+    tl = size ? size.temple : p.size[2];
   const k = lw / 1000 / a.A,
     A = a.A * k,
     Bh = a.B * k,
