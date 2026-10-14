@@ -1872,9 +1872,43 @@ async function start() {
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
   let ringTimer = 0;
+  // Wire frames are thin and their lens openings are empty: a tap or click that misses a frame by a little still opens
+  // the nearest frame within this many CSS px (a finger covers more pixels than a mouse pointer), unless that frame is
+  // hidden behind what was hit.
+  const PICK_PX = { touch: 32, mouse: 16 };
+  function openRec(rec) {
+    if (!rec || !BM.onProductTap) return;
+    nav.turn = yawPitch(nav.x, nav.z, rec.center);
+    kick();
+    BM.onProductTap(rec.pid, rec.ci);
+  }
+  function nearRecord(cx, cy, hitDist, maxPx) {
+    const r = canvas.getBoundingClientRect();
+    let best = null,
+      bestPx = maxPx;
+    for (const rec of records) {
+      const d = camera.position.distanceTo(rec.center);
+      if (d > 8 || d > hitDist + 0.35) continue;
+      tmpV.copy(rec.center).project(camera);
+      if (tmpV.z < -1 || tmpV.z > 1) continue;
+      const px = Math.hypot(r.left + ((tmpV.x + 1) / 2) * r.width - cx, r.top + ((1 - tmpV.y) / 2) * r.height - cy);
+      if (px < bestPx) {
+        bestPx = px;
+        best = rec;
+      }
+    }
+    return best;
+  }
   function tap(cx, cy, touch) {
     setRay(cx, cy);
     const hit = ray.intersectObjects(allHits, false)[0];
+    if (!(hit && hit.object.userData.recs)) {
+      const rec = nearRecord(cx, cy, hit ? hit.distance : Infinity, touch ? PICK_PX.touch : PICK_PX.mouse);
+      if (rec) {
+        openRec(rec);
+        return;
+      }
+    }
     if (!hit) return;
     // Touch feedback: the ring flashes where the floor was tapped, then the destination marker takes over.
     if (touch && hit.object === floor) {
@@ -1889,12 +1923,7 @@ async function start() {
     }
     const o = hit.object;
     if (o.userData.recs) {
-      const rec = o.userData.recs[hit.instanceId];
-      if (rec && BM.onProductTap) {
-        nav.turn = yawPitch(nav.x, nav.z, rec.center);
-        kick();
-        BM.onProductTap(rec.pid, rec.ci);
-      }
+      openRec(o.userData.recs[hit.instanceId]);
       return;
     }
     if (o.userData.action) {

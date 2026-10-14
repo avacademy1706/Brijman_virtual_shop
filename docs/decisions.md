@@ -155,3 +155,8 @@ On a lost graphics context the store pauses and shows "Restoring the 3D view…"
 - "Look around by moving your phone" (optional in the brief) was not added: it needs a permission button on iOS and extra Permissions-Policy entries, for little gain.
 - Haptics (optional) were not added.
 - The layout, touch and forms phases were committed together, because they change the same lines of `src/ui/app.js` and `src/styles/main.css`; the try-on and performance phases have their own commits.
+
+## 2026-10-14: Tapping a frame picks the nearest frame
+
+- On phones, a tap on a thin wire frame (Cove, Aurum) often hit the shelf or the floor behind it, so the visitor walked instead of seeing the product. A tap or click that misses now opens the nearest frame within 32 CSS px on touch or 16 px with a mouse, if that frame is within 8 m and not behind what the tap hit. Taps on the open floor still walk.
+- The mobile audit taps two wire frames slightly off-centre on every profile to keep this fixed.

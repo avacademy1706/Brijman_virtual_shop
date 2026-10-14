@@ -306,6 +306,48 @@ test('mobile audit', async ({ page, browserName }, info) => {
         z0 === undefined ? null : Math.abs(z1 - z0) > 0.02,
         z0 === undefined ? 'zoom not exposed (manual check)' : 'zoom ' + z0.toFixed(2) + ' → ' + z1.toFixed(2),
       );
+      // Tap a frame on a shelf, a little off its centre like a finger: opens the product, does not walk.
+      // m03 and p01 are thin wire frames that a touch tap used to miss.
+      for (const pid of ['m03', 'p01']) {
+        await run((id) => window.BM.api.goProduct(id, 0), pid);
+        await page.waitForTimeout(500);
+        await page.waitForFunction(() => !window.BM.api.stats().moving, null, { timeout: 40000 }).catch(() => {});
+        await page.waitForTimeout(300);
+        const f0 = await pose();
+        await run(
+          ([x, y, touch]) => {
+            const c = document.querySelector('#scene');
+            const o = {
+              pointerId: 1,
+              clientX: x,
+              clientY: y,
+              bubbles: true,
+              cancelable: true,
+              isPrimary: true,
+              pointerType: touch ? 'touch' : 'mouse',
+            };
+            c.dispatchEvent(new PointerEvent('pointerdown', { ...o, buttons: 1 }));
+            c.dispatchEvent(new PointerEvent('pointerup', { ...o, buttons: 0 }));
+          },
+          [vp.width / 2 + (touch ? 10 : 0), vp.height / 2 + (touch ? 8 : 0), touch],
+        );
+        await page.waitForTimeout(900);
+        const opened = await run(() => document.querySelector('#sheet').classList.contains('open'));
+        const f1 = await pose();
+        const moved = Math.hypot(f1.x - f0.x, f1.z - f0.z);
+        check(
+          '3D',
+          'Tap on a frame opens it (' + pid + ')',
+          opened && moved < 0.05,
+          (opened ? 'sheet open' : 'no sheet') + ', moved ' + moved.toFixed(2) + ' m',
+        );
+        await run(
+          () =>
+            document.querySelector('#sheet').classList.contains('open') &&
+            document.querySelector('#sheet-close').click(),
+        );
+        await page.waitForTimeout(400);
+      }
       result.metrics.draws = (await run(() => window.BM.api.stats())).draws;
     }
 
