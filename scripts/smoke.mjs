@@ -32,7 +32,7 @@ await check('GET / returns 200 with a Content-Security-Policy', async () => {
 await check('The site allows the camera for itself only (try-on)', async () => {
   const r = await get('/');
   const pp = r.headers.get('permissions-policy') || '';
-  return /camera=(self)/.test(pp) ? true : 'Permissions-Policy: ' + pp;
+  return pp.includes('camera=(self)') ? true : 'Permissions-Policy: ' + pp;
 });
 await check('GET /api/v1/health is ok', async () => {
   const r = await get('/api/v1/health');
