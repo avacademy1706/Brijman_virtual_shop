@@ -1,27 +1,45 @@
 # Dependencies and build output
 node_modules/
 dist/
+dist-ssr/
 .vercel/
+.cache/
+vite.config.*.timestamp-*
+
+# Test and coverage output
+coverage/
+test-results/
+playwright-report/
 
 # Secrets: never commit these
 .env
 .env.*
 !.env.example
+*.local
 *.pem
 *.key
+*.p12
+*.pfx
 
 # Logs and OS files
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 .DS_Store
 Thumbs.db
+desktop.ini
+*.tmp
+*.swp
 
-# Editor: keep the shared VS Code settings, ignore personal ones
+# Editors: keep the shared VS Code settings, ignore personal ones
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
 !.vscode/launch.json
 !.vscode/tasks.json
+.idea/
 
 # Personal Claude Code settings
 CLAUDE.local.md
