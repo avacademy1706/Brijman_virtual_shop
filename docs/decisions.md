@@ -106,3 +106,12 @@ The bag moved to localStorage key `bm-bag-v2` (id, colour, size, configuration, 
 - The camera is requested only after the shopper taps Allow camera (or Use the camera), is stopped on close, on `pagehide` and when the page is hidden, and restarts only on the shopper's action. A newer camera request cancels an older one, so a double tap cannot leave a second camera running.
 - MediaPipe's wasm prints an informational line ("INFO: Created TensorFlow Lite XNNPACK delegate for CPU.") through `console.error`. The engine filters exactly the lines that start with "INFO: ", so real errors still show.
 - `track(event, props)` in `src/tryon/analytics.js` is a no-op with an allow-list: six events and `productId`, `sizeId`, `colourIndex`, `source` and `result` (good, narrow or wide). No measurements can pass.
+
+## 2026-10-14: Try-on details that differ from the brief or fill gaps
+
+- **Photos look for two faces.** The brief sets `numFaces: 1`. Live video keeps 1; uploaded photos use 2 so the try-on can say "More than one face is in this photo". The mode switch happens only when the input changes, because every `setOptions` rebuilds MediaPipe's graph.
+- **Consent is remembered when the shopper turns the camera on.** Tapping Allow camera, or Use the camera inside the mirror, stores `tryonConsent` in `bm-settings` (not personal data). Choosing a photo does not, so the notice shows again next time.
+- **Artist models are scaled to the chosen size.** A colour's `.glb` (1 unit = 1 m, front +Z, bridge at the origin) is scaled so its `front` node matches the size's real outer width, because one file serves every size of that colour. If it fails to load, the generated frame is used.
+- **Kids' sunglasses follow the kids size rule** (S, M), since kids comes first in the brief's table.
+- **Fit uses the front's outer width from the real geometry** (`frameGeometry(...).outerWidth`) in the try-on, and `frontWidthMm` (2 × lens + bridge + endpieces) in the product sheet; both agree to ±0.5 mm.
+- **Browser test material.** The real-face browser checks used MediaPipe's public test portrait and a short clip made from it, kept outside the repository. The repository's tests use synthetic faces only.

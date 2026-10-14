@@ -9,7 +9,8 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 - `npm run build`: production build to `dist/`
 - `npm run preview`: serves `dist/` and the API with the production security headers read from `vercel.json`
 - `npm test` / `npm run test:watch`: Vitest (tests in `tests/`, no network)
-- `npm run check`: format check, tests, build; stops at the first failure
+- `npm run check`: format check, tests, build, then `scripts/check-bundle.mjs` (first load may grow at most 10 KB gzipped over 32,552 bytes); stops at the first failure
+- `dev`, `build` and `preview` run `scripts/copy-mediapipe.mjs` first (copies the MediaPipe wasm to `public/vendor/mediapipe/<version>/wasm/`, gitignored, and checks the face model hash)
 - `npm run smoke -- <baseUrl>`: post-deploy check of the site, API and headers
 - `npm run format` / `npm run format:check`: Prettier (printWidth 120, single quotes, trailing commas)
 - `npm run assets:check`: confirms every file listed in `assets-3d/catalogue.json` exists
@@ -29,9 +30,13 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 - `src/ui/app.js` holds all interface code:
   - the views: product, browse, search, directory, bag (server quote), rx (prescription for a bag line), checkout, done, eye test, lens guide, info
   - the guided tour and the minimap
-  - the bag in localStorage `bm-bag-v1` (pid, ci, cfg, qty only) and settings in `bm-settings`; prescriptions in memory only (`S.rx`)
+  - the bag in localStorage `bm-bag-v2` via `src/lib/bag-storage.js` (pid, ci, size, cfg, qty only; v1 migrated once) and settings in `bm-settings`; prescriptions in memory only (`S.rx`)
+  - the product sheet size selector (S/M/L) and the `openTryOn()` hook, which dynamically imports `src/tryon/ui.js`
 - `src/scene/showroom.js` builds the store procedurally, places products from `BM.MERCH`, and runs the walk planner (A*), floating labels and the 3D product viewer. It talks to the UI only through `BM` callbacks: `attach3D`, `onProductTap`, `onFeatureTap`, `onArrive`, `onZoneChange`, `onPose`, `onUserNav`, `fail3D`.
 - API: `api/index.js` (Vercel entry) → `server/app.js` (Hono, `basePath('/api')`, routes under `/v1`). `server/routes/` → `server/services/` → `server/repositories/` (`DATA_SOURCE=static|http`) and `server/integrations/` (payments, notifications, crm: no-ops until configured). See `docs/api.md` and `docs/openapi.yaml`.
+- Frame sizes: every frame has `sizes` and `defaultSize` in `data/catalogue.json` (rules in `shared/fit.js` `generateSizes`). Cart lines carry `sizeId` (required for frames); `priceOf(p, cfg, lens, sizeId)` adds an optional `priceDelta`.
+- `src/three/frame-model.js`: frame geometry and materials shared by the shelves (archetype build, unchanged), the product viewer and the try-on (`frameGeometry(p, sizeId)` builds true size from mm, with front, temples, lenses and hinges).
+- Virtual try-on (`src/tryon/`, lazy): `ui.js` (interface) → `engine.js` (MediaPipe `FaceLandmarker` 1.0.1, three.js render; API `start`, `setFrame`, `setNudge`, `snapshot`, `stop`, `on`) → `face-math.js` (Procrustes pose fit, iris-based face width, placement, occluder) and `one-euro.js`. Fit guide in `shared/fit.js`. See `docs/try-on.md`.
 - `src/lib/dom.js` has the DOM helpers `h`, `$`, `ic` and `money` (en-IN, ₹). `src/lib/drawings.js` has the SVG frame drawings, the size diagram and the canvas floor plan.
 - `src/styles/main.css` holds the design tokens for light and dark themes and all styles. `src/styles/fonts.css` and `src/assets/fonts/` hold the self-hosted fonts.
 - `assets-3d/` holds exported GLB models and PNG textures for 3D artists. The site does not load them, `.vercelignore` excludes them from deploys, and they must not be edited by hand.
@@ -47,6 +52,9 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 - Product ids (`m01`, `w03`, `s05`, `k01`, `p02`, `c01`…) and colour indexes are stable keys. Saved bags and shelf placement depend on them.
 - Keep the current design, copy and behaviour unless a task says otherwise. Every change must work at 390 px width and on desktop, in light and dark themes, with keyboard focus states and reduced motion respected.
 - The browser makes no requests to other origins. The CSP in `vercel.json` is `default-src 'self'`. Adding an external origin means changing the CSP on purpose and saying so in the summary.
+- The CSP in `vercel.json` allows `'wasm-unsafe-eval'` (try-on WebAssembly) and nothing else beyond `'self'`; `Permissions-Policy` allows `camera=(self)` only. MediaPipe is self-hosted under `/vendor/mediapipe/` (versioned paths, cached immutable); never load it from a CDN.
+- No camera frame, landmark, face measurement or photo may leave the device, be logged, put in a URL or stored. Try-on analytics (`src/tryon/analytics.js`) allow only the listed events and `good|narrow|wide`.
+- The try-on, MediaPipe and three.js must never be in the first load (`tests/unit/tryon-assets.test.js` and `npm run bundle:check`). The camera starts only after the shopper allows it and stops on close, `pagehide` and hidden pages.
 - Keep `build.assetsInlineLimit: 0` in `vite.config.js`. Inlined data: fonts break the `font-src 'self'` policy.
 - three.js is pinned at 0.180.0, Vite at 8.x, and Node must be 22.12 or newer.
 - Every new dependency is pinned to an exact version and must be justified. Prefer none.

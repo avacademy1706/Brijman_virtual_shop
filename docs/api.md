@@ -126,8 +126,9 @@ Example: Arlo (₹2,490) with single vision, 1.60 and blue-cut is ₹2,490 + ₹
 ### Bag lines
 
 - A bag holds 1 to 20 lines.
-- **Frames**: `qty` must be 1. Add a second pair as a second line, so each pair can carry its own prescription. `colourIndex` must be below the frame's number of colours.
-- **Contacts and care**: `qty` from 1 to 12 packs. `colourIndex` must be 0.
+- **Frames**: `qty` must be 1. Add a second pair as a second line, so each pair can carry its own prescription. `colourIndex` must be below the frame's number of colours. `sizeId` is required and must be one of the frame's sizes.
+- **Sizes**: adult optical frames come in S, M and L; sunglasses and Atelier in M and L; kids in S and M. M is the listed size. S: lens −2, bridge −1, temple 140 (kids: temple −5, minimum 120). L: lens +2, bridge +1, temple +5 (maximum 150). A size may carry an optional whole-rupee `priceDelta` (none today).
+- **Contacts and care**: `qty` from 1 to 12 packs. `colourIndex` must be 0, and there is no `sizeId`.
 
 ### Prescriptions (orders only)
 
@@ -346,13 +347,13 @@ curl http://localhost:5173/api/v1/lenses
 
 Prices a bag on the server. The browser shows these as the confirmed prices. The same bag always gets the same `quoteId`.
 
-Body: `{ "lines": [CartLine, ...] }`, 1 to 20 lines. Each line is `{ productId, colourIndex, config, qty }`.
+Body: `{ "lines": [CartLine, ...] }`, 1 to 20 lines. Each line is `{ productId, colourIndex, sizeId, config, qty }` (`sizeId` for frames only). Quote lines add `sizeId` and `sizeLabel`, for example `"M · 53□18-145"`. A missing or unknown frame size gives 422 on `lines.N.sizeId`.
 
 ```bash
 curl -X POST http://localhost:5173/api/v1/cart/quote \
   -H "Content-Type: application/json" \
   -d '{"lines":[
-        {"productId":"m01","colourIndex":0,"config":{"type":"sv","index":"160","coats":["bc"],"rx":"now"},"qty":1},
+        {"productId":"m01","colourIndex":0,"sizeId":"M","config":{"type":"sv","index":"160","coats":["bc"],"rx":"now"},"qty":1},
         {"productId":"c01","colourIndex":0,"config":{"pack":1},"qty":3}
       ]}'
 ```
