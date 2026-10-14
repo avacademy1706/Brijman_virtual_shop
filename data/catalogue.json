@@ -1,0 +1,1510 @@
+{
+  "products": [
+    {
+      "id": "m01",
+      "name": "Arlo",
+      "zone": "men",
+      "arch": "rectA",
+      "mat": "Acetate",
+      "price": 2490,
+      "size": [
+        53,
+        18,
+        145
+      ],
+      "weight": 24,
+      "colors": [
+        {
+          "n": "Jet black",
+          "a": "#141414",
+          "sw": "#141414"
+        },
+        {
+          "n": "Havana tortoise",
+          "a": "#ffffff",
+          "k": "tort",
+          "sw": "#7a4520"
+        },
+        {
+          "n": "Bottle green",
+          "a": "#1c4a3a",
+          "sw": "#1c4a3a"
+        }
+      ],
+      "desc": "A slim everyday rectangle in polished acetate with five-barrel hinges.",
+      "type": "frame",
+      "tags": [
+        "Bestseller"
+      ]
+    },
+    {
+      "id": "m02",
+      "name": "Brook",
+      "zone": "men",
+      "arch": "squareA",
+      "mat": "Acetate",
+      "price": 2990,
+      "size": [
+        54,
+        19,
+        145
+      ],
+      "weight": 28,
+      "colors": [
+        {
+          "n": "Matte black",
+          "a": "#262626",
+          "sw": "#2b2b2b",
+          "matte": true
+        },
+        {
+          "n": "Navy",
+          "a": "#1d2b4b",
+          "sw": "#1d2b4b"
+        },
+        {
+          "n": "Havana tortoise",
+          "a": "#ffffff",
+          "k": "tort",
+          "sw": "#7a4520"
+        }
+      ],
+      "desc": "A bold square with thick rims and a flat top line.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "m03",
+      "name": "Cove",
+      "zone": "men",
+      "arch": "roundM",
+      "mat": "Titanium",
+      "price": 3490,
+      "size": [
+        49,
+        21,
+        145
+      ],
+      "weight": 14,
+      "colors": [
+        {
+          "n": "Gold",
+          "m": "#d9b26b",
+          "sw": "#d9b26b"
+        },
+        {
+          "n": "Gunmetal",
+          "m": "#5b6067",
+          "sw": "#5b6067"
+        }
+      ],
+      "desc": "Feather-light round titanium wire with adjustable nose pads.",
+      "type": "frame",
+      "tags": [
+        "Titanium"
+      ]
+    },
+    {
+      "id": "m04",
+      "name": "Drift",
+      "zone": "men",
+      "arch": "rectM",
+      "mat": "Stainless steel",
+      "price": 2790,
+      "size": [
+        55,
+        17,
+        145
+      ],
+      "weight": 18,
+      "colors": [
+        {
+          "n": "Gunmetal",
+          "m": "#5b6067",
+          "sw": "#5b6067"
+        },
+        {
+          "n": "Silver",
+          "m": "#cfd3d7",
+          "sw": "#cfd3d7"
+        },
+        {
+          "n": "Black",
+          "m": "#303033",
+          "sw": "#303033"
+        }
+      ],
+      "desc": "A narrow metal rectangle with spring hinges, a clean choice for work.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "m05",
+      "name": "Elm",
+      "zone": "men",
+      "arch": "browC",
+      "mat": "Acetate and metal",
+      "price": 3290,
+      "size": [
+        51,
+        20,
+        145
+      ],
+      "weight": 22,
+      "colors": [
+        {
+          "n": "Jet black · Gold",
+          "a": "#141414",
+          "m": "#d9b26b",
+          "sw": "#141414",
+          "sw2": "#d9b26b"
+        },
+        {
+          "n": "Havana · Silver",
+          "a": "#ffffff",
+          "k": "tort",
+          "m": "#cfd3d7",
+          "sw": "#7a4520",
+          "sw2": "#cfd3d7"
+        }
+      ],
+      "desc": "Browline with an acetate brow over a fine metal lower rim.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "m06",
+      "name": "Flint",
+      "zone": "men",
+      "arch": "geoM",
+      "mat": "Titanium",
+      "price": 3690,
+      "size": [
+        50,
+        20,
+        145
+      ],
+      "weight": 15,
+      "colors": [
+        {
+          "n": "Gunmetal",
+          "m": "#5b6067",
+          "sw": "#5b6067"
+        },
+        {
+          "n": "Gold",
+          "m": "#d9b26b",
+          "sw": "#d9b26b"
+        }
+      ],
+      "desc": "Hexagonal titanium frame with a double-polished finish.",
+      "type": "frame",
+      "tags": [
+        "Titanium"
+      ]
+    },
+    {
+      "id": "m07",
+      "name": "Grove",
+      "zone": "men",
+      "arch": "rectA",
+      "mat": "TR90",
+      "price": 1790,
+      "size": [
+        54,
+        17,
+        140
+      ],
+      "weight": 16,
+      "colors": [
+        {
+          "n": "Matte black",
+          "a": "#262626",
+          "sw": "#2b2b2b",
+          "matte": true
+        },
+        {
+          "n": "Grey crystal",
+          "a": "#8a9097",
+          "k": "clear",
+          "sw": "#8a9097"
+        }
+      ],
+      "desc": "Flexible TR90 rectangle that bends and springs back into shape.",
+      "type": "frame",
+      "tags": [
+        "Flexible"
+      ]
+    },
+    {
+      "id": "m08",
+      "name": "Haven",
+      "zone": "men",
+      "arch": "ovalM",
+      "mat": "Stainless steel",
+      "price": 2190,
+      "size": [
+        52,
+        18,
+        140
+      ],
+      "weight": 17,
+      "colors": [
+        {
+          "n": "Silver",
+          "m": "#cfd3d7",
+          "sw": "#cfd3d7"
+        },
+        {
+          "n": "Gunmetal",
+          "m": "#5b6067",
+          "sw": "#5b6067"
+        }
+      ],
+      "desc": "A soft oval in brushed steel with spring hinges.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "m09",
+      "name": "Indus",
+      "zone": "men",
+      "arch": "roundA",
+      "mat": "Acetate",
+      "price": 2690,
+      "size": [
+        49,
+        21,
+        145
+      ],
+      "weight": 23,
+      "colors": [
+        {
+          "n": "Havana tortoise",
+          "a": "#ffffff",
+          "k": "tort",
+          "sw": "#7a4520"
+        },
+        {
+          "n": "Jet black",
+          "a": "#141414",
+          "sw": "#141414"
+        }
+      ],
+      "desc": "A classic acetate round with a keyhole bridge.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "m10",
+      "name": "Jasper",
+      "zone": "men",
+      "arch": "ovalA",
+      "mat": "Acetate",
+      "price": 2390,
+      "size": [
+        52,
+        18,
+        145
+      ],
+      "weight": 22,
+      "colors": [
+        {
+          "n": "Navy",
+          "a": "#1d2b4b",
+          "sw": "#1d2b4b"
+        },
+        {
+          "n": "Grey crystal",
+          "a": "#8a9097",
+          "k": "clear",
+          "sw": "#8a9097"
+        }
+      ],
+      "desc": "A rounded oval in deep navy or smoke crystal.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "m11",
+      "name": "Kabir",
+      "zone": "men",
+      "arch": "rectM",
+      "mat": "Titanium",
+      "price": 3890,
+      "size": [
+        54,
+        18,
+        145
+      ],
+      "weight": 13,
+      "colors": [
+        {
+          "n": "Black",
+          "m": "#303033",
+          "sw": "#303033"
+        },
+        {
+          "n": "Gold",
+          "m": "#d9b26b",
+          "sw": "#d9b26b"
+        }
+      ],
+      "desc": "Ultra-light titanium rectangle with flexible temples.",
+      "type": "frame",
+      "tags": [
+        "Titanium"
+      ]
+    },
+    {
+      "id": "m12",
+      "name": "Loch",
+      "zone": "men",
+      "arch": "rectA",
+      "mat": "Acetate",
+      "price": 2290,
+      "size": [
+        52,
+        19,
+        145
+      ],
+      "weight": 21,
+      "colors": [
+        {
+          "n": "Olive",
+          "a": "#58653a",
+          "sw": "#58653a"
+        },
+        {
+          "n": "Crystal",
+          "a": "#eef3f4",
+          "k": "clear",
+          "sw": "#dbe6e8"
+        }
+      ],
+      "desc": "A mid-width rectangle in olive or clear crystal acetate.",
+      "type": "frame",
+      "tags": [
+        "New"
+      ]
+    },
+    {
+      "id": "w01",
+      "name": "Mira",
+      "zone": "women",
+      "arch": "cateyeA",
+      "mat": "Acetate",
+      "price": 2890,
+      "size": [
+        52,
+        17,
+        140
+      ],
+      "weight": 22,
+      "colors": [
+        {
+          "n": "Havana tortoise",
+          "a": "#ffffff",
+          "k": "tort",
+          "sw": "#7a4520"
+        },
+        {
+          "n": "Burgundy",
+          "a": "#6a1c2a",
+          "sw": "#6a1c2a"
+        },
+        {
+          "n": "Jet black",
+          "a": "#141414",
+          "sw": "#141414"
+        }
+      ],
+      "desc": "An upswept cat-eye with a bold outer corner.",
+      "type": "frame",
+      "tags": [
+        "Bestseller"
+      ]
+    },
+    {
+      "id": "w02",
+      "name": "Nila",
+      "zone": "women",
+      "arch": "roundA",
+      "mat": "Acetate",
+      "price": 2490,
+      "size": [
+        48,
+        20,
+        140
+      ],
+      "weight": 20,
+      "colors": [
+        {
+          "n": "Blush crystal",
+          "a": "#ecbcb6",
+          "k": "clear",
+          "sw": "#ecbcb6"
+        },
+        {
+          "n": "Honey tortoise",
+          "a": "#ffffff",
+          "k": "tort",
+          "tl": true,
+          "sw": "#c68d44"
+        },
+        {
+          "n": "Ivory",
+          "a": "#eee3cf",
+          "sw": "#eee3cf"
+        }
+      ],
+      "desc": "A petite round in soft crystal and honey tones.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "w03",
+      "name": "Opal",
+      "zone": "women",
+      "arch": "oversizeA",
+      "mat": "Acetate",
+      "price": 3190,
+      "size": [
+        55,
+        16,
+        140
+      ],
+      "weight": 27,
+      "colors": [
+        {
+          "n": "Jet black",
+          "a": "#141414",
+          "sw": "#141414"
+        },
+        {
+          "n": "Olive",
+          "a": "#58653a",
+          "sw": "#58653a"
+        },
+        {
+          "n": "Honey tortoise",
+          "a": "#ffffff",
+          "k": "tort",
+          "tl": true,
+          "sw": "#c68d44"
+        }
+      ],
+      "desc": "An oversized square that frames the face.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "w04",
+      "name": "Pari",
+      "zone": "women",
+      "arch": "cateyeM",
+      "mat": "Stainless steel",
+      "price": 3390,
+      "size": [
+        52,
+        17,
+        140
+      ],
+      "weight": 15,
+      "colors": [
+        {
+          "n": "Rose gold",
+          "m": "#dea78f",
+          "sw": "#dea78f"
+        },
+        {
+          "n": "Gold",
+          "m": "#d9b26b",
+          "sw": "#d9b26b"
+        }
+      ],
+      "desc": "A fine-wire cat-eye in rose gold or gold.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "w05",
+      "name": "Quill",
+      "zone": "women",
+      "arch": "geoM",
+      "mat": "Titanium",
+      "price": 3590,
+      "size": [
+        51,
+        19,
+        140
+      ],
+      "weight": 14,
+      "colors": [
+        {
+          "n": "Rose gold",
+          "m": "#dea78f",
+          "sw": "#dea78f"
+        },
+        {
+          "n": "Silver",
+          "m": "#cfd3d7",
+          "sw": "#cfd3d7"
+        }
+      ],
+      "desc": "Geometric titanium with a light, open profile.",
+      "type": "frame",
+      "tags": [
+        "Titanium"
+      ]
+    },
+    {
+      "id": "w06",
+      "name": "Rhea",
+      "zone": "women",
+      "arch": "ovalA",
+      "mat": "Acetate",
+      "price": 2290,
+      "size": [
+        51,
+        18,
+        140
+      ],
+      "weight": 20,
+      "colors": [
+        {
+          "n": "Blush pink",
+          "a": "#e3ada7",
+          "sw": "#e3ada7"
+        },
+        {
+          "n": "Bottle green",
+          "a": "#1c4a3a",
+          "sw": "#1c4a3a"
+        },
+        {
+          "n": "Crystal",
+          "a": "#eef3f4",
+          "k": "clear",
+          "sw": "#dbe6e8"
+        }
+      ],
+      "desc": "An easy oval in blush, bottle green or crystal.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "w07",
+      "name": "Sana",
+      "zone": "women",
+      "arch": "rectA",
+      "mat": "Acetate",
+      "price": 1990,
+      "size": [
+        51,
+        17,
+        140
+      ],
+      "weight": 19,
+      "colors": [
+        {
+          "n": "Navy",
+          "a": "#1d2b4b",
+          "sw": "#1d2b4b"
+        },
+        {
+          "n": "Blush crystal",
+          "a": "#ecbcb6",
+          "k": "clear",
+          "sw": "#ecbcb6"
+        }
+      ],
+      "desc": "A slim rectangle for everyday wear.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "w08",
+      "name": "Tara",
+      "zone": "women",
+      "arch": "roundM",
+      "mat": "Stainless steel",
+      "price": 2690,
+      "size": [
+        48,
+        20,
+        140
+      ],
+      "weight": 13,
+      "colors": [
+        {
+          "n": "Rose gold",
+          "m": "#dea78f",
+          "sw": "#dea78f"
+        },
+        {
+          "n": "Gold",
+          "m": "#d9b26b",
+          "sw": "#d9b26b"
+        }
+      ],
+      "desc": "A delicate round wire with adjustable pads.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "w09",
+      "name": "Uma",
+      "zone": "women",
+      "arch": "rectA",
+      "mat": "Acetate",
+      "price": 2590,
+      "size": [
+        52,
+        17,
+        140
+      ],
+      "weight": 21,
+      "colors": [
+        {
+          "n": "Burgundy",
+          "a": "#6a1c2a",
+          "sw": "#6a1c2a"
+        },
+        {
+          "n": "Havana tortoise",
+          "a": "#ffffff",
+          "k": "tort",
+          "sw": "#7a4520"
+        }
+      ],
+      "desc": "A soft rectangle with rounded corners.",
+      "type": "frame",
+      "tags": [
+        "New"
+      ]
+    },
+    {
+      "id": "w10",
+      "name": "Veda",
+      "zone": "women",
+      "arch": "oversizeA",
+      "mat": "Acetate",
+      "price": 2990,
+      "size": [
+        54,
+        17,
+        140
+      ],
+      "weight": 25,
+      "colors": [
+        {
+          "n": "Ivory",
+          "a": "#eee3cf",
+          "sw": "#eee3cf"
+        },
+        {
+          "n": "Blush crystal",
+          "a": "#ecbcb6",
+          "k": "clear",
+          "sw": "#ecbcb6"
+        }
+      ],
+      "desc": "A large square in ivory or blush crystal.",
+      "type": "frame",
+      "tags": []
+    },
+    {
+      "id": "s01",
+      "name": "Kite",
+      "zone": "sun",
+      "arch": "aviatorM",
+      "mat": "Stainless steel",
+      "price": 3990,
+      "size": [
+        58,
+        14,
+        140
+      ],
+      "weight": 26,
+      "colors": [
+        {
+          "n": "Gold · G-15 green lens",
+          "m": "#d9b26b",
+          "sw": "#d9b26b",
+          "l": "#3c4d36"
+        },
+        {
+          "n": "Silver · Blue mirror lens",
+          "m": "#cfd3d7",
+          "sw": "#cfd3d7",
+          "l": "#3d6fd4",
+          "lk": "mirror"
+        },
+        {
+          "n": "Gunmetal · Grey lens",
+          "m": "#5b6067",
+          "sw": "#5b6067",
+          "l": "#33373a"
+        }
+      ],
+      "desc": "A teardrop aviator with a double bridge and polarised lenses.",
+      "type": "frame",
+      "tags": [
+        "Polarised",
+        "Bestseller"
+      ],
+      "sun": true,
+      "polar": true
+    },
+    {
+      "id": "s02",
+      "name": "Laguna",
+      "zone": "sun",
+      "arch": "squareA",
+      "mat": "Acetate",
+      "price": 3490,
+      "size": [
+        55,
+        18,
+        145
+      ],
+      "weight": 30,
+      "colors": [
+        {
+          "n": "Jet black · Grey lens",
+          "a": "#141414",
+          "sw": "#141414",
+          "l": "#33373a"
+        },
+        {
+          "n": "Havana tortoise · Brown lens",
+          "a": "#ffffff",
+          "k": "tort",
+          "sw": "#7a4520",
+          "l": "#5a3a24"
+        }
+      ],
+      "desc": "Chunky square sunglasses with polarised lenses.",
+      "type": "frame",
+      "tags": [
+        "Polarised"
+      ],
+      "sun": true,
+      "polar": true
+    },
+    {
+      "id": "s03",
+      "name": "Marina",
+      "zone": "sun",
+      "arch": "cateyeA",
+      "mat": "Acetate",
+      "price": 3290,
+      "size": [
+        56,
+        17,
+        140
+      ],
+      "weight": 27,
+      "colors": [
+        {
+          "n": "Jet black · Grey lens",
+          "a": "#141414",
+          "sw": "#141414",
+          "l": "#33373a"
+        },
+        {
+          "n": "Honey tortoise · Brown lens",
+          "a": "#ffffff",
+          "k": "tort",
+          "tl": true,
+          "sw": "#c68d44",
+          "l": "#5a3a24"
+        }
+      ],
+      "desc": "A wide cat-eye with UV400 lenses.",
+      "type": "frame",
+      "tags": [],
+      "sun": true
+    },
+    {
+      "id": "s04",
+      "name": "Noor",
+      "zone": "sun",
+      "arch": "roundM",
+      "mat": "Stainless steel",
+      "price": 2990,
+      "size": [
+        50,
+        22,
+        145
+      ],
+      "weight": 18,
+      "colors": [
+        {
+          "n": "Gold · Brown lens",
+          "m": "#d9b26b",
+          "sw": "#d9b26b",
+          "l": "#5a3a24"
+        },
+        {
+          "n": "Silver · Grey lens",
+          "m": "#cfd3d7",
+          "sw": "#cfd3d7",
+          "l": "#33373a"
+        }
+      ],
+      "desc": "Round metal sunglasses with tinted UV400 lenses.",
+      "type": "frame",
+      "tags": [],
+      "sun": true
+    },
+    {
+      "id": "s05",
+      "name": "Orbit",
+      "zone": "sun",
+      "arch": "geoM",
+      "mat": "Stainless steel",
+      "price": 3790,
+      "size": [
+        52,
+        20,
+        145
+      ],
+      "weight": 20,
+      "colors": [
+        {
+          "n": "Gold · Gold mirror lens",
+          "m": "#d9b26b",
+          "sw": "#d9b26b",
+          "l": "#c99a3a",
+          "lk": "mirror"
+        },
+        {
+          "n": "Gunmetal · Grey lens",
+          "m": "#5b6067",
+          "sw": "#5b6067",
+          "l": "#33373a"
+        }
+      ],
+      "desc": "Hexagonal sunglasses with mirrored, polarised lenses.",
+      "type": "frame",
+      "tags": [
+        "Polarised"
+      ],
+      "sun": true,
+      "polar": true
+    },
+    {
+      "id": "s06",
+      "name": "Palm",
+      "zone": "sun",
+      "arch": "rectA",
+      "mat": "TR90",
+      "price": 2690,
+      "size": [
+        56,
+        16,
+        140
+      ],
+      "weight": 22,
+      "colors": [
+        {
+          "n": "Matte black · Blue mirror lens",
+          "a": "#262626",
+          "sw": "#2b2b2b",
+          "matte": true,
+          "l": "#3d6fd4",
+          "lk": "mirror"
+        },
+        {
+          "n": "Olive · G-15 green lens",
+          "a": "#58653a",
+          "sw": "#58653a",
+          "l": "#3c4d36"
+        }
+      ],
+      "desc": "A light rectangle for driving and travel.",
+      "type": "frame",
+      "tags": [
+        "Polarised"
+      ],
+      "sun": true,
+      "polar": true
+    },
+    {
+      "id": "s07",
+      "name": "Ravi",
+      "zone": "sun",
+      "arch": "browC",
+      "mat": "Acetate and metal",
+      "price": 3590,
+      "size": [
+        52,
+        20,
+        145
+      ],
+      "weight": 24,
+      "colors": [
+        {
+          "n": "Havana · Gold · G-15 green lens",
+          "a": "#ffffff",
+          "k": "tort",
+          "m": "#d9b26b",
+          "sw": "#7a4520",
+          "sw2": "#d9b26b",
+          "l": "#3c4d36"
+        },
+        {
+          "n": "Jet black · Silver · Grey lens",
+          "a": "#141414",
+          "m": "#cfd3d7",
+          "sw": "#141414",
+          "sw2": "#cfd3d7",
+          "l": "#33373a"
+        }
+      ],
+      "desc": "Browline sunglasses with polarised G-15 lenses.",
+      "type": "frame",
+      "tags": [
+        "Polarised"
+      ],
+      "sun": true,
+      "polar": true
+    },
+    {
+      "id": "s08",
+      "name": "Sol",
+      "zone": "sun",
+      "arch": "ovalM",
+      "mat": "Stainless steel",
+      "price": 2490,
+      "size": [
+        51,
+        19,
+        140
+      ],
+      "weight": 16,
+      "colors": [
+        {
+          "n": "Gold · Rose lens",
+          "m": "#d9b26b",
+          "sw": "#d9b26b",
+          "l": "#a86666"
+        },
+        {
+          "n": "Silver · Green lens",
+          "m": "#cfd3d7",
+          "sw": "#cfd3d7",
+          "l": "#4a6a4a"
+        }
+      ],
+      "desc": "Small oval sunglasses with tinted lenses.",
+      "type": "frame",
+      "tags": [],
+      "sun": true
+    },
+    {
+      "id": "k01",
+      "name": "Pip",
+      "zone": "kids",
+      "arch": "roundA",
+      "mat": "TR90",
+      "price": 1290,
+      "size": [
+        44,
+        16,
+        125
+      ],
+      "weight": 12,
+      "colors": [
+        {
+          "n": "Sky blue",
+          "a": "#5fa9dc",
+          "sw": "#5fa9dc"
+        },
+        {
+          "n": "Coral",
+          "a": "#e2775a",
+          "sw": "#e2775a"
+        },
+        {
+          "n": "Sunflower",
+          "a": "#f0bf4c",
+          "sw": "#f0bf4c"
+        }
+      ],
+      "desc": "A flexible round for ages 4 to 8, with soft temple tips.",
+      "type": "frame",
+      "tags": [
+        "Flexible"
+      ],
+      "kids": true
+    },
+    {
+      "id": "k02",
+      "name": "Bolt",
+      "zone": "kids",
+      "arch": "rectA",
+      "mat": "TR90",
+      "price": 1390,
+      "size": [
+        46,
+        15,
+        125
+      ],
+      "weight": 13,
+      "colors": [
+        {
+          "n": "Navy",
+          "a": "#1d2b4b",
+          "sw": "#1d2b4b"
+        },
+        {
+          "n": "Fire red",
+          "a": "#c5403a",
+          "sw": "#c5403a"
+        },
+        {
+          "n": "Lime",
+          "a": "#98c23c",
+          "sw": "#98c23c"
+        }
+      ],
+      "desc": "A sturdy rectangle with spring hinges, for ages 6 to 12.",
+      "type": "frame",
+      "tags": [
+        "Flexible"
+      ],
+      "kids": true
+    },
+    {
+      "id": "k03",
+      "name": "Moon",
+      "zone": "kids",
+      "arch": "ovalA",
+      "mat": "TR90",
+      "price": 1190,
+      "size": [
+        42,
+        16,
+        120
+      ],
+      "weight": 11,
+      "colors": [
+        {
+          "n": "Lilac",
+          "a": "#b59fd9",
+          "sw": "#b59fd9"
+        },
+        {
+          "n": "Mint",
+          "a": "#8ed1bf",
+          "sw": "#8ed1bf"
+        }
+      ],
+      "desc": "A small oval for ages 3 to 6.",
+      "type": "frame",
+      "tags": [],
+      "kids": true
+    },
+    {
+      "id": "k04",
+      "name": "Zip",
+      "zone": "kids",
+      "arch": "squareA",
+      "mat": "TR90",
+      "price": 1490,
+      "size": [
+        47,
+        16,
+        130
+      ],
+      "weight": 14,
+      "colors": [
+        {
+          "n": "Jet black",
+          "a": "#141414",
+          "sw": "#141414"
+        },
+        {
+          "n": "Tangerine",
+          "a": "#ee8848",
+          "sw": "#ee8848"
+        }
+      ],
+      "desc": "A square frame for ages 8 to 12.",
+      "type": "frame",
+      "tags": [],
+      "kids": true
+    },
+    {
+      "id": "k05",
+      "name": "Sunny",
+      "zone": "kids",
+      "arch": "roundA",
+      "mat": "TR90",
+      "price": 1290,
+      "size": [
+        44,
+        16,
+        125
+      ],
+      "weight": 12,
+      "colors": [
+        {
+          "n": "Sunflower · Grey lens",
+          "a": "#f0bf4c",
+          "sw": "#f0bf4c",
+          "l": "#33373a"
+        },
+        {
+          "n": "Coral · Brown lens",
+          "a": "#e2775a",
+          "sw": "#e2775a",
+          "l": "#5a3a24"
+        }
+      ],
+      "desc": "Kids’ polarised sunglasses with UV400 lenses.",
+      "type": "frame",
+      "tags": [
+        "Polarised"
+      ],
+      "kids": true,
+      "sun": true,
+      "polar": true
+    },
+    {
+      "id": "p01",
+      "name": "Aurum",
+      "zone": "premium",
+      "arch": "roundM",
+      "mat": "Beta titanium, 18K gold plated",
+      "price": 14900,
+      "size": [
+        48,
+        22,
+        145
+      ],
+      "weight": 12,
+      "colors": [
+        {
+          "n": "18K gold",
+          "m": "#e6bd68",
+          "sw": "#e6bd68"
+        },
+        {
+          "n": "Palladium",
+          "m": "#babdc0",
+          "sw": "#babdc0"
+        }
+      ],
+      "desc": "A hand-finished round in beta titanium with 18K gold plating.",
+      "type": "frame",
+      "tags": [
+        "Atelier",
+        "Titanium"
+      ]
+    },
+    {
+      "id": "p02",
+      "name": "Noir",
+      "zone": "premium",
+      "arch": "squareA",
+      "mat": "Italian acetate",
+      "price": 11900,
+      "size": [
+        53,
+        20,
+        145
+      ],
+      "weight": 30,
+      "colors": [
+        {
+          "n": "Jet black",
+          "a": "#141414",
+          "sw": "#141414"
+        },
+        {
+          "n": "Dark havana",
+          "a": "#a08c80",
+          "k": "tort",
+          "sw": "#4a3326"
+        }
+      ],
+      "desc": "Hand-polished thick acetate square with seven-barrel hinges.",
+      "type": "frame",
+      "tags": [
+        "Atelier"
+      ]
+    },
+    {
+      "id": "p03",
+      "name": "Seraph",
+      "zone": "premium",
+      "arch": "cateyeA",
+      "mat": "Italian acetate",
+      "price": 12900,
+      "size": [
+        53,
+        17,
+        140
+      ],
+      "weight": 26,
+      "colors": [
+        {
+          "n": "Jet black",
+          "a": "#141414",
+          "sw": "#141414"
+        },
+        {
+          "n": "Burgundy",
+          "a": "#6a1c2a",
+          "sw": "#6a1c2a"
+        }
+      ],
+      "desc": "A sculpted cat-eye cut from a single acetate block.",
+      "type": "frame",
+      "tags": [
+        "Atelier"
+      ]
+    },
+    {
+      "id": "p04",
+      "name": "Atlas",
+      "zone": "premium",
+      "arch": "aviatorM",
+      "mat": "Titanium",
+      "price": 16900,
+      "size": [
+        58,
+        14,
+        145
+      ],
+      "weight": 22,
+      "colors": [
+        {
+          "n": "18K gold · G-15 green lens",
+          "m": "#e6bd68",
+          "sw": "#e6bd68",
+          "l": "#3c4d36"
+        },
+        {
+          "n": "Palladium · Grey lens",
+          "m": "#babdc0",
+          "sw": "#babdc0",
+          "l": "#33373a"
+        }
+      ],
+      "desc": "A titanium aviator with polarised mineral-glass lenses.",
+      "type": "frame",
+      "tags": [
+        "Atelier",
+        "Polarised"
+      ],
+      "sun": true,
+      "polar": true
+    },
+    {
+      "id": "p05",
+      "name": "Vela",
+      "zone": "premium",
+      "arch": "geoM",
+      "mat": "Titanium",
+      "price": 13900,
+      "size": [
+        50,
+        20,
+        145
+      ],
+      "weight": 13,
+      "colors": [
+        {
+          "n": "Rose gold",
+          "m": "#dea78f",
+          "sw": "#dea78f"
+        },
+        {
+          "n": "Gold",
+          "m": "#d9b26b",
+          "sw": "#d9b26b"
+        }
+      ],
+      "desc": "A faceted titanium geometric with a satin finish.",
+      "type": "frame",
+      "tags": [
+        "Atelier",
+        "Titanium"
+      ]
+    },
+    {
+      "id": "p06",
+      "name": "Ember",
+      "zone": "premium",
+      "arch": "browC",
+      "mat": "Acetate and titanium",
+      "price": 10900,
+      "size": [
+        51,
+        21,
+        145
+      ],
+      "weight": 21,
+      "colors": [
+        {
+          "n": "Havana · Gold",
+          "a": "#ffffff",
+          "k": "tort",
+          "m": "#d9b26b",
+          "sw": "#7a4520",
+          "sw2": "#d9b26b"
+        },
+        {
+          "n": "Jet black · Gold",
+          "a": "#141414",
+          "m": "#d9b26b",
+          "sw": "#141414",
+          "sw2": "#d9b26b"
+        }
+      ],
+      "desc": "A browline with a titanium lower rim and a hand-polished brow.",
+      "type": "frame",
+      "tags": [
+        "Atelier"
+      ]
+    },
+    {
+      "id": "c01",
+      "name": "Brijman Daily 1-Day",
+      "zone": "contacts",
+      "type": "contacts",
+      "color": "#3f88c5",
+      "packs": [
+        {
+          "n": "30 lenses",
+          "p": 1450
+        },
+        {
+          "n": "90 lenses",
+          "p": 3950
+        }
+      ],
+      "desc": "Daily disposable silicone hydrogel lenses. A fresh pair every day.",
+      "tags": [
+        "Daily"
+      ]
+    },
+    {
+      "id": "c02",
+      "name": "Brijman Monthly Comfort",
+      "zone": "contacts",
+      "type": "contacts",
+      "color": "#2f9a7f",
+      "packs": [
+        {
+          "n": "6 lenses",
+          "p": 1350
+        },
+        {
+          "n": "3 lenses",
+          "p": 750
+        }
+      ],
+      "desc": "Monthly lenses with a moisture-retaining surface.",
+      "tags": [
+        "Monthly"
+      ]
+    },
+    {
+      "id": "c03",
+      "name": "Brijman Toric Daily",
+      "zone": "contacts",
+      "type": "contacts",
+      "color": "#8b5fbf",
+      "packs": [
+        {
+          "n": "30 lenses",
+          "p": 2150
+        }
+      ],
+      "desc": "Daily lenses that correct astigmatism.",
+      "tags": [
+        "Toric"
+      ]
+    },
+    {
+      "id": "c04",
+      "name": "Brijman Colour Tones",
+      "zone": "contacts",
+      "type": "contacts",
+      "color": "#c56b4f",
+      "packs": [
+        {
+          "n": "2 lenses, hazel",
+          "p": 1200
+        },
+        {
+          "n": "2 lenses, grey",
+          "p": 1200
+        },
+        {
+          "n": "2 lenses, blue",
+          "p": 1200
+        }
+      ],
+      "desc": "Monthly coloured lenses, with or without power.",
+      "tags": [
+        "Coloured"
+      ]
+    },
+    {
+      "id": "c05",
+      "name": "All-in-One Solution",
+      "zone": "contacts",
+      "type": "care",
+      "color": "#2c7fb8",
+      "packs": [
+        {
+          "n": "360 ml",
+          "p": 550
+        },
+        {
+          "n": "120 ml travel",
+          "p": 240
+        }
+      ],
+      "desc": "Cleans, rinses and stores soft contact lenses.",
+      "tags": []
+    },
+    {
+      "id": "c06",
+      "name": "Comfort Drops",
+      "zone": "contacts",
+      "type": "care",
+      "color": "#58a6a6",
+      "packs": [
+        {
+          "n": "10 ml",
+          "p": 350
+        }
+      ],
+      "desc": "Lubricating drops for dry or tired eyes.",
+      "tags": []
+    },
+    {
+      "id": "c07",
+      "name": "Lens Case Kit",
+      "zone": "contacts",
+      "type": "care",
+      "color": "#e0a73d",
+      "packs": [
+        {
+          "n": "Kit",
+          "p": 250
+        }
+      ],
+      "desc": "Two cases, tweezers and a mirror in a travel pouch.",
+      "tags": []
+    }
+  ]
+}

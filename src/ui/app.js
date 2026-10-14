@@ -41,14 +41,14 @@ const isNarrow = () => window.matchMedia('(max-width: 760px)').matches;
 const api = () => (S.has3D ? BM.api : null);
 
 let toastT = null;
-function toast(msg) {
+function toast(msg, ms) {
   const t = $('#toast');
   t.textContent = msg;
   t.hidden = false;
   clearTimeout(toastT);
   toastT = setTimeout(() => {
     t.hidden = true;
-  }, 2400);
+  }, ms || 2400);
 }
 BM.toast = toast;
 

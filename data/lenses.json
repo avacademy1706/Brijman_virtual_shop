@@ -1,0 +1,106 @@
+{
+  "types": [
+    {
+      "id": "zero",
+      "n": "Zero power",
+      "d": "No prescription. Anti-glare lenses for screens or style.",
+      "p": 0
+    },
+    {
+      "id": "sv",
+      "n": "Single vision",
+      "d": "One power, for distance or for reading.",
+      "p": 1200
+    },
+    {
+      "id": "bf",
+      "n": "Bifocal",
+      "d": "Distance on top with a reading segment below.",
+      "p": 2400
+    },
+    {
+      "id": "pg",
+      "n": "Progressive",
+      "d": "Distance, intermediate and near in one lens, with no visible line.",
+      "p": 4900
+    }
+  ],
+  "index": [
+    {
+      "id": "156",
+      "n": "1.56 Standard",
+      "d": "Good for low powers.",
+      "p": 0
+    },
+    {
+      "id": "160",
+      "n": "1.60 Thin",
+      "d": "About 7% thinner than 1.56.",
+      "p": 900
+    },
+    {
+      "id": "167",
+      "n": "1.67 Extra thin",
+      "d": "About 16% thinner. Suits powers above ±4.00.",
+      "p": 2200
+    },
+    {
+      "id": "174",
+      "n": "1.74 Ultra thin",
+      "d": "About 24% thinner. For high powers.",
+      "p": 4500
+    }
+  ],
+  "coats": [
+    {
+      "id": "ag",
+      "n": "Anti-glare and scratch guard",
+      "d": "Included on every lens.",
+      "p": 0,
+      "fixed": true
+    },
+    {
+      "id": "bc",
+      "n": "Blue-cut filter",
+      "d": "Filters part of the blue light from screens.",
+      "p": 900
+    },
+    {
+      "id": "ph",
+      "n": "Photochromic",
+      "d": "Darkens outdoors and clears indoors.",
+      "p": 1900
+    }
+  ],
+  "sun": [
+    {
+      "id": "plano",
+      "n": "Non-prescription UV400",
+      "d": "The lenses shown on the frame.",
+      "p": 0
+    },
+    {
+      "id": "rxsun",
+      "n": "Prescription sun lenses",
+      "d": "The same tint, made to your power.",
+      "p": 2900
+    }
+  ],
+  "rx": [
+    {
+      "id": "later",
+      "n": "Add it after ordering",
+      "d": "Share a photo of your prescription later."
+    },
+    {
+      "id": "now",
+      "n": "Enter it now",
+      "d": "Type the values from your prescription."
+    },
+    {
+      "id": "test",
+      "n": "Book a free eye test first",
+      "d": "We hold the frame until your test."
+    }
+  ]
+}

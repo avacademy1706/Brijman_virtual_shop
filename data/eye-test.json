@@ -1,0 +1,10 @@
+{
+  "timezone": "Asia/Kolkata",
+  "durationMinutes": 20,
+  "openingHours": { "open": "10:30", "close": "21:00" },
+  "slotTimes": ["10:30", "12:00", "14:30", "16:00", "18:30"],
+  "bookingWindowDays": 14,
+  "leadTimeMinutes": 30,
+  "closedDates": [],
+  "closedWeekdays": []
+}
