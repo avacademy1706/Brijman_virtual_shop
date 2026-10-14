@@ -10,6 +10,13 @@ const vercel = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url)
 const siteRule = (vercel.headers || []).find((rule) => rule.source === '/(.*)');
 const previewHeaders = Object.fromEntries((siteRule ? siteRule.headers : []).map((h) => [h.key, h.value]));
 delete previewHeaders['Strict-Transport-Security']; // preview runs on plain http
+// Safari and WebKit apply upgrade-insecure-requests even to http://localhost, so the local preview would fail to load
+// its own files. Production (https on Vercel) keeps the directive.
+if (previewHeaders['Content-Security-Policy'])
+  previewHeaders['Content-Security-Policy'] = previewHeaders['Content-Security-Policy'].replace(
+    /;\s*upgrade-insecure-requests/,
+    '',
+  );
 
 export default defineConfig({
   plugins: [apiPlugin(), bundleReport()],

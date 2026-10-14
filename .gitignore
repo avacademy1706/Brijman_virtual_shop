@@ -50,3 +50,6 @@ public/vendor/mediapipe/*/wasm/
 
 # Local-only test material (for example a photo for manual try-on checks)
 tests/local/
+
+# Mobile audit output (screenshots and results); the generator script is committed
+reports/
