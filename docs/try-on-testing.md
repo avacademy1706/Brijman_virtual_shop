@@ -47,22 +47,22 @@ Record fps from the debug overlay. Targets: at least 24 fps on device A, at leas
 
 ## Sizes, colours and flow
 
-| Check                                              | Expected                                                                                                 | A   | B   | C   |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --- | --- | --- |
-| Switch S → M → L                                   | Frame grows on the face immediately; fit chip updates ("Good fit" / "May feel narrow" / "May feel wide") |     |     |     |
-| Tap the fit chip                                   | Explains it is an estimate; may suggest "Size L may fit you better"                                      |     |     |     |
-| Nudge up / down / reset                            | Frame moves about 1 mm per tap, at most 3 mm; size never changes                                         |     |     |     |
-| Change colour                                      | Frame colour changes in place                                                                            |     |     |     |
-| Swipe left / right (phone) or arrow keys (desktop) | Next / previous frame in the same section                                                                |     |     |     |
-| Tap a frame in the carousel                        | That frame goes on                                                                                       |     |     |     |
-| Take 4 photos                                      | Shutter flash; "Photos (4)"; a 5th asks you to remove one                                                |     |     |     |
-| Compare                                            | Photos side by side with frame, colour and size under each                                               |     |     |     |
-| Save a photo                                       | Phone: share sheet with the image. Desktop: the image downloads                                          |     |     |     |
-| **Add to bag**                                     | Try-on closes; product sheet opens with the same colour and size selected                                |     |     |     |
-| Finish checkout                                    | Bag, quote and order show the size, for example "Size M · 53□18-145"                                     |     |     |     |
-| Keyboard only (desktop)                            | Every control reachable with Tab, visible focus, Esc closes                                              |     |     |     |
-| Screen reader                                      | Fit changes and size changes are announced                                                               |     |     |     |
-| Reduced motion on                                  | Fades instead of flashes and slides                                                                      |     |     |     |
-| Dark mode                                          | All controls readable over the video                                                                     |     |     |     |
+| Check                                              | Expected                                                                                                                            | A   | B   | C   |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --- | --- | --- |
+| Switch S → M → L                                   | Frame grows on the face immediately; fit chip updates ("Good fit" / "May feel narrow" / "May feel wide")                            |     |     |     |
+| Tap the fit chip                                   | Explains it is an estimate; may suggest "Size L may fit you better"                                                                 |     |     |     |
+| Nudge up / down / reset                            | Frame moves 2 mm per tap, at most 10 mm, the offset shows beside the buttons and the arrow greys out at the end; size never changes |     |     |     |
+| Change colour                                      | Frame colour changes in place                                                                                                       |     |     |     |
+| Swipe left / right (phone) or arrow keys (desktop) | Next / previous frame in the same section                                                                                           |     |     |     |
+| Tap a frame in the carousel                        | That frame goes on                                                                                                                  |     |     |     |
+| Take 4 photos                                      | Shutter flash; "Photos (4)"; a 5th asks you to remove one                                                                           |     |     |     |
+| Compare                                            | Photos side by side with frame, colour and size under each                                                                          |     |     |     |
+| Save a photo                                       | Phone: share sheet with the image. Desktop: the image downloads                                                                     |     |     |     |
+| **Add to bag**                                     | Try-on closes; product sheet opens with the same colour and size selected                                                           |     |     |     |
+| Finish checkout                                    | Bag, quote and order show the size, for example "Size M · 53□18-145"                                                                |     |     |     |
+| Keyboard only (desktop)                            | Every control reachable with Tab, visible focus, Esc closes                                                                         |     |     |     |
+| Screen reader                                      | Fit changes and size changes are announced                                                                                          |     |     |     |
+| Reduced motion on                                  | Fades instead of flashes and slides                                                                                                 |     |     |     |
+| Dark mode                                          | All controls readable over the video                                                                                                |     |     |     |
 
 Note any failure with the device, browser version, light conditions and a screenshot (never commit photos of real people to the repository).

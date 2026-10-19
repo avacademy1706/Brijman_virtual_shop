@@ -283,7 +283,8 @@ export const FIT = Object.freeze({
   bridgeClearanceMm: 1.5, // bridge in front of the nose surface
   pupilAboveLensCentreMm: 2, // pupils sit a little above the lens centre in most frames
   pantoscopicTiltDeg: 9,
-  nudgeLimitMm: 3,
+  nudgeLimitMm: 10, // how far the shopper can move the frame up or down on the nose
+  nudgeStepMm: 2, // per tap: big enough to see on a phone, where 1 mm is often under 2 screen pixels
 });
 
 /**

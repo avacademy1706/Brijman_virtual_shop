@@ -27,6 +27,7 @@ import {
   FaceWidthCalibrator,
   framePlacement,
   occluderEllipsoid,
+  FIT,
 } from './face-math.js';
 import { OneEuroFilter, OneEuroVector, OneEuroQuaternion } from './one-euro.js';
 
@@ -723,9 +724,11 @@ export async function createEngine(opts = {}) {
         widths: p.sizes.map((s) => ({ id: s.id, widthMm: frameGeometry(p, s.id).outerWidth * 1000 })),
       };
     },
-    /** Moves the frame up (+) or down (−) on the nose, in mm, limited to ±3 mm. Never changes its size. */
+    /** How far setNudge can move the frame, and the step of one tap, in mm. */
+    nudge: { limitMm: FIT.nudgeLimitMm, stepMm: FIT.nudgeStepMm },
+    /** Moves the frame up (+) or down (−) on the nose, in mm, within ±nudge.limitMm. Never changes its size. */
     setNudge(mm) {
-      st.nudge = Math.max(-3, Math.min(3, mm));
+      st.nudge = Math.max(-FIT.nudgeLimitMm, Math.min(FIT.nudgeLimitMm, mm));
       placeFrame();
       return st.nudge;
     },

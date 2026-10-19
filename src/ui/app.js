@@ -284,7 +284,14 @@ BM.onArrive = (info) => {
     tourArrived();
     return;
   }
-  if (info.reason === 'product') return;
+  if (info.reason === 'product') {
+    // The product sheet is about the frame, not the section: don't leave an older section's card up.
+    if (info.zone !== S.cardZone) {
+      $('#zonecard').hidden = true;
+      S.cardZone = null;
+    }
+    return;
+  }
   if (S.tour.on) return;
   if (!info.zone) {
     $('#zonecard').hidden = true;
@@ -304,6 +311,18 @@ BM.onUserNav = (kind) => {
   hideWelcome(true);
   if (S.tour.on && S.tour.playing) pauseTour();
 };
+// Details about a frame or a spot in the store close when the visitor walks somewhere else. The bag, checkout and
+// directory stay, and so does a form the visitor has started typing in.
+const DETAIL_VIEWS = ['product', 'eyetest', 'lensguide'];
+BM.onMoveAway = () => {
+  if (!sheet.classList.contains('open') || S.sheetEdited) return;
+  const top = S.stack[S.stack.length - 1];
+  if (top && DETAIL_VIEWS.includes(top.view)) closeSheet();
+};
+sheet.addEventListener('input', (e) => {
+  if (e.target.matches('textarea, input:not([type=radio]):not([type=checkbox]):not([type=range])'))
+    S.sheetEdited = true;
+});
 BM.onProductTap = (pid, ci) => {
   hideWelcome(false);
   pauseTour();
@@ -509,6 +528,7 @@ function sheetHistoryBack() {
 }
 function openSheet(view, data, push) {
   teardown();
+  S.sheetEdited = false;
   if (!push) {
     S.stack = [];
     // Replacing the views: keep one history entry for the sheet and drop the nested ones.

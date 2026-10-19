@@ -351,6 +351,21 @@ test('mobile audit', async ({ page, browserName }, info) => {
             ' m' +
             (opened ? '' : ', under the tap: ' + under),
         );
+        if (opened && pid === 'p01') {
+          // Going somewhere else closes the product's details and its tag.
+          await run(() => window.BM.api.goZone('welcome'));
+          await page.waitForTimeout(800);
+          const left = await run(() => ({
+            sheet: document.querySelector('#sheet').classList.contains('open'),
+            pin: !document.querySelector('#pin').hidden,
+          }));
+          check(
+            '3D',
+            'Walking away closes the product details',
+            !left.sheet && !left.pin,
+            (left.sheet ? 'sheet still open' : '') + (left.pin ? ' tag still shown' : ''),
+          );
+        }
         await run(
           () =>
             document.querySelector('#sheet').classList.contains('open') &&

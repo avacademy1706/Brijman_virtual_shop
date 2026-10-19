@@ -54,7 +54,7 @@ The canonical face (`shared/canonical-face.js`, from MediaPipe's `canonical_face
 3. **Real face width.** `faceWidthMm = |Q234 − Q454| / irisDiameterPx × 11.7`. 11.7 mm is the average visible iris diameter, which is why the fit guide is an estimate.
 4. **Calibration.** Median of the first 30 good frames (yaw and pitch within ±15°, eye openness above 0.12), then an exponential moving average with a 5 s time constant. Photos use their single measurement.
 5. **Frame size.** `faceScale = CANONICAL_FACE_WIDTH / faceWidthMm` (canonical units per real mm). The frame model (metres) is scaled by `1000 × faceScale` inside head space, so on screen it is `trueSizeMm × faceScale × s` pixels wide, the shopper's real proportion. Test: a 128 mm frame on a 140 mm face renders at 0.914 ± 0.01 of the face width.
-6. **Placement** (`framePlacement`): lens centres 2 mm below the pupils, lens plane 12 mm (vertex distance) in front of the cornea (upper-lid landmark + 1 mm), bridge at least 1.5 mm clear of the nose ridge, pantoscopic tilt 9°. The shopper can nudge up or down by up to ±3 mm; the size never changes.
+6. **Placement** (`framePlacement`): lens centres 2 mm below the pupils, lens plane 12 mm (vertex distance) in front of the cornea (upper-lid landmark + 1 mm), bridge at least 1.5 mm clear of the nose ridge, pantoscopic tilt 9°. The shopper can nudge up or down in 2 mm steps, up to ±10 mm; the size never changes.
 7. **Occluder** (`occluderEllipsoid`): a depth-only ellipsoid, 1.25 times deeper than wide, at least as wide as the face. Its front stays 8 mm behind the frame front, and its surface crosses the temple line 30 mm behind the hinges, so temples disappear from there. Tests prove the rims and lenses are never hidden for head turns up to ±35°.
 
 ## Tunable constants
@@ -62,7 +62,7 @@ The canonical face (`shared/canonical-face.js`, from MediaPipe's `canonical_face
 | Constant                                                                                     | File                         | Default                                                |
 | -------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------ |
 | `IRIS_DIAMETER_MM`                                                                           | `src/tryon/face-math.js`     | 11.7                                                   |
-| `FIT` (vertex distance, tilt, pupil offset, nudge limit)                                     | `src/tryon/face-math.js`     | 12 mm, 9°, 2 mm, ±3 mm                                 |
+| `FIT` (vertex distance, tilt, pupil offset, nudge limit)                                     | `src/tryon/face-math.js`     | 12 mm, 9°, 2 mm, ±10 mm in 2 mm steps                  |
 | `OCCLUDER` (temple hide distance, front gap, depth ratio)                                    | `src/tryon/face-math.js`     | 30 mm, 8 mm, 1.25                                      |
 | `FaceWidthCalibrator` (frames, time constant)                                                | `src/tryon/face-math.js`     | 30 frames, 5 s                                         |
 | `FIT_NARROW_BELOW_MM`, `FIT_WIDE_ABOVE_MM`                                                   | `shared/fit.js`              | −8 mm, +4 mm (starting values)                         |

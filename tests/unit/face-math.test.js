@@ -146,11 +146,14 @@ describe('placement', () => {
     expect(pl.tiltDeg).toBeGreaterThanOrEqual(8);
     expect(pl.tiltDeg).toBeLessThanOrEqual(10);
   });
-  it('lines the lens centres up just below the pupils, and the nudge is limited to ±3 mm', () => {
+  it('lines the lens centres up just below the pupils, and the nudge is limited to ±10 mm', () => {
     const pupilY = (canonical(LM.eyeOuterR)[1] + canonical(LM.eyeInnerR)[1]) / 2;
     expect((pupilY - pl.position[1]) / fs).toBeCloseTo(FIT.pupilAboveLensCentreMm, 1);
-    const up = framePlacement({ faceScale: fs, bridgeYmm: 5, nudgeMm: 9 });
-    expect((up.position[1] - pl.position[1]) / fs).toBeCloseTo(3, 5);
+    const up = framePlacement({ faceScale: fs, bridgeYmm: 5, nudgeMm: 4 });
+    expect((up.position[1] - pl.position[1]) / fs).toBeCloseTo(4, 5);
+    const far = framePlacement({ faceScale: fs, bridgeYmm: 5, nudgeMm: -25 });
+    expect((far.position[1] - pl.position[1]) / fs).toBeCloseTo(-FIT.nudgeLimitMm, 5);
+    expect(FIT.nudgeLimitMm).toBe(10);
   });
 });
 

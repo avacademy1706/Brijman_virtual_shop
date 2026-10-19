@@ -161,3 +161,10 @@ On a lost graphics context the store pauses and shows "Restoring the 3D view…"
 - On phones, a tap on a thin wire frame (Cove, Aurum) often hit the shelf or the floor behind it, so the visitor walked instead of seeing the product. A tap or click that misses now opens the nearest frame within 32 CSS px on touch or 16 px with a mouse, if that frame is within 8 m and not behind what the tap hit. Taps on the open floor still walk.
 - The mobile audit taps two wire frames slightly off-centre on every profile to keep this fixed.
 - In portrait the product sheet opened on pointerup and the click the browser sends right after the tap landed on the new backdrop, closing the sheet again (landscape has no backdrop, so it worked there). `src/ui/app.js` now swallows that one click (within 40 px and 700 ms of the end of a 3D tap). The audit taps with real touch and mouse input so the click is included.
+
+## 2026-10-19: Details close when the visitor walks away; bigger try-on nudge
+
+- A product, eye-test or lens-guide panel opened from the store now closes when the visitor walks somewhere else (floor tap, keys, a section label, the floor plan or a section jump), and the product's tag over the shelf goes with it. The bag, checkout and directory stay open, and so does a panel whose form the visitor has typed in. Small steps (under 30 cm) don't count.
+- After walking to a product, a card for the previous section no longer stays up.
+- In phone landscape the section card sits below the floor plan button and steps aside while the side panel is open.
+- The try-on up and down buttons moved the frame 1 mm per tap, at most 3 mm: on a phone that is often under two screen pixels a tap, so they seemed not to work. They now move 2 mm per tap, up to 10 mm, show the offset (for example "+4 mm") and grey out at the end. Sizes S, M and L stay true to their millimetre measurements.

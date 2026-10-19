@@ -95,9 +95,10 @@ class Session {
     this.nudgeBox = h(
       'div',
       { class: 'tryon-nudge', role: 'group', 'aria-label': 'Move the frame on your nose' },
-      this.iconBtn('up', 'Move frame up 1 mm', () => this.setNudge(this.nudge + 1)),
-      this.iconBtn('reset', 'Reset frame position', () => this.setNudge(0)),
-      this.iconBtn('down', 'Move frame down 1 mm', () => this.setNudge(this.nudge - 1)),
+      (this.nudgeUp = this.iconBtn('up', 'Move frame up', () => this.setNudge(this.nudge + this.nudgeStep()))),
+      (this.nudgeReset = this.iconBtn('reset', 'Reset frame position', () => this.setNudge(0))),
+      (this.nudgeDown = this.iconBtn('down', 'Move frame down', () => this.setNudge(this.nudge - this.nudgeStep()))),
+      (this.nudgeVal = h('span', { class: 'tryon-nudge-val', 'aria-hidden': 'true', hidden: true })),
     );
     this.colours = h('div', { class: 'tryon-row', role: 'radiogroup', 'aria-label': 'Colour' });
     this.sizes = h('div', { class: 'tryon-row', role: 'radiogroup', 'aria-label': 'Size' });
@@ -606,12 +607,25 @@ class Session {
     const next = list[(i + dir + list.length) % list.length];
     if (next) this.setProduct(next.id);
   }
+  nudgeStep() {
+    return (this.engine && this.engine.nudge && this.engine.nudge.stepMm) || 2;
+  }
   setNudge(mm) {
-    this.nudge = this.engine ? this.engine.setNudge(mm) : Math.max(-3, Math.min(3, mm));
+    const lim = (this.engine && this.engine.nudge && this.engine.nudge.limitMm) || 10;
+    this.nudge = this.engine ? this.engine.setNudge(mm) : Math.max(-lim, Math.min(lim, mm));
+    // Show where the frame is and which way it can still go.
+    this.nudgeUp.disabled = this.nudge >= lim;
+    this.nudgeDown.disabled = this.nudge <= -lim;
+    this.nudgeVal.hidden = this.nudge === 0;
+    this.nudgeVal.textContent = (this.nudge > 0 ? '+' : '') + this.nudge + ' mm';
     this.live.textContent =
       this.nudge === 0
         ? 'Frame position reset.'
-        : 'Frame moved ' + (this.nudge > 0 ? 'up ' : 'down ') + Math.abs(this.nudge) + ' mm.';
+        : 'Frame moved ' +
+          (this.nudge > 0 ? 'up ' : 'down ') +
+          Math.abs(this.nudge) +
+          ' mm' +
+          (Math.abs(this.nudge) >= lim ? ', as far as it goes.' : '.');
   }
 
   /* ---------- Fit guide ---------- */

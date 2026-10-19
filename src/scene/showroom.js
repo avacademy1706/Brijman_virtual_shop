@@ -1700,6 +1700,8 @@ async function start() {
       return false;
     }
     nav.info = info || { reason: 'point' };
+    // Walking somewhere else (anything but the walk to a chosen product) leaves the current product behind.
+    if (nav.info.reason !== 'product' && Math.hypot(end.x - nav.x, end.y - nav.z) > 0.3) movedAway(nav.info.reason);
     const endLook = look ? yawPitch(end.x, end.y, look) : null;
     if (BM.settings && BM.settings.move === 'jump') return teleport(end, endLook);
     const cum = [0];
@@ -2057,6 +2059,7 @@ async function start() {
     nav.turn = null;
     dest.visible = false;
     if (BM.onUserNav) BM.onUserNav('keys');
+    movedAway('keys');
     kick();
   });
   window.addEventListener('keyup', (e) => {
@@ -2079,6 +2082,18 @@ async function start() {
     pinLabel.textContent = p.name + (p.type === 'frame' ? ' · ' + BM.colorOf(p, rec.ci).n : '');
     pinEl.hidden = false;
     kick(6600);
+  }
+  function endPulse() {
+    if (!pulse) return;
+    setPose(pulse.rec, hovered === pulse.rec ? 1 : 0);
+    pulse = null;
+    pinEl.hidden = true;
+    kick();
+  }
+  // Tells the UI the visitor is leaving, so details about what they were looking at can close.
+  function movedAway(reason) {
+    endPulse();
+    if (BM.onMoveAway) BM.onMoveAway(reason);
   }
   const tmpV = new V3();
   function updatePin() {

@@ -2194,10 +2194,21 @@ fieldset.section > legend {
     width: min(400px, calc(50% - 3 * var(--gutter)));
     bottom: var(--bottom-edge);
     justify-content: flex-start;
+    /* Below the floor plan button (or the open floor plan); a tall card scrolls instead of covering it. */
+    top: calc(var(--chrome-top) + 8px + 48px + var(--gutter));
+    align-items: flex-end;
   }
+  .app:not(.minimap-closed) .dock {
+    top: calc(var(--chrome-top) + 8px + 98px + var(--gutter));
+  }
+  .dock .card {
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* The side panel takes over: the section and tour cards step aside until it closes. */
   .app.sheet-open .dock {
-    display: flex;
-    right: auto;
+    display: none;
   }
   .card {
     padding: 10px 12px;

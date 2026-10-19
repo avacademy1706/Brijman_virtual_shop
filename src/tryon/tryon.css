@@ -156,6 +156,19 @@ html.tryon-open body {
   transform: translateY(-50%);
   display: grid;
   gap: 8px;
+  justify-items: center;
+}
+.tryon-nudge .tryon-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.tryon-nudge-val {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(12, 20, 17, 0.72);
+  color: #fff;
+  font: 600 12px/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Messages over the video */
