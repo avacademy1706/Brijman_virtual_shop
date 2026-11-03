@@ -41,17 +41,19 @@ export const FACE = {
 export const FACE_MM = {
   width: 140, // between the cheek edges (landmarks 234 and 454)
   // earlobe relative to the jaw landmark: outwards, backwards (into the head), downwards
-  lobeOut: 4,
+  lobeOut: 10,
   lobeBack: 16,
-  lobeDown: 4,
+  lobeDown: 2,
   // a maang tikka's pendant starts this far below the top of the face mesh (about the hairline)
   tikkaDown: 8,
   // the nath pierces the side of the left nostril
   nathOut: 1.5,
   nathFwd: 1,
   // neck base (where a necklace's frame sits) below the centre between the cheek landmarks, which is close to
-  // the axis the head turns about, so the necklace stays put when the head turns
-  neckDown: 192,
+  // the axis the head turns about, so the necklace stays put when the head turns. The distance is a multiple of
+  // the shopper's own upper-face height (hairline to nose tip), measured from camera images of real faces: it
+  // follows long and short faces, and does not move when the jaw opens.
+  neckPerUpperFace: 1.32,
   neckFwd: 8,
 };
 /**
@@ -100,7 +102,8 @@ export function faceAnchors(P) {
   const fwd0 = v.norm([F.Z[0] * 0.45, 0, Math.max(0.35, F.Z[2])]);
   const right = v.norm(v.cross(up, fwd0)); // towards the face's left side, like X
   const fwd = v.cross(right, up);
-  const neck = v.add(F.o, v.add(v.mul(up, -M.neckDown * F.s), v.mul(fwd, M.neckFwd * F.s)));
+  const upperFace = Math.max(0, v.dot(v.sub(P[FACE.foreheadTop], P[FACE.noseTip]), F.Y));
+  const neck = v.add(F.o, v.add(v.mul(up, -M.neckPerUpperFace * upperFace), v.mul(fwd, M.neckFwd * F.s)));
   // how much each earlobe is turned away (0 facing, 1 hidden)
   const away = Math.max(-1, Math.min(1, F.Z[0]));
   return {

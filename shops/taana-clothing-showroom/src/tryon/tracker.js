@@ -67,7 +67,7 @@ async function modelAvailable(m) {
     return false;
   }
 }
-export async function createLandmarker(model = 'lite', masks = true) {
+export async function createLandmarker(model = 'lite', masks = true, delegates = ['GPU', 'CPU']) {
   const fileset = await FilesetResolver.forVisionTasks(BASE + 'vendor/mediapipe/' + MP_VERSION + '/wasm');
   const make = (delegate, m) =>
     PoseLandmarker.createFromOptions(fileset, {
@@ -85,7 +85,7 @@ export async function createLandmarker(model = 'lite', masks = true) {
   if (!models.length) throw new Error('No pose model is served at ' + modelUrl('lite') + '. Run npm run setup:tryon.');
   let lastErr = null;
   for (const m of models)
-    for (const d of ['GPU', 'CPU']) {
+    for (const d of delegates) {
       try {
         const lm = await make(d, m);
         return { landmarker: lm, delegate: d, model: m };

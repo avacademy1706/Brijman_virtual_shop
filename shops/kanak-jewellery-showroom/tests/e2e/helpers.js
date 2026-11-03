@@ -143,5 +143,6 @@ export async function settled(locator) {
 export const KNOWN_NOISE = [
   /odml\.pa\.googleapis\.com/, // MediaPipe usage statistics, blocked on purpose by connect-src 'self'
   /Content Security Policy.*connect-src/,
+  /INFO: Created TensorFlow Lite XNNPACK delegate/, // MediaPipe logs this information line as a console error
 ];
 export const realProblems = (list) => list.filter((p) => !KNOWN_NOISE.some((re) => re.test(p)));

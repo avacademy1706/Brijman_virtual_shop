@@ -29,11 +29,11 @@ export class ModelMissing extends Error {
     this.code = 'model-missing';
   }
 }
-async function create() {
+async function create(delegates = ['GPU', 'CPU']) {
   if (!(await modelAvailable('face'))) throw new ModelMissing('face');
   const fs = await fileset();
   let last = null;
-  for (const delegate of ['GPU', 'CPU']) {
+  for (const delegate of delegates) {
     try {
       return await FaceLandmarker.createFromOptions(fs, {
         baseOptions: { modelAssetPath: modelUrl('face'), delegate },
@@ -63,6 +63,8 @@ export class Tracker {
     this.filter = new VecFilter(IDX.length * 3, 1.2, 0.03);
     this.lastT = 0;
     this.lost = 0;
+    this.errors = 0; // detection errors in a row
+    this.cpu = false;
   }
   async ensure() {
     if (this.face) return;
@@ -83,6 +85,28 @@ export class Tracker {
     this.filter.reset();
     this.lastT = 0;
   }
+  /** Replaces a failing GPU tracker with a CPU one; tracking resumes as soon as it has loaded. */
+  toCpu() {
+    this.cpu = true;
+    const old = this.face;
+    this.face = null;
+    try {
+      if (old) old.close();
+    } catch (e) {
+      /* already gone */
+    }
+    this.loading = create(['CPU']).then(
+      (m) => {
+        this.face = m;
+        this.errors = 0;
+        return m;
+      },
+      (e) => {
+        this.loading = null;
+        console.warn(e);
+      },
+    );
+  }
   /** One video frame. Returns { face: anchors | null, raw }. */
   update(video, now) {
     const W = video.videoWidth,
@@ -94,8 +118,11 @@ export class Tracker {
     let r = null;
     try {
       r = this.face.detectForVideo(video, now);
+      this.errors = 0;
     } catch (e) {
       console.warn(e);
+      // Some phones load the GPU delegate and then fail on every frame: rebuild the tracker on the CPU.
+      if (++this.errors >= 5 && !this.cpu) this.toCpu();
     }
     const lm = r && r.faceLandmarks && r.faceLandmarks[0];
     out.raw = lm || null;

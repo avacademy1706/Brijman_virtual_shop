@@ -1662,7 +1662,8 @@ async function start() {
       h = Math.max(1, Math.round(r.height));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    baseFov = camera.aspect < 0.75 ? 72 : camera.aspect < 1.15 ? 64 : 58;
+    // Tall phones held upright get a taller view, so the view is wide enough (about 48° across) to take in a display.
+    baseFov = camera.aspect < 0.6 ? 82 : camera.aspect < 0.75 ? 72 : camera.aspect < 1.15 ? 64 : 58;
     if (composer) {
       composer.setPixelRatio(renderer.getPixelRatio());
       composer.setSize(w, h);

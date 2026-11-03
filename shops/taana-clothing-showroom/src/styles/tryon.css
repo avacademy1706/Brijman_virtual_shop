@@ -198,6 +198,34 @@ html.tryon-open body {
   max-height: 58vh;
   overflow: auto;
 }
+/* the grip folds the panel to its name, price and buttons, so the whole body is in view (phones) */
+.to-handle {
+  justify-self: center;
+  width: 64px;
+  height: 18px;
+  margin: -6px 0 -4px;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.to-handle span {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+.to-handle:hover span,
+.to-handle:focus-visible span {
+  background: var(--accent);
+}
+.to-panel.min .to-carousel,
+.to-panel.min .to-row,
+.to-panel.min .to-more,
+.to-panel.min .to-extra {
+  display: none;
+}
 .to-carousel {
   display: flex;
   gap: 8px;

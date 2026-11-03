@@ -13,7 +13,7 @@ import '../lib/drawings.js';
 import { h, ic, money } from '../lib/dom.js';
 import { frameGroup } from '../frames/geometry.js';
 import { Tracker, ModelMissing } from './tracker.js';
-import { Calibrator, glassesPose, FACE } from './anchors.js';
+import { Calibrator, glassesPose, FACE, FACE_MM } from './anchors.js';
 import '../styles/tryon.css';
 
 const DEBUG = typeof location !== 'undefined' && /[?&]tryondebug=1/.test(location.search);
@@ -630,10 +630,14 @@ function createTryOn() {
     }
     const g = glassesPose(face.P, F, s);
     holder.matrix.copy(basis(g.X, g.Y, g.Z, g.o, s * 1000));
-    // head: an ellipsoid behind the face, as wide as the temples
+    // head: an ellipsoid as wide as the temples, whose front sits just behind the eyes (6 mm behind the cornea), so it
+    // hides the temple arms past the cheeks but never the front of the frame. Measured from the lens plane: the face
+    // origin (between the cheek points) lies near the ears, far behind the eyes.
     const halfW = (S.measured ? S.measured.face : 138) / 2;
-    const c = [0, 1, 2].map((i) => F.o[i] - F.Z[i] * 14 * s + F.Y[i] * 8 * s);
-    head.matrix.copy(basis(F.X, F.Y, F.Z, c, (halfW + 3) * s, 112 * s, 100 * s));
+    const RZ = 100;
+    const back = (RZ + FACE_MM.vertex + 6) * s;
+    const c = [0, 1, 2].map((i) => g.o[i] - F.Z[i] * back + F.Y[i] * 8 * s);
+    head.matrix.copy(basis(F.X, F.Y, F.Z, c, (halfW + 3) * s, 112 * s, RZ * s));
   }
   function drawDebug(r, W, H) {
     const g = dbg.getContext('2d');

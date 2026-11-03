@@ -12,6 +12,7 @@ import '../lib/drawings.js';
 import { h, ic, money } from '../lib/dom.js';
 import { pieceKit } from '../jewel/source.js';
 import { realize } from '../jewel/kit.js';
+import { bustGeometry } from '../jewel/shapes.js';
 import { makeJewelEnv, addStudioLights } from '../jewel/materials.js';
 import { makeSparkle } from '../jewel/sparkle.js';
 import { Tracker, ModelMissing } from './tracker.js';
@@ -185,6 +186,9 @@ function createTryOn() {
     neck: mkOcc(new THREE.CylinderGeometry(1, 1, 1, 24, 1, false)),
     finger: mkOcc(new THREE.CylinderGeometry(1, 1, 1, 16, 1, false)),
     forearm: mkOcc(new THREE.CylinderGeometry(1, 1, 1, 20, 1, false)),
+    // the shoulders and chest: the same bust the necklaces are shaped on, so the strands that pass behind the neck
+    // and shoulders are hidden and the ones lying on the chest stay in front
+    bust: bustGeometry(32, 24).map(mkOcc),
   };
   const V = (a) => new THREE.Vector3(a[0], a[1], a[2]);
   const basis = (X, Y, Z, o, sx, sy, sz) => {
@@ -686,6 +690,7 @@ function createTryOn() {
     // occluders
     occ.head.visible = !!face;
     occ.neck.visible = !!face && !!S.worn.neck;
+    for (const m of occ.bust) m.visible = occ.neck.visible;
     if (face) {
       const F = face.F;
       // head: an ellipsoid behind the face centre
@@ -694,6 +699,8 @@ function createTryOn() {
       const N = face.neck;
       const nc = [N.o[0] + N.Y[0] * 40 * N.s, N.o[1] + N.Y[1] * 40 * N.s, N.o[2] + N.Y[2] * 40 * N.s];
       occ.neck.matrix.copy(basis(N.X, N.Y, N.Z, nc, 50 * N.s, 140 * N.s, 46 * N.s));
+      // a little smaller than the necklace's own bust, so the strands (2 mm or more off its surface) stay in front
+      for (const m of occ.bust) m.matrix.copy(basis(N.X, N.Y, N.Z, N.o, 0.985 * N.s));
     }
     occ.finger.visible = !!hand && !!S.worn.finger;
     occ.forearm.visible = !!hand && !!S.worn.wrist;

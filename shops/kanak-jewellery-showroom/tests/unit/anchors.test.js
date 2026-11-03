@@ -116,7 +116,10 @@ describe('face anchors', () => {
     expect(A.nath[1]).toBeLessThan(40);
   });
   it('the necklace sits at the base of the neck, under the face, and barely moves when the head turns', () => {
-    expect(A.neck.o[1]).toBeLessThan(40 - 150 * 2);
+    // a little below the chin (the chin is 95 mm under the cheek line on this face, scale 2 px per mm)
+    const chinY = 40 - 95 * 2;
+    expect(A.neck.o[1]).toBeLessThan(chinY - 20 * 2);
+    expect(A.neck.o[1]).toBeGreaterThan(chinY - 90 * 2);
     expect(Math.abs(A.neck.o[0] - 10)).toBeLessThan(1);
     const turned = faceAnchors(pose(FACE_PTS, { yaw: 30, at: [10, 40] }));
     expect(Math.abs(turned.neck.o[0] - A.neck.o[0])).toBeLessThan(10 * 2); // less than 1 cm sideways

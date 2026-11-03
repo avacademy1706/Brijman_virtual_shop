@@ -29,11 +29,11 @@ export class ModelMissing extends Error {
     this.code = 'model-missing';
   }
 }
-async function create(kind) {
+async function create(kind, delegates = ['GPU', 'CPU']) {
   if (!(await modelAvailable(kind))) throw new ModelMissing(kind);
   const fs = await fileset();
   let last = null;
-  for (const delegate of ['GPU', 'CPU']) {
+  for (const delegate of delegates) {
     try {
       if (kind === 'face')
         return await FaceLandmarker.createFromOptions(fs, {
@@ -75,6 +75,8 @@ export class Tracker {
     this.lastT = 0;
     this.lostFace = 0;
     this.lostHand = 0;
+    this.errors = { face: 0, hand: 0 }; // detection errors in a row
+    this.cpu = { face: false, hand: false };
   }
   /** Loads the models the worn pieces need. needs: { face, hand } */
   async ensure(needs) {
@@ -96,6 +98,31 @@ export class Tracker {
       }
     await Promise.all(jobs);
   }
+  /**
+   * Some phones load the GPU delegate and then fail on every frame: replace that tracker with a CPU one. Tracking
+   * resumes as soon as it has loaded.
+   */
+  toCpu(k) {
+    this.cpu[k] = true;
+    const old = this[k];
+    this[k] = null;
+    try {
+      if (old) old.close();
+    } catch (e) {
+      /* already gone */
+    }
+    this.loading[k] = create(k, ['CPU']).then(
+      (m) => {
+        this[k] = m;
+        this.errors[k] = 0;
+        return m;
+      },
+      (e) => {
+        this.loading[k] = null;
+        console.warn(e);
+      },
+    );
+  }
   reset() {
     this.fFace.reset();
     this.fHand.reset();
@@ -112,8 +139,10 @@ export class Tracker {
       let r = null;
       try {
         r = this.face.detectForVideo(video, now);
+        this.errors.face = 0;
       } catch (e) {
         console.warn(e);
+        if (++this.errors.face >= 5 && !this.cpu.face) this.toCpu('face');
       }
       const lm = r && r.faceLandmarks && r.faceLandmarks[0];
       out.raw.face = lm || null;
@@ -131,8 +160,10 @@ export class Tracker {
       let r = null;
       try {
         r = this.hand.detectForVideo(video, now);
+        this.errors.hand = 0;
       } catch (e) {
         console.warn(e);
+        if (++this.errors.hand >= 5 && !this.cpu.hand) this.toCpu('hand');
       }
       const lm = r && r.landmarks && r.landmarks[0];
       out.raw.hand = lm || null;

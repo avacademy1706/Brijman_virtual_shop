@@ -122,7 +122,7 @@ a {
   justify-content: space-between;
   gap: 12px;
   padding: calc(10px + env(safe-area-inset-top)) var(--gutter) 10px;
-  background: color-mix(in srgb, var(--bg) 95%, transparent);
+  background: var(--bg);
   backdrop-filter: saturate(1.4) blur(14px);
   -webkit-backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid var(--line);
@@ -134,9 +134,10 @@ a {
   min-height: 44px;
   text-decoration: none;
 }
+/* the Plexus Digitals network symbol */
 .mk-mark {
-  width: 34px;
-  height: 34px;
+  width: auto;
+  height: 38px;
   flex: none;
 }
 .mk-brand-text {
@@ -652,6 +653,23 @@ main {
   text-align: center;
   display: grid;
   gap: 4px;
+}
+
+.mk-foot-logo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-weight: 600;
+}
+/* the logo's dark lettering needs a light tile in dark mode */
+.mk-foot-logo img {
+  width: 116px;
+  height: auto;
+  padding: 10px;
+  border-radius: 18px;
+  background: #ffffff;
 }
 
 /* ---------- Smaller screens ---------- */

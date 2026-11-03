@@ -127,9 +127,16 @@ function createTryOn() {
     h('div', { class: 'to-row', hidden: true, id: 'to-drape-row' }, h('span', { class: 'to-label' }, 'Drape'), drapes),
     h('div', { class: 'to-row' }, h('span', { class: 'to-label' }, 'Body'), builds),
   );
+  // fold the panel away to see the whole body (phones)
+  const handle = h(
+    'button',
+    { class: 'to-handle', type: 'button', 'aria-expanded': 'true', 'aria-label': 'Hide the options' },
+    h('span'),
+  );
   const panel = h(
     'section',
     { class: 'to-panel', 'aria-label': 'Garment options' },
+    handle,
     carousel,
     h(
       'div',
@@ -142,6 +149,12 @@ function createTryOn() {
     moreBtn,
     extra,
   );
+  function setMin(min) {
+    panel.classList.toggle('min', min);
+    handle.setAttribute('aria-expanded', min ? 'false' : 'true');
+    handle.setAttribute('aria-label', min ? 'Show the options' : 'Hide the options');
+  }
+  handle.addEventListener('click', () => setMin(!panel.classList.contains('min')));
   const shot = h('div', { class: 'to-shot', hidden: true, role: 'dialog', 'aria-label': 'Your photo' });
   const root = h(
     'div',
@@ -255,6 +268,7 @@ function createTryOn() {
     facing: 'user',
     running: false,
     landmarker: null,
+    detectErrors: 0, // detection errors in a row
     tracker: new PoseTracker(),
     outfit: null,
     outfitKey: '',
@@ -624,6 +638,30 @@ function createTryOn() {
     guide.textContent = t;
     guide.hidden = false;
   }
+  /** Replaces a GPU tracker that fails on every frame (some phones) with a CPU one; tracking resumes once loaded. */
+  function toCpu() {
+    const old = S.landmarker;
+    S.landmarker = null;
+    S.delegate = 'CPU';
+    try {
+      if (old) old.close();
+    } catch (e) {
+      /* already gone */
+    }
+    // masks only while the body is still being measured
+    S.cpuLoading = createLandmarker(S.model || 'lite', !S.calibrated, ['CPU']).then(
+      (r) => {
+        S.landmarker = r.landmarker;
+        S.model = r.model;
+        S.detectErrors = 0;
+        S.cpuLoading = null;
+      },
+      (e) => {
+        S.cpuLoading = null;
+        console.warn(e);
+      },
+    );
+  }
   async function startCamera() {
     introMsg.hidden = true;
     if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -658,6 +696,7 @@ function createTryOn() {
         flipBtn.hidden = true;
       }
       setStatus('Loading body tracking…');
+      if (!S.landmarker && S.cpuLoading) await S.cpuLoading;
       if (!S.landmarker) {
         const r = await createLandmarker(coarse ? 'lite' : 'full');
         S.landmarker = r.landmarker;
@@ -767,13 +806,16 @@ function createTryOn() {
       const dt = Math.min(1 / 30, Math.max(0.001, (now - S.last) / 1000));
       S.last = now;
       S.fps += (1 / dt - S.fps) * 0.05;
-      if (video.currentTime !== S.lastVideoTime && !S.optionsBusy) {
+      if (video.currentTime !== S.lastVideoTime && !S.optionsBusy && S.landmarker) {
         S.lastVideoTime = video.currentTime;
         let res = null;
         try {
           res = S.landmarker.detectForVideo(video, now);
+          S.detectErrors = 0;
         } catch (e) {
           console.warn(e);
+          // Some phones load the GPU delegate and then fail on every frame: rebuild the tracker on the CPU.
+          if (++S.detectErrors >= 5 && S.delegate !== 'CPU') toCpu();
         }
         const J = S.tracker.update(res, W, H, now);
         onPose(J);
@@ -860,10 +902,40 @@ function createTryOn() {
     const v = S.tracker.vis;
     const hipsIn = v.lHip > 0.5 && v.rHip > 0.5;
     setStatus(S.calibrated ? 'Tracking' : 'Measuring…', 'ok');
-    showGuide(hipsIn ? '' : 'Step back a little so your hips are in view. The fit is better.');
+    // folded arms or hands held in front of the body (both wrists in front of the torso): the sleeves cannot follow
+    // and the hands cut into the garment, so ask for relaxed arms
+    const mid = (J.lShoulder[0] + J.rShoulder[0]) / 2;
+    const half = Math.abs(J.lShoulder[0] - J.rShoulder[0]) / 2;
+    const inFront = (w) => v[w] > 0.3 && Math.abs(J[w][0] - mid) < 0.8 * half;
+    // timed (whatever the frame rate), so the hint neither flickers nor appears for a passing gesture
+    const held = inFront('lWrist') && inFront('rWrist');
+    const t = performance.now();
+    if (held) {
+      S.armsFreeAt = 0;
+      S.armsInFrontAt = S.armsInFrontAt || t;
+      if (t - S.armsInFrontAt > 500) S.crossed = true;
+    } else {
+      S.armsInFrontAt = 0;
+      S.armsFreeAt = S.armsFreeAt || t;
+      if (t - S.armsFreeAt > 2000) S.crossed = false;
+    }
+    showGuide(
+      S.crossed
+        ? 'Let your arms hang by your sides, so the sleeves can follow them.'
+        : hipsIn
+          ? ''
+          : 'Step back a little so your hips are in view. The fit is better.',
+    );
     if (!S.seen) {
       S.seen = true;
       panel.classList.add('live');
+      // on phones (upright or sideways) and portrait tablets the panel covers the body: fold it once the shopper is
+      // in view
+      if (
+        window.matchMedia('(max-width: 760px), (max-height: 500px), (orientation: portrait) and (max-width: 1100px)')
+          .matches
+      )
+        setMin(true);
     }
   }
   /** Provisional body from one frame: default proportions scaled to the tracked shoulder width. */
@@ -1007,6 +1079,7 @@ function createTryOn() {
     intro.hidden = false;
     panel.hidden = false;
     panel.classList.remove('live');
+    setMin(false);
     drawPanel();
     drawCarousel();
     setStatus('Camera off');
