@@ -91,7 +91,9 @@ describe('each built shop', () => {
       });
       it('keeps the strict policy of its own project (camera for itself only, no third-party sources)', () => {
         const own = JSON.parse(read('shops/' + b.folder + '/vercel.json')).headers[0].headers;
-        const ours = vercel.headers.find((r) => r.source === '/(clothing|jewellery)/(.*)').headers;
+        const ours = vercel.headers.find(
+          (r) => r.source === '/(' + SHOP_BUILDS.map((s) => s.path).join('|') + ')/(.*)',
+        ).headers;
         const csp = (hs) => hs.find((h) => h.key === 'Content-Security-Policy').value;
         expect(csp(ours)).toBe(csp(own));
         expect(csp(ours)).not.toMatch(/https?:|\*/);

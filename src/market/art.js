@@ -45,6 +45,22 @@ export const ART = {
       '<g fill="var(--a)" opacity=".22"><rect x="70" y="82" width="70" height="48" rx="16"/><rect x="180" y="82" width="70" height="48" rx="16"/></g>' +
       '<g stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".75"><path d="M84 96l14-10M194 96l14-10"/></g>',
   ),
+  // A frame in an arched niche on a marble ledge, under a bronze lamp.
+  opticals: art(
+    '<rect width="320" height="200" fill="var(--b)"/>' +
+      '<path d="M104 200V92a56 56 0 0 1 112 0v108z" fill="var(--a)" opacity=".14"/>' +
+      '<path d="M104 200V92a56 56 0 0 1 112 0v108" fill="none" stroke="var(--a)" stroke-width="4" opacity=".55"/>' +
+      '<rect x="88" y="140" width="144" height="12" rx="3" fill="#fff" stroke="var(--k)" stroke-width="2" opacity=".9"/>' +
+      '<path d="M100 146h34M150 144l24 4M190 146h28" stroke="var(--k)" stroke-width="1.2" opacity=".25"/>' +
+      '<g fill="none" stroke="var(--k)" stroke-width="5" stroke-linejoin="round">' +
+      '<circle cx="140" cy="116" r="19"/><circle cx="180" cy="116" r="19"/><path d="M159 112c0-5 2-6 1-6"/>' +
+      '<path d="M156 110q4-5 8 0"/></g>' +
+      '<g stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"><path d="M131 108l8-6M171 108l8-6"/></g>' +
+      '<path d="M268 0v38" stroke="var(--k)" stroke-width="2" opacity=".5"/>' +
+      '<path d="M248 56a20 18 0 0 1 40 0z" fill="var(--a)"/>' +
+      '<ellipse cx="268" cy="80" rx="34" ry="10" fill="#f6d68a" opacity=".35"/>' +
+      '<path d="M40 200c4-40 10-70 22-96M54 200c2-30 0-56-4-80M68 200c0-36 6-60 16-84" stroke="var(--a)" stroke-width="3" fill="none" opacity=".45" stroke-linecap="round"/>',
+  ),
   // A kurta on a hanger, its hem caught mid-swing.
   clothing: art(
     '<rect width="320" height="200" fill="var(--b)"/>' +

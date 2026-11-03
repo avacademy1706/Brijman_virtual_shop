@@ -4,10 +4,11 @@ import { test, expect } from '@playwright/test';
 
 const SHOPS = [
   { name: 'Brijman Eyewear', path: '/eyewear/' },
+  { name: 'Brijman Opticals Salon', path: '/opticals/' },
   { name: 'Taana Studio', path: '/clothing/' },
   { name: 'Kanak Fine Jewellery', path: '/jewellery/' },
 ];
-const READY = /Showroom ready|boutique is open|floor plan stands in/;
+const READY = /Showroom ready|Salon ready|boutique is open|floor plan stands in/;
 
 test('marketplace', async ({ page, browserName }, info) => {
   const project = info.project.name;
@@ -71,7 +72,7 @@ test('marketplace', async ({ page, browserName }, info) => {
   const badges = await page.$$eval('.mk-card', (cs) =>
     cs.map((c) => c.querySelector('.mk-bag-badge')?.textContent || '-'),
   );
-  expect.soft(badges).toEqual(['1 item', '3 items', '-']);
+  expect.soft(badges).toEqual(['1 item', '-', '3 items', '-']);
 
   // Into each shop and back: one Android phone and one desktop (the 3D stores are slow on software graphics).
   if (browserName === 'chromium' && (project === 'Pixel 7' || project === 'Desktop 1366')) {

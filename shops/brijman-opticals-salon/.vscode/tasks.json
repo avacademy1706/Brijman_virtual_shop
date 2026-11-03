@@ -1,0 +1,52 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start salon (dev server)",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Build for production",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Preview production build",
+      "type": "npm",
+      "script": "preview",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run unit tests",
+      "type": "npm",
+      "script": "test",
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Run browser tests on all screens",
+      "type": "npm",
+      "script": "test:e2e",
+      "problemMatcher": []
+    },
+    {
+      "label": "Open browser test report",
+      "type": "npm",
+      "script": "test:report",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

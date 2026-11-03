@@ -1,0 +1,38 @@
+{
+  "name": "brijman-opticals-salon",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Walkable 3D eyewear salon: marble islands, arched frame niches and a lounge, frames at true size, lens options, a bag and a camera try-on with fit guidance. Static site built with Vite, three.js and MediaPipe.",
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/setup-tryon.mjs",
+    "dev": "vite",
+    "dev:phone": "vite --host",
+    "prebuild": "node scripts/setup-tryon.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "setup:tryon": "node scripts/setup-tryon.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "node scripts/check-assets.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:devices": "playwright test tests/e2e/layout.spec.js",
+    "test:report": "playwright show-report",
+    "test:all": "npm test && npm run test:e2e"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.0.1",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "prettier": "3.9.9",
+    "vite": "8.3.4",
+    "vitest": "5.0.3"
+  },
+  "engines": {
+    "node": ">=22.12.0 <25"
+  }
+}

@@ -177,3 +177,9 @@ On a lost graphics context the store pauses and shows "Restoring the 3D view…"
 - Bags stay per shop (each shop prices and checks out its own products); the marketplace reads them only to show how many items wait in each. It stores only the last shop opened and the chosen filter, nothing personal.
 - The browser Back button from a shop's bare store returns to the marketplace; panels inside the eyewear shop still close one at a time first.
 - In the headless test browser (software graphics), leaving Kanak or Taana for another page on the site can take 20–45 s because the shared graphics process is still drawing their continuously animated scenes; with WebGL off, or on a real GPU, it is instant. The tests allow for this rather than changing the shops.
+
+## 2026-11-03: The Brijman Opticals salon joins the marketplace
+
+- On request, the Plexus package's `brijman-opticals-salon` is now a fourth shop at `/opticals/` ("Brijman Opticals Salon", category Eyewear, next to Brijman Eyewear). It is built and served like Taana and Kanak; its bag (`brijman-bag-v1`) and settings (`brijman-settings`) do not clash with the eyewear shop's (`bm-bag-v2`, `bm-settings`).
+- The salon's welcome card already fills a 320 × 568 phone, so on phones the "All shops" link takes the place of its eyebrow line at the same height instead of adding a row.
+- The marketplace grid now fits four cards in a row on desktops.

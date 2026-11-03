@@ -8,6 +8,7 @@
 export const SHOP_BUILDS = Object.freeze([
   Object.freeze({ folder: 'taana-clothing-showroom', path: 'clothing' }),
   Object.freeze({ folder: 'kanak-jewellery-showroom', path: 'jewellery' }),
+  Object.freeze({ folder: 'brijman-opticals-salon', path: 'opticals' }),
 ]);
 
 /**
@@ -27,6 +28,20 @@ export const SHOPS = Object.freeze([
     stats: ['10 sections', '41 styles'],
     bagKey: 'bm-bag-v2',
     theme: { a: '#1f6b57', b: '#cfe4dc', ink: '#0f2a22' },
+  }),
+  Object.freeze({
+    id: 'opticals',
+    path: 'opticals',
+    name: 'Brijman Opticals Salon',
+    category: 'Eyewear',
+    tagline: 'A boutique optical salon with a lounge',
+    blurb:
+      'Marble islands, arched frame niches and a velvet lounge. Eight sections and 41 frame styles in three sizes, each drawn from its real millimetre size.',
+    tryOn: 'Frames at their real size; measures your face and pupillary distance and suggests a size',
+    tryOnIcon: 'face',
+    stats: ['8 sections', '41 styles'],
+    bagKey: 'brijman-bag-v1',
+    theme: { a: '#1f2b45', b: '#ece4d6', ink: '#1a1a1f' },
   }),
   Object.freeze({
     id: 'clothing',

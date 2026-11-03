@@ -57,3 +57,4 @@ reports/
 # The marketplace's other shops, built from shops/<folder>/ by scripts/build-shops.mjs (never committed)
 public/clothing/
 public/jewellery/
+public/opticals/

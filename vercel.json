@@ -19,7 +19,7 @@
   ],
   "headers": [
     {
-      "source": "/((?!clothing|jewellery).*)",
+      "source": "/((?!clothing|jewellery|opticals).*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
@@ -52,7 +52,7 @@
       ]
     },
     {
-      "source": "/(clothing|jewellery)/(.*)",
+      "source": "/(clothing|jewellery|opticals)/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
@@ -103,7 +103,7 @@
       ]
     },
     {
-      "source": "/(clothing|jewellery)/assets/(.*)",
+      "source": "/(clothing|jewellery|opticals)/assets/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -112,7 +112,7 @@
       ]
     },
     {
-      "source": "/(clothing|jewellery)/vendor/(.*)",
+      "source": "/(clothing|jewellery|opticals)/vendor/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -121,7 +121,7 @@
       ]
     },
     {
-      "source": "/(clothing|jewellery)/models/(.*)",
+      "source": "/(clothing|jewellery|opticals)/models/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -162,6 +162,11 @@
     {
       "source": "/jewellery",
       "destination": "/jewellery/",
+      "permanent": true
+    },
+    {
+      "source": "/opticals",
+      "destination": "/opticals/",
       "permanent": true
     }
   ]
