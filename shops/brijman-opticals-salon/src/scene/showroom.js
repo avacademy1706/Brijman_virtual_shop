@@ -866,8 +866,11 @@ async function start() {
       drag.active = false;
     }
     if (drag.active && e.pointerId === drag.id) {
-      if (!drag.moved && !wasPinch && e.type === 'pointerup' && performance.now() - drag.t < 650)
-        tap(e.clientX, e.clientY);
+      if (!drag.moved && !wasPinch && e.type === 'pointerup' && performance.now() - drag.t < 650) {
+        tap(e.clientX, e.clientY, e.pointerType);
+        // Opening a sheet can take a while on a slow phone; the browser's click for this tap arrives only after that.
+        if (NY.lastSceneTap) NY.lastSceneTap.t = performance.now();
+      }
       drag.active = false;
       canvas.classList.remove('grabbing');
     }
@@ -894,13 +897,38 @@ async function start() {
   );
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-  function tap(cx, cy) {
+  // A fingertip covers several pixels and many pieces are small or thin: a touch that just misses a piece still opens
+  // the nearest one within this many CSS px, unless that piece is behind what the touch hit.
+  const TOUCH_PICK_PX = 34;
+  function nearRec(cx, cy, hitDist) {
+    const r = canvas.getBoundingClientRect();
+    const q = new V3();
+    let best = null,
+      bestPx = TOUCH_PICK_PX;
+    for (const rec of records) {
+      const d = camera.position.distanceTo(rec.center);
+      if (d > 7 || d > hitDist + 0.35) continue;
+      q.copy(rec.center).project(camera);
+      if (q.z < -1 || q.z > 1) continue;
+      const px = Math.hypot(r.left + ((q.x + 1) / 2) * r.width - cx, r.top + ((1 - q.y) / 2) * r.height - cy);
+      if (px < bestPx) {
+        bestPx = px;
+        best = rec;
+      }
+    }
+    return best;
+  }
+  function tap(cx, cy, type) {
+    // The browser sends a click at this point right after the pointerup; the interface swallows it (see app.js).
+    NY.lastSceneTap = { x: cx, y: cy, t: performance.now() };
     setRay(cx, cy);
     const hit = ray.intersectObjects(allHits, false)[0];
-    if (!hit) return;
-    const o = hit.object;
-    if (o.userData.recs) {
-      const rec = o.userData.recs[hit.instanceId];
+    const near =
+      type === 'touch' && !(hit && hit.object.userData.recs) ? nearRec(cx, cy, hit ? hit.distance : Infinity) : null;
+    if (!hit && !near) return;
+    const o = hit ? hit.object : { userData: {} };
+    if (near || o.userData.recs) {
+      const rec = near || o.userData.recs[hit.instanceId];
       if (rec && NY.onProductTap) {
         nav.turn = yawPitch(nav.x, nav.z, rec.center);
         kick();

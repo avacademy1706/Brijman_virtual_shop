@@ -27,10 +27,15 @@ const S = {
   spot: null,
   nextSpot: null,
 };
+// On a touch screen one tap walks (a double tap felt like the floor did not respond); with a mouse a double click
+// does, so a stray click never moves the visitor. A saved choice counts only if the visitor made it in the settings.
+const savedSettings = store.get('kanak-settings', {}) || {};
+const defaultWalkClick = window.matchMedia('(pointer: coarse)').matches ? 'single' : 'double';
 S.settings = Object.assign(
-  { move: RM ? 'jump' : 'walk', walkClick: 'double', look: 'normal', quality: 'auto', labels: true },
-  store.get('kanak-settings', {}),
+  { move: RM ? 'jump' : 'walk', walkClick: defaultWalkClick, look: 'normal', quality: 'auto', labels: true },
+  savedSettings,
 );
+if (!savedSettings.walkClickSet) S.settings.walkClick = defaultWalkClick;
 NY.settings = S.settings;
 const saveCart = () =>
   store.set(
@@ -624,6 +629,20 @@ function closeSheet() {
 $('#sheet-close').addEventListener('click', closeSheet);
 $('#sheet-back').addEventListener('click', backSheet);
 scrim.addEventListener('click', closeSheet);
+// A tap in the 3D view acts on pointerup, and the browser then sends a click at the same point. If that tap opened
+// the bottom sheet, the click would land on the backdrop (closing the sheet again at once) or on a button in it.
+document.addEventListener(
+  'click',
+  (e) => {
+    const t = NY.lastSceneTap;
+    if (!t || performance.now() - t.t > 700 || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 40) return;
+    NY.lastSceneTap = null;
+    if (e.target.id === 'scene') return;
+    e.preventDefault();
+    e.stopPropagation();
+  },
+  true,
+);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && sheet.classList.contains('open')) {
     e.preventDefault();
@@ -1998,6 +2017,7 @@ VIEWS.info = function () {
     S.settings.walkClick,
     (v) => {
       S.settings.walkClick = v;
+      S.settings.walkClickSet = true;
       saveSettings();
     },
   );

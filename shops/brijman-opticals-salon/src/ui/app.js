@@ -500,6 +500,20 @@ function closeSheet() {
 $('#sheet-close').addEventListener('click', closeSheet);
 $('#sheet-back').addEventListener('click', backSheet);
 scrim.addEventListener('click', closeSheet);
+// A tap in the 3D view acts on pointerup, and the browser then sends a click at the same point. If that tap opened
+// the bottom sheet, the click would land on the backdrop (closing the sheet again at once) or on a button in it.
+document.addEventListener(
+  'click',
+  (e) => {
+    const t = NY.lastSceneTap;
+    if (!t || performance.now() - t.t > 700 || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 40) return;
+    NY.lastSceneTap = null;
+    if (e.target.id === 'scene') return;
+    e.preventDefault();
+    e.stopPropagation();
+  },
+  true,
+);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && sheet.classList.contains('open')) {
     e.preventDefault();

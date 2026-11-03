@@ -677,8 +677,13 @@ function createTryOn() {
         audio: false,
         video: {
           facingMode: S.facing,
-          width: { ideal: portrait ? 720 : 1280 },
+          // upright: as tall as the camera allows, in the screen's shape (a 1280 x 720 camera gives 405 x 720)
+          width: portrait ? undefined : { ideal: 1280 },
           height: { ideal: portrait ? 1280 : 720 },
+          // many phones deliver wide frames even when held upright: ask the browser to crop them to the screen's shape
+          // (Chrome does; others ignore it and the view is cropped instead)
+          aspectRatio: { ideal: portrait ? 9 / 16 : 16 / 9 },
+          resizeMode: { ideal: 'crop-and-scale' },
           frameRate: { ideal: 30, max: 30 },
         },
       });
@@ -796,7 +801,9 @@ function createTryOn() {
       if (canvas.width !== W || canvas.height !== H) {
         const va = W / H,
           sa = root.clientWidth / Math.max(1, root.clientHeight);
-        root.classList.toggle('fit-contain', (va < 0.8 && sa > 1.15) || (va > 1.25 && sa < 0.8));
+        // A wide camera image on an upright phone fills the screen (cropped at the sides, like any camera app), never a thin
+        // strip; only an upright image on a wide screen is shown whole, so the head is not cut off.
+        root.classList.toggle('fit-contain', va < 0.8 && sa > 1.15);
         canvas.width = W;
         canvas.height = H;
         renderer.setSize(W, H, false);
@@ -817,12 +824,16 @@ function createTryOn() {
           // Some phones load the GPU delegate and then fail on every frame: rebuild the tracker on the CPU.
           if (++S.detectErrors >= 5 && S.delegate !== 'CPU') toCpu();
         }
+        // Too close to the camera (shoulders at or below the bottom edge): only the top of the garment would show, as a
+        // torn edge under the chin. Wait until both shoulders are well inside the picture.
+        const lm = res && res.landmarks && res.landmarks[0];
+        S.framed = !!lm && [11, 12].every((i) => lm[i] && lm[i].y < 0.82 && (lm[i].visibility ?? 1) > 0.5);
         const J = S.tracker.update(res, W, H, now);
         onPose(J);
         if (DEBUG) drawDebug(res, W, H);
       }
       sampleLight(now);
-      if (S.J && S.outfit) {
+      if (S.J && S.outfit && S.framed) {
         S.outfit.step(S.J, dt, { legs: true });
         S.outfit.sync();
         updateOccluders(S.J, S.m);
@@ -836,6 +847,7 @@ function createTryOn() {
         occ.group.visible = true;
       } else if (S.outfit) {
         S.outfit.group.visible = false;
+        occ.group.visible = false;
       }
       renderer.render(scene, cam);
     };
@@ -920,11 +932,13 @@ function createTryOn() {
       if (t - S.armsFreeAt > 2000) S.crossed = false;
     }
     showGuide(
-      S.crossed
-        ? 'Let your arms hang by your sides, so the sleeves can follow them.'
-        : hipsIn
-          ? ''
-          : 'Step back a little so your hips are in view. The fit is better.',
+      !S.framed
+        ? 'Step back so your shoulders and chest are in the picture. Prop the phone up if you can.'
+        : S.crossed
+          ? 'Let your arms hang by your sides, so the sleeves can follow them.'
+          : hipsIn
+            ? ''
+            : 'Step back a little so your hips are in view. The fit is better.',
     );
     if (!S.seen) {
       S.seen = true;
