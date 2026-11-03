@@ -51,9 +51,33 @@ function createTryOn() {
   video.muted = true;
   const canvas = h('canvas', { class: 'to-canvas', 'aria-hidden': 'true' });
   const dbg = h('canvas', { class: 'to-canvas to-debug', hidden: !DEBUG, 'aria-hidden': 'true' });
-  const stage = h('div', { class: 'to-stage' }, video, canvas, dbg);
+  const backdrop = h('video', {
+    class: 'to-backdrop',
+    playsinline: true,
+    muted: true,
+    autoplay: true,
+    'aria-hidden': 'true',
+  });
+  backdrop.muted = true;
+  const stage = h('div', { class: 'to-stage' }, backdrop, video, canvas, dbg);
   const status = h('span', { class: 'to-status', role: 'status', 'aria-live': 'polite' }, 'Camera off');
   const closeBtn = h('button', { class: 'to-icon', type: 'button', 'aria-label': 'Close the try-on' }, ic('close'));
+  // switches between filling the screen and showing the whole camera picture
+  const viewIcon = (whole) => {
+    const t = document.createElement('template');
+    t.innerHTML =
+      '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      (whole
+        ? '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'
+        : '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>') +
+      '</svg>';
+    return t.content.firstChild;
+  };
+  const viewBtn = h('button', { class: 'to-icon', type: 'button', hidden: true });
+  viewBtn.addEventListener('click', () => {
+    S.view = root.classList.contains('fit-contain') ? 'fill' : 'whole';
+    fit();
+  });
   const flipBtn = h(
     'button',
     { class: 'to-icon', type: 'button', 'aria-label': 'Switch camera', hidden: true },
@@ -64,6 +88,7 @@ function createTryOn() {
     { class: 'to-top' },
     closeBtn,
     h('div', { class: 'to-title' }, h('b', null, 'Try-on'), status),
+    viewBtn,
     flipBtn,
   );
   const guide = h('p', { class: 'to-guide', hidden: true, 'aria-live': 'polite' });
@@ -436,20 +461,17 @@ function createTryOn() {
         audio: false,
         video: {
           facingMode: S.facing,
-          // upright: as tall as the camera allows, in the screen's shape (a 1280 x 720 camera gives 405 x 720)
-          width: portrait ? undefined : { ideal: 1280 },
+          width: { ideal: portrait ? 720 : 1280 },
           height: { ideal: portrait ? 1280 : 720 },
-          // many phones deliver wide frames even when held upright: ask the browser to crop them to the screen's shape
-          // (Chrome does; others ignore it and the view is cropped instead)
-          aspectRatio: { ideal: portrait ? 9 / 16 : 16 / 9 },
-          resizeMode: { ideal: 'crop-and-scale' },
           frameRate: { ideal: 30, max: 30 },
         },
       });
       stopStream();
       S.stream = stream;
       video.srcObject = stream;
+      backdrop.srcObject = stream;
       await video.play().catch(() => {});
+      backdrop.play().catch(() => {});
       root.classList.toggle('mirrored', S.facing === 'user');
       intro.hidden = true;
       try {
@@ -497,6 +519,7 @@ function createTryOn() {
     if (S.stream) for (const t of S.stream.getTracks()) t.stop();
     S.stream = null;
     video.srcObject = null;
+    backdrop.srcObject = null;
   }
   flipBtn.addEventListener('click', () => {
     S.facing = S.facing === 'user' ? 'environment' : 'user';
@@ -550,16 +573,24 @@ function createTryOn() {
       /* ignore */
     }
   }
-  /** Portrait video on a wide screen (or the reverse) is shown whole instead of cropped. */
+  /**
+   * How the camera picture fits the screen. Filling the screen crops the picture; a phone that sends a wide picture
+   * while held upright would then be zoomed in about three times. So the picture fills the screen only when that
+   * keeps at least 60% of it, and is otherwise shown whole over a blurred copy of itself. The view button overrides.
+   */
   function fit() {
     const W = video.videoWidth,
       H = video.videoHeight;
     if (!W || !H) return;
     const va = W / H,
-      sa = stage.clientWidth / Math.max(1, stage.clientHeight);
-    // A wide camera image on an upright phone fills the screen (cropped at the sides, like any camera app), never a thin
-    // strip; only an upright image on a wide screen is shown whole, so the head is not cut off.
-    root.classList.toggle('fit-contain', va < 0.8 && sa > 1.15);
+      sa = root.clientWidth / Math.max(1, root.clientHeight);
+    const kept = Math.min(va, sa) / Math.max(va, sa); // share of the picture left on screen when it fills the screen
+    const whole = S.view === 'whole' || (S.view !== 'fill' && kept < 0.6);
+    root.classList.toggle('fit-contain', whole);
+    viewBtn.hidden = kept > 0.85;
+    viewBtn.setAttribute('aria-label', whole ? 'Fill the screen' : 'Show the whole camera picture');
+    viewBtn.title = viewBtn.getAttribute('aria-label');
+    viewBtn.replaceChildren(viewIcon(whole));
   }
   window.addEventListener('resize', () => {
     if (!root.hidden) fit();

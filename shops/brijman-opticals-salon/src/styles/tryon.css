@@ -46,6 +46,20 @@ html.tryon-open body {
 .to-debug[hidden] {
   display: none;
 }
+/* A wide camera picture on an upright phone is shown whole: a blurred copy of the live picture fills the rest. */
+.to-backdrop {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: cover;
+  filter: blur(26px) brightness(0.6) saturate(1.1);
+  display: none;
+  pointer-events: none;
+}
+.to.fit-contain .to-backdrop {
+  display: block;
+}
 .to.fit-contain .to-video,
 .to.fit-contain .to-canvas {
   object-fit: contain;
