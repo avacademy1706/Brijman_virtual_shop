@@ -2,3 +2,7 @@ dist
 node_modules
 package-lock.json
 assets-3d
+shops
+public/clothing
+public/jewellery
+reports

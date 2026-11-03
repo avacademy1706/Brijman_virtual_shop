@@ -26,7 +26,7 @@ describe('MediaPipe self-hosting', () => {
   });
   it('copies the wasm before dev, build and preview, and keeps the copies out of git', () => {
     const s = JSON.parse(read('package.json')).scripts;
-    for (const k of ['predev', 'prebuild', 'prepreview']) expect(s[k]).toBe('node scripts/copy-mediapipe.mjs');
+    for (const k of ['predev', 'prebuild', 'prepreview']) expect(s[k]).toMatch(/^node scripts\/copy-mediapipe\.mjs\b/);
     expect(read('.gitignore')).toContain('public/vendor/mediapipe/*/wasm/');
   });
   it('is lazy: the showroom entry and interface never import the try-on statically', () => {

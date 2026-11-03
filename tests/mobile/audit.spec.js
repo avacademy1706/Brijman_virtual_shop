@@ -138,7 +138,7 @@ test('mobile audit', async ({ page, browserName }, info) => {
   try {
     /* 1. Welcome */
     t0 = Date.now();
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/eyewear/', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => document.querySelector('#w-explore') && window.BM && window.BM.PRODUCTS, null, {
       timeout: 120000,
     });
@@ -398,7 +398,7 @@ test('mobile audit', async ({ page, browserName }, info) => {
       stayed ? '' : 'left the page: ' + page.url(),
     );
     if (!stayed) {
-      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await page.goto('/eyewear/', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => window.BM && window.BM.openTryOn, null, { timeout: 120000 });
       await page
         .waitForFunction(
@@ -588,7 +588,7 @@ test('mobile audit', async ({ page, browserName }, info) => {
 
     // If Back left the page earlier, come back before measuring performance.
     if (!(await run(() => !!window.BM).catch(() => false))) {
-      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await page.goto('/eyewear/', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => window.BM && window.BM.openTryOn, null, { timeout: 120000 });
       await page
         .waitForFunction(

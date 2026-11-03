@@ -1,15 +1,15 @@
 {
-  "name": "brijman-virtual-showroom",
+  "name": "plexus-marketplace",
   "private": true,
   "version": "1.0.0",
-  "description": "Walkable 3D eyewear showroom with frame details, lens options, a server-priced bag, demo checkout and eye-test booking. Vite, three.js and a Hono API on Vercel.",
+  "description": "Plexus virtual marketplace: walkable 3D shops (Brijman Eyewear, Taana Studio clothing, Kanak Fine Jewellery) with camera try-ons. Vite, three.js, MediaPipe and a Hono API on Vercel.",
   "type": "module",
   "scripts": {
-    "predev": "node scripts/copy-mediapipe.mjs",
+    "predev": "node scripts/copy-mediapipe.mjs && node scripts/build-shops.mjs",
     "dev": "vite",
-    "predev:phone": "node scripts/copy-mediapipe.mjs",
+    "predev:phone": "node scripts/copy-mediapipe.mjs && node scripts/build-shops.mjs",
     "dev:phone": "vite --host",
-    "prebuild": "node scripts/copy-mediapipe.mjs",
+    "prebuild": "node scripts/copy-mediapipe.mjs && node scripts/build-shops.mjs",
     "build": "vite build",
     "prepreview": "node scripts/copy-mediapipe.mjs",
     "preview": "vite preview",
@@ -22,7 +22,8 @@
     "assets:check": "node scripts/check-assets.mjs",
     "bundle:check": "node scripts/check-bundle.mjs",
     "test:mobile": "npm run build && playwright test -c tests/mobile/playwright.config.mjs && node scripts/mobile-report.mjs",
-    "test:mobile:report": "node scripts/mobile-report.mjs"
+    "test:mobile:report": "node scripts/mobile-report.mjs",
+    "build:shops": "node scripts/build-shops.mjs --force"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.0.1",

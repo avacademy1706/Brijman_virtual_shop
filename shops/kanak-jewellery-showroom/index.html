@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Kanak Fine Jewellery · Virtual Boutique</title>
+    <meta
+      name="description"
+      content="Walk through the Kanak fine-jewellery boutique in 3D. See gold, diamond and polki pieces up close, price them live from today's gold rate and try them on with your camera."
+    />
+    <meta name="theme-color" content="#f4eee4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f0c0a" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kanak Fine Jewellery · Virtual Boutique" />
+    <meta
+      property="og:description"
+      content="A domed rotunda, six salons and a private bridal lounge, in 3D. Price any piece live and try it on with your camera."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <canvas
+        id="scene"
+        aria-label="3D view of the Kanak boutique. The directory, search and section cards give the same information without the 3D view."
+      ></canvas>
+      <canvas id="plan-fallback" hidden aria-label="Floor plan of the boutique. Tap a section to browse it."></canvas>
+      <div id="labels" class="labels"></div>
+      <div id="pin" class="pin" hidden><span class="pin-label" id="pin-label"></span></div>
+      <div id="tooltip" class="tooltip" hidden></div>
+      <div id="fade" class="fade" aria-hidden="true"></div>
+
+      <header class="topbar glass">
+        <button class="brand" id="brand-btn" type="button" aria-label="Store details and settings">
+          <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+            <defs>
+              <linearGradient id="brandgold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f7e3a8" />
+                <stop offset=".5" stop-color="#c9a24f" />
+                <stop offset="1" stop-color="#8a6526" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M20 4 L29 13 L20 36 L11 13 Z"
+              fill="none"
+              stroke="url(#brandgold)"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M11 13 H29 M16 13 L20 36 L24 13 M15.5 8.5 L20 13 L24.5 8.5"
+              fill="none"
+              stroke="url(#brandgold)"
+              stroke-width="1.2"
+            />
+            <path
+              d="M20 36 C12 33 5 27 4 19 C9 20 13 23 15 27 M20 36 C28 33 35 27 36 19 C31 20 27 23 25 27"
+              fill="none"
+              stroke="url(#brandgold)"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span class="brand-text"
+            ><span class="brand-name">KANAK</span
+            ><span class="brand-sub">Fine Jewellery &middot; Virtual boutique</span></span
+          >
+        </button>
+        <button
+          class="zone-pill"
+          id="zone-pill"
+          type="button"
+          aria-label="You are in this section. Open the boutique directory."
+        >
+          <span class="zone-dot" aria-hidden="true"></span>
+          <span class="zone-pill-text"
+            ><span class="eyebrow">You&rsquo;re in</span
+            ><span class="zone-pill-name" id="zone-name">Foyer &amp; Today&rsquo;s Rates</span></span
+          >
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m7 10 5 5 5-5" />
+          </svg>
+        </button>
+        <nav class="actions" aria-label="Boutique tools">
+          <button class="icon-btn hide-sm" id="btn-tour" type="button" aria-pressed="false">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="m10 8.5 5.5 3.5-5.5 3.5z" /></svg
+            ><span>Tour</span>
+          </button>
+          <button class="icon-btn hide-sm" id="btn-dir" type="button">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+              <path d="M9 4v14M15 6v14" /></svg
+            ><span>Directory</span>
+          </button>
+          <button class="icon-btn tryon-btn" id="btn-tryon" type="button" aria-label="Open the camera try-on">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z" />
+              <circle cx="12" cy="13.2" r="3.6" /></svg
+            ><span class="hide-sm">Try on</span>
+          </button>
+          <button class="icon-btn" id="btn-search" type="button" aria-label="Find a piece">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16 16 4.5 4.5" /></svg
+            ><span class="hide-sm">Search</span>
+          </button>
+          <button class="icon-btn bag-btn" id="btn-bag" type="button" aria-label="Open your bag">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 8h14l-1 12H6L5 8z" />
+              <path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></svg
+            ><span class="hide-sm">Bag</span><span class="badge" id="bag-count" hidden>0</span>
+          </button>
+        </nav>
+      </header>
+
+      <section class="minimap glass" id="minimap" aria-label="Floor plan">
+        <div class="minimap-head">
+          <span class="eyebrow">Floor plan</span
+          ><button class="link-btn" id="minimap-open" type="button">Directory</button>
+        </div>
+        <canvas
+          id="minimap-canvas"
+          role="img"
+          aria-label="Floor plan with your position and view direction. Click a spot to walk there."
+        ></canvas>
+      </section>
+
+      <div class="dock" id="dock">
+        <section class="card glass" id="zonecard" hidden aria-live="polite">
+          <p class="eyebrow" id="zc-eyebrow">Section</p>
+          <h2 id="zc-title">Section</h2>
+          <p class="blurb" id="zc-blurb"></p>
+          <div class="card-actions" id="zc-actions"></div>
+          <div class="zc-timer" aria-hidden="true"><span id="zc-bar"></span></div>
+          <button class="card-close" id="zc-close" type="button" aria-label="Hide section card">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </section>
+        <section class="card glass" id="tourcard" hidden aria-live="polite">
+          <div class="tc-head">
+            <p class="eyebrow" id="tc-step">Stop 1 of 9</p>
+            <button class="link-btn" id="tc-exit" type="button">End tour</button>
+          </div>
+          <h2 id="tc-title">Foyer</h2>
+          <p class="blurb" id="tc-text"></p>
+          <div class="card-actions" id="tc-extra"></div>
+          <div class="tc-controls">
+            <button class="btn small" id="tc-prev" type="button">
+              <svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 5l-7 7 7 7" /></svg
+              ><span>Back</span>
+            </button>
+            <button class="btn small" id="tc-play" type="button" aria-pressed="true"><span>Pause</span></button>
+            <span class="grow"></span>
+            <button class="btn small primary" id="tc-next" type="button">
+              <span>Next stop</span
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </button>
+          </div>
+          <div class="tc-progress" aria-hidden="true"><span id="tc-bar"></span></div>
+        </section>
+      </div>
+
+      <section class="welcome glass" id="welcome" aria-labelledby="welcome-title">
+        <a class="market-back" href="/"
+          ><svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M15 5l-7 7 7 7" /></svg
+          ><span>All shops</span></a
+        >
+        <p class="eyebrow">Virtual boutique &middot; Sample store</p>
+        <h1 id="welcome-title">Welcome to <em>Kanak</em></h1>
+        <p class="lede" id="welcome-lede">
+          A domed rotunda, six salons and a private bridal lounge. Every piece is built in 3D and priced live from
+          today&rsquo;s gold rate.
+        </p>
+        <ul class="howto">
+          <li>
+            <span class="ic"
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 21c4-4 6.5-7.2 6.5-10.3a6.5 6.5 0 1 0-13 0C5.5 13.8 8 17 12 21z" />
+                <circle cx="12" cy="10.5" r="2.2" /></svg></span
+            ><span
+              ><b>Double-click the floor</b> (double-tap on a phone) to walk there. <b>Drag</b> to look around, pinch or
+              scroll to look closer.</span
+            >
+          </li>
+          <li>
+            <span class="ic"
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 4h10l3.5 5L12 20 3.5 9z" />
+                <path d="M3.5 9h17M9 4l-1.5 5L12 20l4.5-11L15 4" /></svg></span
+            ><span
+              ><b>Tap any piece</b> to turn it in your hand, change the metal, stone and size, and see exactly how it is
+              priced.</span
+            >
+          </li>
+          <li>
+            <span class="ic"
+              ><svg
+                class="i"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z" />
+                <circle cx="12" cy="13.2" r="3.6" /></svg></span
+            ><span><b>Try on</b> earrings, necklaces, tikkas, rings and bangles with your camera.</span>
+          </li>
+        </ul>
+        <p class="status" id="status" role="status">
+          <span class="spinner" aria-hidden="true"></span><span id="status-text">Opening the boutique&hellip;</span>
+        </p>
+        <div class="welcome-actions">
+          <button class="btn primary" id="w-tour" type="button">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="m10 8.5 5.5 3.5-5.5 3.5z" /></svg
+            ><span>Take the guided tour</span>
+          </button>
+          <button class="btn" id="w-explore" type="button"><span>Explore on my own</span></button>
+          <button class="btn" id="w-tryon" type="button">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z" />
+              <circle cx="12" cy="13.2" r="3.6" /></svg
+            ><span>Camera try-on</span>
+          </button>
+        </div>
+      </section>
+      <p class="hint" id="hint" hidden>Double-click the floor to walk &middot; drag to look around</p>
+
+      <nav class="bottombar" aria-label="Boutique tools">
+        <button id="bb-dir" type="button">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+            <path d="M9 4v14M15 6v14" /></svg
+          ><span>Directory</span>
+        </button>
+        <button id="bb-tour" type="button" aria-pressed="false">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="m10 8.5 5.5 3.5-5.5 3.5z" /></svg
+          ><span>Tour</span>
+        </button>
+        <button id="bb-tryon" type="button">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z" />
+            <circle cx="12" cy="13.2" r="3.6" /></svg
+          ><span>Try on</span>
+        </button>
+        <button id="bb-rates" type="button">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <ellipse cx="12" cy="7" rx="7" ry="2.8" />
+            <path d="M5 7v5c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V7" />
+            <path d="M5 12v5c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8v-5" /></svg
+          ><span>Rates</span>
+        </button>
+        <button id="bb-info" type="button">
+          <svg
+            class="i"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v5.5M12 7.6v.1" /></svg
+          ><span>Info</span>
+        </button>
+      </nav>
+
+      <div class="scrim" id="scrim" hidden></div>
+      <aside class="sheet" id="sheet" role="dialog" aria-labelledby="sheet-title" aria-hidden="true" inert>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <header class="sheet-head">
+          <button class="icon-btn sq" id="sheet-back" type="button" aria-label="Back" hidden>
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </button>
+          <h2 id="sheet-title" tabindex="-1">Details</h2>
+          <button class="icon-btn sq" id="sheet-close" type="button" aria-label="Close">
+            <svg
+              class="i"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </header>
+        <div class="sheet-body" id="sheet-body"></div>
+        <footer class="sheet-foot" id="sheet-foot" hidden></footer>
+      </aside>
+      <div class="toast" id="toast" role="status" hidden></div>
+    </div>
+
+    <noscript
+      ><p style="padding: 24px; font: 16px system-ui">
+        The virtual boutique needs JavaScript. Please turn it on and reload the page.
+      </p></noscript
+    >
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

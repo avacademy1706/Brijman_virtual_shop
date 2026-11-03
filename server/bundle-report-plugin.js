@@ -1,4 +1,4 @@
-// Records which files the showroom's first screen loads, and their gzipped size, for scripts/check-bundle.mjs.
+// Records which files the eyewear shop's first screen loads, and their gzipped size, for scripts/check-bundle.mjs.
 // The report goes to node_modules/.cache, never into dist/.
 import { gzipSync } from 'node:zlib';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -22,7 +22,10 @@ export function bundleReport() {
         c.imports.forEach(add);
         for (const css of (c.viteMetadata && c.viteMetadata.importedCss) || []) seen.add(css);
       };
-      const entry = chunks.find((c) => c.isEntry);
+      // The eyewear shop's entry (the marketplace page has its own, much smaller one).
+      const entry = chunks.find(
+        (c) => c.isEntry && (c.facadeModuleId || '').replace(/\\/g, '/').endsWith('/src/main.js'),
+      );
       if (entry) add(entry.fileName);
       // The interface chunk loads right after the store data, as part of the first screen.
       const app = chunks.find((c) => (c.facadeModuleId || '').replace(/\\/g, '/').endsWith('/src/ui/app.js'));

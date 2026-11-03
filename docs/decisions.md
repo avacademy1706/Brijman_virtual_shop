@@ -168,3 +168,12 @@ On a lost graphics context the store pauses and shows "Restoring the 3D view…"
 - After walking to a product, a card for the previous section no longer stays up.
 - In phone landscape the section card sits below the floor plan button and steps aside while the side panel is open.
 - The try-on up and down buttons moved the frame 1 mm per tap, at most 3 mm: on a phone that is often under two screen pixels a tap, so they seemed not to work. They now move 2 mm per tap, up to 10 mm, show the offset (for example "+4 mm") and grey out at the end. Sizes S, M and L stay true to their millimetre measurements.
+
+## 2026-11-03: Plexus marketplace with three shops
+
+- The site is now a marketplace: `/` lets the visitor choose a shop, the Brijman eyewear shop moved to `/eyewear/`, and two shops from the Plexus package were added: Taana Studio (clothing) at `/clothing/` and Kanak Fine Jewellery at `/jewellery/`. The Plexus package's `brijman-opticals-salon` was left out, because it is a second version of the eyewear shop this repository already runs.
+- Taana and Kanak stay separate Vite projects in `shops/`, with their own lockfiles and tests, instead of being merged into this code base: they share the same template but differ throughout (cloth simulation, jewellery pricing, pose and hand tracking), and keeping them whole keeps their tests and updates usable. They already read `import.meta.env.BASE_URL`, so `scripts/build-shops.mjs` builds them with `--base=/<path>/` into `public/<path>/` (gitignored), and one Vercel project serves everything. No npm workspaces, so each shop installs from its own lockfile.
+- One CSP per path: the shops keep their own policy (it adds `media-src blob: mediastream:` and `worker-src 'self' blob:` for their try-ons); the marketplace and eyewear keep this repository's policy. The site rule excludes the shop paths so the two never overlap.
+- Bags stay per shop (each shop prices and checks out its own products); the marketplace reads them only to show how many items wait in each. It stores only the last shop opened and the chosen filter, nothing personal.
+- The browser Back button from a shop's bare store returns to the marketplace; panels inside the eyewear shop still close one at a time first.
+- In the headless test browser (software graphics), leaving Kanak or Taana for another page on the site can take 20–45 s because the shared graphics process is still drawing their continuously animated scenes; with WebGL off, or on a real GPU, it is instant. The tests allow for this rather than changing the shops.

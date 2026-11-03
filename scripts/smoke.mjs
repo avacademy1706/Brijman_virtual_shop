@@ -34,6 +34,38 @@ await check('The site allows the camera for itself only (try-on)', async () => {
   const pp = r.headers.get('permissions-policy') || '';
   return pp.includes('camera=(self)') ? true : 'Permissions-Policy: ' + pp;
 });
+await check('GET / is the marketplace and links to every shop', async () => {
+  const html = await (await get('/')).text();
+  const missing = ['/eyewear/', '/clothing/', '/jewellery/'].filter((p) => !html.includes('href="' + p + '"'));
+  return missing.length ? 'no link to ' + missing.join(', ') : true;
+});
+for (const [path, marker] of [
+  ['/eyewear/', 'Walk through Brijman Eyewear'],
+  ['/clothing/', 'Taana Studio'],
+  ['/jewellery/', 'Kanak'],
+]) {
+  await check('GET ' + path + ' is the shop, with a CSP and a link back to the marketplace', async () => {
+    const r = await get(path);
+    if (r.status !== 200) return 'status ' + r.status;
+    const html = await r.text();
+    if (!html.includes(marker)) return 'not the shop page';
+    if (!html.includes('class="market-back" href="/"')) return 'no link back to the marketplace';
+    return r.headers.get('content-security-policy') ? true : 'no CSP header';
+  });
+  await check('GET ' + path.slice(0, -1) + ' redirects to ' + path, async () => {
+    const r = await get(path.slice(0, -1));
+    return r.status >= 300 && r.status < 400 && (r.headers.get('location') || '').endsWith(path)
+      ? true
+      : 'status ' + r.status + ' → ' + r.headers.get('location');
+  });
+}
+await check('The clothing and jewellery shops allow their try-on workers and camera video', async () => {
+  for (const p of ['/clothing/', '/jewellery/']) {
+    const csp = (await get(p)).headers.get('content-security-policy') || '';
+    if (!/worker-src 'self' blob:/.test(csp) || !/media-src 'self' blob: mediastream:/.test(csp)) return p + ': ' + csp;
+  }
+  return true;
+});
 await check('GET /api/v1/health is ok', async () => {
   const r = await get('/api/v1/health');
   const j = await r.json();

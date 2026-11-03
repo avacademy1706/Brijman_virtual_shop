@@ -1,0 +1,13 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "package-lock.json": true
+  },
+  "npm.packageManager": "npm"
+}

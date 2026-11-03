@@ -1,4 +1,16 @@
-# Brijman Virtual Showroom
+# Plexus Virtual Marketplace (with the Brijman eyewear shop)
+
+## Marketplace
+
+- `/` is the marketplace (`index.html`, `src/market/main.js`, `art.js`, `market.css`); the shop list is `shared/marketplace.js` (`SHOPS` for the page, `SHOP_BUILDS` for the build). No three.js on this page.
+- `/eyewear/` is the Brijman shop (`eyewear/index.html`, everything under `src/` except `src/market/`, the API). Vite builds both pages (`build.rollupOptions.input`).
+- `/clothing/` (Taana) and `/jewellery/` (Kanak) are separate Vite projects in `shops/<folder>/`, each with its own `package.json`, lockfile, tests, `CLAUDE.md` and `NY` namespace. Read that `CLAUDE.md` before changing a shop. `scripts/build-shops.mjs` (run by `predev` and `prebuild`) installs each with `npm ci` and builds it with `--base=/<path>/` into `public/<path>/` (gitignored), so the main dev server and build serve it. It skips an unchanged shop; on Vercel or with `--force` it always builds. Run a shop's own tests inside its folder (`cd shops/<folder> && npm test`).
+- Never add npm workspaces: each shop must keep installing from its own lockfile.
+- `vercel.json`: the site rule `/((?!clothing|jewellery).*)` and the shop rule `/(clothing|jewellery)/(.*)` (the shops' own CSP, which adds `media-src blob: mediastream:` and `worker-src 'self' blob:`), so every path gets exactly one policy; redirects add the trailing slash. `vite.config.js` sends the same headers in preview. `tests/unit/marketplace.test.js` checks them.
+- Every shop links back to `/` (`.market-back` in the welcome card, `.market-link` in the store details). Bags stay per shop (`bm-bag-v2`, `taana-bag-v1`, `kanak-bag-v1`); the marketplace only reads them to show counts. The marketplace stores only `plexus-last-shop` and `plexus-filter`.
+- Adding a shop: copy its Vite project into `shops/` (it must read `import.meta.env.BASE_URL` for its own files), add it to `shared/marketplace.js`, add its path to both `vercel.json` rules and the redirects, add the back links, and run the marketplace tests.
+
+## Brijman eyewear shop
 
 Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eyewear" and the whole catalogue are sample data. Vite + three.js site with a Hono API (one Vercel Function), deployed on Vercel. Plain JavaScript (ES modules), no UI framework, no TypeScript.
 
@@ -12,14 +24,14 @@ Walkable 3D eyewear showroom for the web, built by Plexus Digitals. "Brijman Eye
 - `npm run check`: format check, tests, build, then `scripts/check-bundle.mjs` (first load may grow at most 10 KB gzipped over 32,552 bytes); stops at the first failure
 - `dev`, `build` and `preview` run `scripts/copy-mediapipe.mjs` first (copies the MediaPipe wasm to `public/vendor/mediapipe/<version>/wasm/`, gitignored, and checks the face model hash)
 - `npm run smoke -- <baseUrl>`: post-deploy check of the site, API and headers
-- `npm run test:mobile`: builds, serves the production build and runs the Playwright audit (`tests/mobile/`) on 16 device profiles; report in `reports/mobile-audit/index.html` (gitignored). Needs `npx playwright install chromium webkit firefox` once. `AUDIT_PHASE=before` writes a baseline
+- `npm run test:mobile`: builds, serves the production build and runs the Playwright audit of the eyewear shop (`tests/mobile/audit.spec.js`, at `/eyewear/`) and the marketplace test (`tests/mobile/marketplace.spec.js`) on 16 device profiles; report in `reports/mobile-audit/index.html` (gitignored). Needs `npx playwright install chromium webkit firefox` once. `AUDIT_PHASE=before` writes a baseline
 - `npm run format` / `npm run format:check`: Prettier (printWidth 120, single quotes, trailing commas)
 - `npm run assets:check`: confirms every file listed in `assets-3d/catalogue.json` exists
 - The developer machine runs Windows. npm scripts must be cross-platform: use Node scripts, not bash, `rm -rf` or `export`.
 
 ## Architecture
 
-- `index.html` holds the page shell: top bar, floor-plan card, section and tour cards, detail sheet, welcome card.
+- `eyewear/index.html` holds the page shell: top bar, floor-plan card, section and tour cards, detail sheet, welcome card.
 - Boot order in `src/main.js`: fonts and CSS → `await loadInitialData()` (`src/services/data-loader.js`: one `GET /api/v1/bootstrap`, or the bundled `data/*.json` in static mode or when the API fails) → import `src/ui/app.js` → lazy-load `src/scene/showroom.js` (three.js chunk).
 - Business data lives in `data/*.json`: `store.json` (store, zones, tour, tourText), `catalogue.json`, `merchandising.json`, `lenses.json`, `eye-test.json`.
 - Shared namespace `BM` in `src/core/bm.js`, also exposed as `window.BM`:

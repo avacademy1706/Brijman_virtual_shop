@@ -1,4 +1,17 @@
-# Brijman Eyewear · Virtual Showroom
+# Plexus · Virtual Marketplace
+
+A marketplace of walkable 3D shops. The front page (`/`) lets visitors choose a shop; each shop is a complete store with its own sections, products, camera try-on, bag and demo checkout, and links back to the marketplace.
+
+| Address       | Shop                                     | Camera try-on                                                     | Source                                  |
+| ------------- | ---------------------------------------- | ----------------------------------------------------------------- | --------------------------------------- |
+| `/`           | Plexus marketplace (choose a shop)       |                                                                   | `index.html`, `src/market/`             |
+| `/eyewear/`   | Brijman Eyewear · Virtual Showroom       | Frames at their true size on the face, with a fit guide           | `eyewear/index.html`, `src/`, `server/` |
+| `/clothing/`  | Taana Studio · Virtual Clothing Showroom | The garment simulated as cloth over the body (MediaPipe Pose)     | `shops/taana-clothing-showroom/`        |
+| `/jewellery/` | Kanak Fine Jewellery · Virtual Boutique  | Earrings and necklaces on the face, rings and bangles on the hand | `shops/kanak-jewellery-showroom/`       |
+
+The marketplace page shows how many items wait in each shop's bag and offers to continue in the last shop visited. Taana and Kanak are separate Vite projects with their own `package.json`, lockfile, tests and documentation (see their `README.md` and `CLAUDE.md`); `scripts/build-shops.mjs` builds them into the site. Everything deploys as one Vercel project.
+
+## Brijman Eyewear (the eyewear shop)
 
 A walkable 3D eyewear showroom for the web. Visitors tap the floor to walk (the route goes around fixtures), drag to look around, and use the floor plan, directory, guided tour or search to find a section or frame. Tapping a frame opens its colours, real sizes (S, M, L), size guide, lens options and prescription entry. **Try on** puts the frame on your face at its true size, live from the camera or on a photo, all on the device. Items go into a bag priced by the server, with a demo checkout and eye-test booking.
 
@@ -6,7 +19,7 @@ It is built with [Vite](https://vite.dev), [three.js](https://threejs.org) and a
 
 **Everything is in this folder:** the source code, the API, the store data (`data/*.json`), the fonts (`src/assets/fonts`), the favicon, and every 3D model and texture from the showroom as `.glb` and `.png` files in [`assets-3d/`](assets-3d/README.md).
 
-> **Sample data.** "Brijman Eyewear", the frames, prices and stock levels are placeholders. Checkout and eye-test booking are demos: the server checks them and returns a reference, but nothing is charged, booked or stored.
+> **Sample data.** "Plexus", "Brijman Eyewear", "Taana Studio", "Kanak", the products, prices and stock levels are placeholders. Checkout and eye-test booking are demos: the server checks them and returns a reference, but nothing is charged, booked or stored.
 
 **Step-by-step guide from this folder to a live URL: [docs/setup-and-deploy.md](docs/setup-and-deploy.md).**
 
@@ -18,24 +31,27 @@ Needs Node.js 22.12 or newer (24 LTS recommended).
 
 ```bash
 npm ci            # install the exact package versions
-npm run dev       # site and API at http://localhost:5173
+npm run dev       # marketplace, shops and API at http://localhost:5173
 ```
+
+The first `npm run dev` or `npm run build` also installs and builds the clothing and jewellery shops (needs internet once: their try-on models are downloaded from Google's MediaPipe model bucket), which takes a minute or two. After that a shop is rebuilt only when its files change; `npm run build:shops` rebuilds both.
 
 ## Scripts
 
-| Command                  | What it does                                                                                                                   |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `npm run dev`            | Site and API at http://localhost:5173 with live reload                                                                         |
-| `npm run dev:phone`      | Same, reachable from phones on your Wi-Fi                                                                                      |
-| `npm run build`          | Production build into `dist/`                                                                                                  |
-| `npm run preview`        | Serves `dist/` and the API at http://localhost:4173 with the production headers                                                |
-| `npm test`               | Runs the tests once (Vitest); `npm run test:watch` keeps them running                                                          |
-| `npm run check`          | Format check, tests, build and the first-load size check; stops at the first failure                                           |
-| `npm run test:mobile`    | Builds, serves the production build and audits 16 phone, tablet and desktop profiles; writes `reports/mobile-audit/index.html` |
-| `npm run bundle:check`   | After a build: fails if the showroom's first load grew more than 10 KB gzipped                                                 |
-| `npm run smoke -- <url>` | Checks a running site and its API, for example `npm run smoke -- http://localhost:4173`                                        |
-| `npm run format`         | Formats all files with Prettier                                                                                                |
-| `npm run assets:check`   | Confirms every 3D model and texture in `assets-3d/` is present                                                                 |
+| Command                  | What it does                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`            | Site and API at http://localhost:5173 with live reload                                                                          |
+| `npm run dev:phone`      | Same, reachable from phones on your Wi-Fi                                                                                       |
+| `npm run build`          | Production build into `dist/` (marketplace, eyewear shop, and the other shops from `shops/`)                                    |
+| `npm run build:shops`    | Rebuilds the clothing and jewellery shops into `public/clothing/` and `public/jewellery/` (gitignored)                          |
+| `npm run preview`        | Serves `dist/` and the API at http://localhost:4173 with the production headers                                                 |
+| `npm test`               | Runs the tests once (Vitest); `npm run test:watch` keeps them running                                                           |
+| `npm run check`          | Format check, tests, build and the first-load size check; stops at the first failure                                            |
+| `npm run test:mobile`    | Builds, serves the production build, audits the eyewear shop and tests the marketplace on 16 phone, tablet and desktop profiles |
+| `npm run bundle:check`   | After a build: fails if the showroom's first load grew more than 10 KB gzipped                                                  |
+| `npm run smoke -- <url>` | Checks a running site and its API, for example `npm run smoke -- http://localhost:4173`                                         |
+| `npm run format`         | Formats all files with Prettier                                                                                                 |
+| `npm run assets:check`   | Confirms every 3D model and texture in `assets-3d/` is present                                                                  |
 
 ## Phones, tablets and desktops
 
@@ -99,7 +115,9 @@ Payment, WhatsApp and CRM variables are listed in `.env.example` and [docs/backe
 
 ```
 brijman-virtual-showroom/
-├─ index.html                 Page shell: top bar, floor-plan card, section and tour cards, detail sheet
+├─ index.html                 Marketplace front page (script and styles in src/market/)
+├─ eyewear/index.html         Eyewear shop page shell: top bar, floor-plan card, section and tour cards, detail sheet
+├─ shops/                     The other shops, each its own Vite project: taana-clothing-showroom/, kanak-jewellery-showroom/
 ├─ api/index.js               Vercel Function entry: exports the Hono app's fetch
 ├─ server/
 │  ├─ app.js                  Hono app: request id, headers, logging, rate-limit hook, routes, errors
@@ -109,11 +127,13 @@ brijman-virtual-showroom/
 │  ├─ integrations/           payments, notifications, crm: no-ops until configured
 │  ├─ lib/                    errors, responses, request helpers, IST dates, hashing
 │  └─ vite-api-plugin.js      Serves the API inside npm run dev and npm run preview
-├─ shared/                    Runs in the browser and in Node: pricing, rules, zod schemas, constants, frame archetypes,
+├─ shared/                    Runs in the browser and in Node: marketplace.js (the shop list), pricing, rules, zod schemas,
+│                             constants, frame archetypes,
 │                             fit guide and sizes (fit.js), MediaPipe canonical face
 ├─ data/                      store.json, catalogue.json, merchandising.json, lenses.json, eye-test.json
 ├─ src/
-│  ├─ main.js                 Entry: fonts and styles, load data, then the UI, then the 3D scene
+│  ├─ market/                 Marketplace page: main.js (cards, filter, bag counts, continue), art.js, market.css
+│  ├─ main.js                 Eyewear entry: fonts and styles, load data, then the UI, then the 3D scene
 │  ├─ services/               http client, data loader, cart, order and eye-test services
 │  ├─ core/bm.js              Shared namespace (window.BM) for data and the UI ↔ 3D bridge
 │  ├─ data/                   store-layout.js (floor plan), frames.js (shape maths), catalogue.js (fills BM)
@@ -126,9 +146,9 @@ brijman-virtual-showroom/
 │  └─ styles/                 main.css (design tokens, light and dark) and fonts.css
 ├─ tests/                     unit, route, Vercel entry and repository contract tests; tests/mobile/ is the Playwright audit
 ├─ public/vendor/mediapipe/   Face model (committed) and the wasm runtime (copied at build time, gitignored)
-├─ scripts/                   smoke.mjs, check-assets.mjs, copy-mediapipe.mjs, check-bundle.mjs
+├─ scripts/                   build-shops.mjs, smoke.mjs, check-assets.mjs, copy-mediapipe.mjs, check-bundle.mjs
 ├─ assets-3d/                 Every 3D model (.glb) and texture (.png), for 3D artists (not loaded by the site)
 ├─ docs/                      Guides, API reference, OpenAPI, decisions
-├─ vercel.json                Build settings, rewrite, region, function limits, security headers
-└─ vite.config.js             Build settings and the local API plugin
+├─ vercel.json                Build settings, rewrite, region, function limits, security headers (one rule for the shops)
+└─ vite.config.js             Build settings (two pages), the local API plugin and the shops plugin
 ```

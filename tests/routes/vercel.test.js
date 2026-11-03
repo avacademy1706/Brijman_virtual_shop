@@ -23,7 +23,7 @@ describe('vercel.json', () => {
     expect(vercel.functions['api/index.js']).toMatchObject({ maxDuration: 10, includeFiles: 'data/**' });
   });
   it('keeps the security headers and sets no API cache rule', () => {
-    const site = vercel.headers.find((h) => h.source === '/(.*)').headers.map((h) => h.key);
+    const site = vercel.headers.find((h) => h.source === '/((?!clothing|jewellery).*)').headers.map((h) => h.key);
     for (const k of [
       'Content-Security-Policy',
       'X-Content-Type-Options',
@@ -33,12 +33,12 @@ describe('vercel.json', () => {
       expect(site).toContain(k);
     expect(vercel.headers.some((h) => h.source.startsWith('/api'))).toBe(false);
     const csp = vercel.headers
-      .find((h) => h.source === '/(.*)')
+      .find((h) => h.source === '/((?!clothing|jewellery).*)')
       .headers.find((h) => h.key === 'Content-Security-Policy');
     expect(csp.value).toMatch(/connect-src 'self'/);
   });
   it("allows only what the try-on needs: 'wasm-unsafe-eval' and camera=(self)", () => {
-    const site = vercel.headers.find((h) => h.source === '/(.*)').headers;
+    const site = vercel.headers.find((h) => h.source === '/((?!clothing|jewellery).*)').headers;
     const csp = site.find((h) => h.key === 'Content-Security-Policy').value;
     expect(csp).toContain("script-src 'self' 'wasm-unsafe-eval';");
     expect(csp).not.toMatch(/unsafe-eval'(?<!wasm-unsafe-eval')|https?:/);

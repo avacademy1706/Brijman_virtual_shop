@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kanak · Jewellery gallery (development)</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0d0a08;
+        color: #eadfcc;
+        font:
+          14px/1.4 system-ui,
+          sans-serif;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #bar {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      #bar select,
+      #bar button {
+        font: inherit;
+        background: #1d1712;
+        color: inherit;
+        border: 1px solid #5a4a36;
+        border-radius: 8px;
+        padding: 6px 10px;
+      }
+      #info {
+        position: fixed;
+        left: 12px;
+        bottom: 12px;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+    <div id="bar"></div>
+    <div id="info"></div>
+    <script type="module" src="./gallery.js"></script>
+  </body>
+</html>

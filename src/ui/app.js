@@ -2483,6 +2483,10 @@ VIEWS.lensguide = function () {
 VIEWS.info = function () {
   const st = BM.STORE;
   const body = h('div', { class: 'stack' });
+  // This shop is one of several in the Plexus marketplace.
+  body.append(
+    h('a', { class: 'btn market-link', href: '/' }, ic('back'), h('span', null, 'All shops in the marketplace')),
+  );
   body.append(
     section(
       st.name,

@@ -53,3 +53,7 @@ tests/local/
 
 # Mobile audit output (screenshots and results); the generator script is committed
 reports/
+
+# The marketplace's other shops, built from shops/<folder>/ by scripts/build-shops.mjs (never committed)
+public/clothing/
+public/jewellery/
