@@ -288,11 +288,52 @@ html.tryon-open body {
 .to-handle:focus-visible span {
   background: var(--accent);
 }
+/* folded: only the collections and the frame strip step aside; colour, size and fit stay in view */
 .to-panel.min .to-carousel,
-.to-panel.min .to-row,
-.to-panel.min .to-meta,
-.to-panel.min .to-fit {
+.to-panel.min .to-slots {
   display: none;
+}
+/* up / down / reset: move the frame on the nose */
+.to-nudge {
+  position: absolute;
+  z-index: 3;
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  top: 38%;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+.to-nudge[hidden] {
+  display: none;
+}
+.to-nudge .to-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.to-nudge-val {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(12, 14, 20, 0.72);
+  color: #fff;
+  font:
+    600 12px/1.4 ui-monospace,
+    'SFMono-Regular',
+    Menlo,
+    Consolas,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.to-nudge-val[hidden] {
+  display: none;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 .to-slots {
   display: flex;
@@ -582,6 +623,10 @@ html.tryon-open body {
 /* wide screens: the panel becomes a column on the right and the camera view fills the rest,
    so the face, neck and hands are never covered */
 @media (min-width: 980px) and (min-aspect-ratio: 5/4) {
+  .to-nudge {
+    right: auto;
+    left: calc(var(--sl, 0px) + 16px);
+  }
   .to-stage {
     right: calc(var(--sr) + 404px);
   }
@@ -626,9 +671,7 @@ html.tryon-open body {
     display: none;
   }
   .to-panel.min .to-carousel,
-  .to-panel.min .to-row,
-  .to-panel.min .to-meta,
-  .to-panel.min .to-fit {
+  .to-panel.min .to-slots {
     display: revert;
   }
   .to-slots {

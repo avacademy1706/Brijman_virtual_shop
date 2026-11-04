@@ -92,6 +92,47 @@ function createTryOn() {
     flipBtn,
   );
   const guide = h('p', { class: 'to-guide', hidden: true, 'aria-live': 'polite' });
+  // Moves the frame up or down on the nose (as in the eyewear shop's try-on): 2 mm a tap, at most 10 mm either way.
+  const NUDGE_STEP = 2,
+    NUDGE_MAX = 10;
+  const svgIcon = (d) => {
+    const t = document.createElement('template');
+    t.innerHTML =
+      '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' +
+      d +
+      '"/></svg>';
+    return t.content.firstChild;
+  };
+  const nudgeBtn = (d, label, fn) => {
+    const b = h('button', { class: 'to-icon', type: 'button', 'aria-label': label, title: label }, svgIcon(d));
+    b.addEventListener('click', fn);
+    return b;
+  };
+  const nudgeUp = nudgeBtn('M6 15l6-6 6 6', 'Move frame up', () => setNudge(S.nudge + NUDGE_STEP));
+  const nudgeReset = nudgeBtn('M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4', 'Reset frame position', () => setNudge(0));
+  const nudgeDown = nudgeBtn('M6 9l6 6 6-6', 'Move frame down', () => setNudge(S.nudge - NUDGE_STEP));
+  const nudgeVal = h('span', { class: 'to-nudge-val', 'aria-hidden': 'true', hidden: true });
+  const nudgeLive = h('span', { class: 'sr-only', 'aria-live': 'polite' });
+  const nudgeBox = h(
+    'div',
+    { class: 'to-nudge', role: 'group', 'aria-label': 'Move the frame on your nose', hidden: true },
+    nudgeUp,
+    nudgeReset,
+    nudgeDown,
+    nudgeVal,
+    nudgeLive,
+  );
+  function setNudge(mm) {
+    S.nudge = Math.max(-NUDGE_MAX, Math.min(NUDGE_MAX, mm));
+    nudgeUp.disabled = S.nudge >= NUDGE_MAX;
+    nudgeDown.disabled = S.nudge <= -NUDGE_MAX;
+    nudgeVal.hidden = S.nudge === 0;
+    nudgeVal.textContent = (S.nudge > 0 ? '+' : '') + S.nudge + ' mm';
+    nudgeLive.textContent =
+      S.nudge === 0
+        ? 'Frame position reset.'
+        : 'Frame moved ' + (S.nudge > 0 ? 'up ' : 'down ') + Math.abs(S.nudge) + ' mm.';
+  }
   const startBtn = h(
     'button',
     { class: 'btn primary', type: 'button', id: 'to-start' },
@@ -180,6 +221,7 @@ function createTryOn() {
     stage,
     top,
     guide,
+    nudgeBox,
     intro,
     panel,
     shot,
@@ -627,6 +669,7 @@ function createTryOn() {
     const face = r.face;
     if (face && !S.seen) {
       S.seen = true;
+      nudgeBox.hidden = false;
       panel.classList.add('live');
       // on phones and portrait tablets the panel covers the face: fold it once the shopper is in view
       if (window.matchMedia('(max-width: 760px), (orientation: portrait) and (max-width: 1100px)').matches)
@@ -664,6 +707,7 @@ function createTryOn() {
       }
     }
     const g = glassesPose(face.P, F, s);
+    if (S.nudge) g.o = g.o.map((v, i) => v + F.Y[i] * S.nudge * s);
     holder.matrix.copy(basis(g.X, g.Y, g.Z, g.o, s * 1000));
     // head: an ellipsoid as wide as the temples, whose front sits just behind the eyes (6 mm behind the cornea), so it
     // hides the temple arms past the cheeks but never the front of the frame. Measured from the lens plane: the face
@@ -771,6 +815,8 @@ function createTryOn() {
     S.userSized = !!o.size && o.size !== 'M';
     S.tab = p0.zone;
     S.measured = o.fit && o.fit.face ? { face: o.fit.face, pd: o.fit.pd } : null;
+    nudgeBox.hidden = true;
+    setNudge(0);
     S.cal.reset();
     S.tracker.reset();
     build();
