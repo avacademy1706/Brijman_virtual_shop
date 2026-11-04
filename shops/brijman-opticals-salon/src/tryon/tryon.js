@@ -456,15 +456,12 @@ function createTryOn() {
     startBtn.disabled = true;
     setStatus('Starting camera…');
     try {
-      const portrait = window.innerHeight > window.innerWidth;
+      // Asked for as 1280 x 720 whatever the screen's orientation, like the eyewear shop's try-on: phones describe camera
+      // sizes sideways and turn the picture upright themselves (an upright phone gets 720 x 1280). Asking for 720 x 1280
+      // matches no camera size, and many Android phones then send a wide picture that looks tiny or zoomed in.
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: {
-          facingMode: S.facing,
-          width: { ideal: portrait ? 720 : 1280 },
-          height: { ideal: portrait ? 1280 : 720 },
-          frameRate: { ideal: 30, max: 30 },
-        },
+        video: { facingMode: S.facing, width: { ideal: 1280 }, height: { ideal: 720 } },
       });
       stopStream();
       S.stream = stream;
